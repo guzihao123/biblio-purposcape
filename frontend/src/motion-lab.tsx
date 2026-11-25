@@ -8,6 +8,7 @@ import { DownloadFeedback } from './components/DownloadFeedback'
 import { PageTransition } from './components/PageTransition'
 import './styles/full-power.css'
 import './styles/motion.css'
+import './styles/astral.css'
 
 function MotionLab() {
   return (

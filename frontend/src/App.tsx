@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { createTask, getTask } from './api'
+import { SceneBackdrop } from './components/SceneBackdrop'
 import type { TaskView } from './api'
 import { InvitePage } from './pages/InvitePage'
 import { TaskPage } from './pages/TaskPage'
@@ -82,11 +83,17 @@ export function App() {
   }, [sessionReady, route, task?.id, startTask, openTask])
 
   if (!sessionReady) {
-    return <InvitePage onSuccess={() => setSessionReady(true)} />
+    return (
+      <div className="app-root">
+        <SceneBackdrop />
+        <InvitePage onSuccess={() => setSessionReady(true)} />
+      </div>
+    )
   }
 
   return (
     <div className="app-root">
+      <SceneBackdrop />
       <nav className="app-nav" aria-label="应用导航">
         <span className="app-nav__brand">研究图谱</span>
         <button type="button" onClick={() => {
