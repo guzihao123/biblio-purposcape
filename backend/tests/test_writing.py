@@ -453,6 +453,26 @@ def test_components_with_uncited_reference_are_retried_once(tmp_path):
     assert '方向卡' in output.components.markdown
 
 
+def test_body_prompt_carries_length_and_blank_row_rules(tmp_path):
+    class FakeModel:
+        def __init__(self):
+            self.payloads = []
+
+        def complete_json(self, system_prompt, payload):
+            self.payloads.append(payload)
+            if payload['stage'] == 'components':
+                return {'components': component_data('A')}
+            return {'body': '领域格局与方向卡正文 [1]。', 'evidence': [EVIDENCE]}
+
+    model = FakeModel()
+    task = make_task('A', tmp_path, component_data=None)
+    WritingService(workspace_root=tmp_path, model=model).produce(task)
+
+    body_payload = [p for p in model.payloads if p['stage'] == 'body'][0]
+    assert body_payload['length_target'] == '1500-2500'
+    assert '空白1：' in body_payload['format_rules']
+
+
 def test_body_with_uncited_reference_is_retried_once(tmp_path):
     class RetryModel:
         def __init__(self):

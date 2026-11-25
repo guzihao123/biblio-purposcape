@@ -49,6 +49,21 @@ OUTLINE_HEADINGS = {
 _EVIDENCE_SHAPE = 'EVIDENCE={"claim":"论断","refs":[论文 ref_no],"quotes":{"<ref_no>":"摘要逐字原句"}}'
 _COMPONENT_EVIDENCE_NOTE = '；evidence 必须是 EVIDENCE 列表，' + _EVIDENCE_SHAPE
 
+LENGTH_TARGETS = {
+    'A': '1500-2500',
+    'A_DIALOGUE': '1500-2500',
+    'B': '2000-3000',
+    'C1': '800-1200',
+    'C2': '800-1200',
+    'D': '3000-6000',
+    'E': '1500-2500',
+}
+
+FORMAT_RULES = {
+    'A': '研究空白证据表每行必须以「空白1：」「空白2：」…开头，并在同一行写 [n] 引用与理由类型；方向卡保留「第 N 推荐」「核心研究问题」「数据可得性」。',
+    'A_DIALOGUE': '每类选题的两张卡与综合第 1 推荐必须保留推荐理由与主要风险。',
+}
+
 COMPONENT_SCHEMAS = {
     'A': (
         '{"landscape":[{"direction":"…","share":"篇数/占比","paper_refs":[1],"venues":"团队/期刊口径"}],'
@@ -610,7 +625,8 @@ class WritingService:
                 response = self.model.complete_json(
                     '你是科研正文写作器。先读已完成的构件、提纲和样章，再写连贯正文。每个文献事实必须在 evidence 中给出 refs 与逐字摘要 quotes；'
                     'quote 必须是该篇摘要中逐字复制的一个连续片段（含原标点），不得改写、翻译或拼接；'
-                    '分析判断标明“分析”，不得虚构用户结果、全文细节或参考文献。',
+                    '分析判断标明“分析”，不得虚构用户结果、全文细节或参考文献；'
+                    '正文 CJK 字数必须落在 length_target 区间，并严格遵守 format_rules。',
                     {
                         'stage': 'body',
                         'mode': task.mode,
@@ -624,6 +640,8 @@ class WritingService:
                         'project': task.project,
                         'user_results': task.user_results,
                         'team_context': task.team_context,
+                        'length_target': LENGTH_TARGETS.get(task.mode.upper(), ''),
+                        'format_rules': FORMAT_RULES.get(task.mode.upper(), ''),
                         'response_schema': (
                             '严格返回 {"body":"完整正文 Markdown（含全部章节）",'
                             '"evidence":[{"claim":"论断","refs":[论文 ref_no],"quotes":{"<ref_no>":"摘要逐字原句"}}]}。'
