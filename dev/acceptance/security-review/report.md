@@ -155,3 +155,10 @@
 4. 手工验证均为**本地构造对象/纯计算**：Origin 绕过仅构造 `SitesStorageClient` 判断放行与否（未发起任何网络请求、未使用真实密钥）；唯一索引与 DATABASE_URL 前缀用内存 SQLite 与本地 `get_settings()` 校验（未连接生产 DB）。复核过程中未打印任何真实密钥、令牌或连接串值。
 
 5. 复核结束时工作区：无 `backend/`、`app/` 生产代码改动；`fixtures/worker/results` 已恢复；本报告位于 `dev/acceptance/security-review/report.md`。另有并行任务生成的 `dev/acceptance/push-routes/` 目录，非本次复核产物，未改动。
+
+---
+
+## 修复记录（主线，2026-11-25）
+
+- **HIGH-01 已修复**：`SitesStorageClient` 改为解析 origin，仅对精确的 `localhost` / `127.0.0.1` / `::1` 放行明文 HTTP，其余必须 HTTPS，并拒绝内嵌凭据。修复提交 `590e0ff`；回归测试 `test_sites_storage_client_rejects_lookalike_local_http_origins` 覆盖 `http://localhost.evil.test`、`http://127.0.0.1.evil.test`、普通 HTTP 外部域与内嵌凭据，均按预期拒绝；本地回环 HTTP 仍可用。
+- LOW 级两项保留待评估（日志脱敏过度替换、`_sites_raise` 依赖调用方异常安全化），不阻塞发布。
