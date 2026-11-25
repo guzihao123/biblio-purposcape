@@ -29,7 +29,7 @@ class ChatModel:
             raise RuntimeError('QWEN_BASE_URL is required for Qwen analysis')
         if OpenAI is None:
             raise RuntimeError('The openai package is required for live Qwen analysis')
-        timeout = 300 if self.thinking else 90
+        timeout = 600 if self.thinking else 90
         self._client = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout, max_retries=0)
 
     def complete_json(self, system_prompt, payload):
@@ -49,7 +49,7 @@ class ChatModel:
                 # Thinking mode costs ~9x latency on strict JSON extraction; writing opts back in.
                 extra_body={'enable_thinking': self.thinking},
             ),
-            attempts=3,
+            attempts=1 if self.thinking else 3,
         )
         try:
             content = response.choices[0].message.content

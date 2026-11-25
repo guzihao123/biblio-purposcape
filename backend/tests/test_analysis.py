@@ -580,7 +580,7 @@ def test_chat_model_uses_a_longer_timeout_for_thinking_writes(monkeypatch):
 
     ChatModel(thinking=True)
 
-    assert constructor['timeout'] == 300
+    assert constructor['timeout'] == 600
     assert constructor['max_retries'] == 0
 
 
