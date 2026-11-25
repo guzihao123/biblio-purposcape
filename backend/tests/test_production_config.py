@@ -76,3 +76,18 @@ def test_local_development_keeps_process_local_defaults(monkeypatch):
     assert settings.database_url == 'sqlite:///./test.db'
     assert len(settings.session_secret) >= 32
     assert len(settings.admin_token) >= 32
+
+
+def test_standard_postgres_urls_use_the_declared_psycopg_driver():
+    from app.db import normalize_database_url
+
+    assert normalize_database_url(
+        'postgresql://user:pass@host:5432/db'
+    ) == 'postgresql+psycopg://user:pass@host:5432/db'
+    assert normalize_database_url(
+        'postgres://user:pass@host:5432/db'
+    ) == 'postgresql+psycopg://user:pass@host:5432/db'
+    assert normalize_database_url('sqlite:///./test.db') == 'sqlite:///./test.db'
+    assert normalize_database_url(
+        'postgresql+psycopg://user:pass@host/db'
+    ) == 'postgresql+psycopg://user:pass@host/db'
