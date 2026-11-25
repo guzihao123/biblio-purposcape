@@ -1,0 +1,31 @@
+{
+  "source_pdf": "/Users/crisprcas_9/Desktop/肝细胞癌免疫治疗耐药机制组会汇报.pdf",
+  "source_pdf_sha256": "8ec101a4f0b43bf6f76c945fee2d741f7cdbb6d86e46c29afa6aca2eddaaa4e5",
+  "source_pptx_sha256": "2f3946a64f008c6bb2c10045df48ce51848556201798f22786f36582a07fb9c0",
+  "raw_automated_report": "validation.json",
+  "page_count": 25,
+  "all_pages_rasterized": true,
+  "all_pages_have_pdf_cjk": true,
+  "all_pages_have_ocr_cjk": true,
+  "pdf_replacement_characters": 0,
+  "adjudications": [
+    {
+      "page": 22,
+      "raw_failure": "raster OCR missing 发展趋势",
+      "disposition": "false_positive",
+      "evidence": "PDF text contains 发展趋势｜不足→潜在突破 exactly; OCR read 发展趋勢｜不足→潜在突破, a traditional-character recognition variant."
+    },
+    {
+      "page": 7,
+      "raw_failure": "PDF text and raster OCR missing 文献数",
+      "disposition": "compatibility_note",
+      "evidence": "WPS renders the single-series pie chart with category legend and values: 髓系代谢与 S1P, 1; IL-8/CXCR2 动态分层, 1; 乳酸化与 PD-L1, 1; 免疫微环境综述, 1. It omits the separate series name 文献数. No category or value is missing.",
+      "not_claimed": "Pixel-identical chart labeling between WPS and LibreOffice."
+    }
+  ],
+  "result": "accepted_with_compatibility_note",
+  "remaining_boundaries": [
+    "This is automated PDF text, raster and OCR verification, not a human page-by-page aesthetic review.",
+    "PowerPoint desktop, animations, transitions and presenter view were not tested."
+  ]
+}

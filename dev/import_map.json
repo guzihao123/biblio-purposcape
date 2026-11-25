@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "../sites/functions/_qoder/storage.mjs": "./storage-stub.mjs",
+    "../sites/functions/_qoder/database.mjs": "./database-stub.mjs"
+  }
+}

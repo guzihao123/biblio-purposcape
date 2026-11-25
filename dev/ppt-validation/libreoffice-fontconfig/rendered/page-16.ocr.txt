@@ -1,0 +1,15 @@
+代表作精读［2］｜方法与数据
+overcoming immunotherapy resistance in hepatocellular
+carcinoma by targeting myeloid IL-8/CxCR2 signaling
+数据：晚期肝细胞癌患者治疗前和治疗中活检样本，
+并结合循环 1L-8、耐药原位小鼠模型及多癌种关联观
+察；具体队列细节需全文复核。
+阅读深度：仅摘要（离线真实摘要，未读全文）
+研究问题：髓系 IL-8/CXCR2 信号如何介导免疫检查点
+阻断耐药，以及循环 IL-8 能否提供患者分层和监测线
+素。
+方法：对治疗前后活检开展单细胞 RNA 测序，解析
+1-8/CXCR2 的细胞来源，并在模型中采用 CXCR2 拮抗
+策略评价髓源抑制细胞迁移、免疫抑制和抗 PD-L1效
+果。
+16

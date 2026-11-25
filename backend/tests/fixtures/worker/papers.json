@@ -1,0 +1,53 @@
+{
+  "source": "offline-openalex-fixture",
+  "papers": [
+    {
+      "id": "https://openalex.org/W-OFFLINE-2018",
+      "doi": "https://doi.org/10.1234/offline.drainage.2018",
+      "url": "https://openalex.org/W-OFFLINE-2018",
+      "title": "District drainage planning for urban flood resilience",
+      "authors": ["Chen, Rui"],
+      "year": 2018,
+      "venue": "Offline Urban Water Studies",
+      "type": "article",
+      "cited_by_count": 8,
+      "abstract": "District drainage planning improved urban flood preparedness and recovery coordination.",
+      "referenced_works": [],
+      "claim_eligible": true,
+      "evidence_level": "B",
+      "is_retracted": false
+    },
+    {
+      "id": "https://openalex.org/W-OFFLINE-2024",
+      "doi": "https://doi.org/10.1234/offline.calibration.2024",
+      "url": "https://openalex.org/W-OFFLINE-2024",
+      "title": "Calibrated urban flood loss estimation",
+      "authors": ["Li, Wei", "Smith, Jane"],
+      "year": 2024,
+      "venue": "Offline Urban Water Studies",
+      "type": "article",
+      "cited_by_count": 24,
+      "abstract": "The calibrated model reduced urban flood loss estimation error.",
+      "referenced_works": ["https://openalex.org/W-OFFLINE-2018"],
+      "claim_eligible": true,
+      "evidence_level": "B",
+      "is_retracted": false
+    },
+    {
+      "id": "https://openalex.org/W-OFFLINE-2025",
+      "doi": "https://doi.org/10.1234/offline.garage.2025",
+      "url": "https://openalex.org/W-OFFLINE-2025",
+      "title": "Underground garage exposure and recovery survey",
+      "authors": ["Wang, Fang"],
+      "year": 2025,
+      "venue": "Offline Cities and Resilience",
+      "type": "article",
+      "cited_by_count": 12,
+      "abstract": "The survey describes garage exposure and recovery across three districts.",
+      "referenced_works": ["https://openalex.org/W-OFFLINE-2024"],
+      "claim_eligible": true,
+      "evidence_level": "B",
+      "is_retracted": false
+    }
+  ]
+}

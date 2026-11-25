@@ -1,0 +1,1 @@
+/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/.venv/bin/python: can't open file '/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/dev/ppt-validation/d-offline/d-offline/dev/ppt-validation/d-offline/d-offline/verify_delivery.py': [Errno 2] No such file or directory

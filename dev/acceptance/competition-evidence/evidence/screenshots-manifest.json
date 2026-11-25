@@ -1,0 +1,298 @@
+[
+  {
+    "file": "screenshots/01-390-anonymous-390x844.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "匿名入口",
+    "viewport": "390x844",
+    "sha256": "3ba90c3df90b99b12c9ae4ea49b384f8246c5ae1284db26ceb5ee2cc9676c167",
+    "bytes": 170407
+  },
+  {
+    "file": "screenshots/01-390-dashboard-desktop-390x844.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "文献图谱仪表盘",
+    "viewport": "390x844",
+    "sha256": "b28d77d51e0e3ea55830547a3d7087cc92dce53389dcd060fb85f1b94410f7b1",
+    "bytes": 475725
+  },
+  {
+    "file": "screenshots/01-390-dashboard-light-390x844.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "文献图谱仪表盘",
+    "viewport": "390x844",
+    "sha256": "5355bbf073b0ece5ad8a277a63fc78cbf6711320e19cd171a3f9e0695028d8eb",
+    "bytes": 432146
+  },
+  {
+    "file": "screenshots/01-390-delivery-390x844.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "交付形式卡",
+    "viewport": "390x844",
+    "sha256": "bb6825c8008bdddb2948aab4672ea954d711054458d132f9143ab81c53ff8615",
+    "bytes": 460910
+  },
+  {
+    "file": "screenshots/01-390-direction-390x844.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "研究方向卡",
+    "viewport": "390x844",
+    "sha256": "8be3edaabfaa04662aa9e81520c5acd7fe720acb28b3428515afd569ad1bb253",
+    "bytes": 262803
+  },
+  {
+    "file": "screenshots/01-390-history-390x844.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "研究历史",
+    "viewport": "390x844",
+    "sha256": "bc3cda433bfbb217f67d7cf440e8ad28ee2e28357a32623c34198009945ff390",
+    "bytes": 136984
+  },
+  {
+    "file": "screenshots/01-390-mode-receipt-390x844.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "用途确认卡",
+    "viewport": "390x844",
+    "sha256": "bb3d2d4261f3add9791852a63e1b8ddd7ebfe561ee85624acee5a0edee214d7d",
+    "bytes": 255362
+  },
+  {
+    "file": "screenshots/01-390-report-390x844.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "调研交付报告",
+    "viewport": "390x844",
+    "sha256": "98751a4d593bdfd83d21f32a2ad6b578f37657dc6b76a3d1328e32354d44000d",
+    "bytes": 620887
+  },
+  {
+    "file": "screenshots/01-390-report-initial-390x844.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "调研交付报告",
+    "viewport": "390x844",
+    "sha256": "98751a4d593bdfd83d21f32a2ad6b578f37657dc6b76a3d1328e32354d44000d",
+    "bytes": 620887
+  },
+  {
+    "file": "screenshots/01-390-search-390x844.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "检索进度",
+    "viewport": "390x844",
+    "sha256": "c12510ea04ea1d0b9cc86d06c5d6d90f490b0c7de66037e9190e4e6113a312e1",
+    "bytes": 144302
+  },
+  {
+    "file": "screenshots/01-390-terms-390x844.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "术语确认卡",
+    "viewport": "390x844",
+    "sha256": "03e8cf60d5f5b85e86747ea008b792b49c198f35941247d3e42931b55771fb2e",
+    "bytes": 229009
+  },
+  {
+    "file": "screenshots/01-390-years-390x844.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "年限确认卡",
+    "viewport": "390x844",
+    "sha256": "1514de4b4979ffb5b85ca291e6881df3692f8c89396c3314c99ca23655709cbe",
+    "bytes": 250745
+  },
+  {
+    "file": "screenshots/01-anonymous-1440x900.png",
+    "flow": "A 模式：匿名入口 → 方向/用途/术语/年限确认卡 → 检索进度 → 图谱 → 交付形式 → 对话交付 → 历史",
+    "page": "匿名入口",
+    "viewport": "1440x900",
+    "sha256": "bce77ebb7478dfffe6d94a5b7bd6c5ec31f4d413eb53ddd8f6b6078a2c4b1b7f",
+    "bytes": 476470
+  },
+  {
+    "file": "screenshots/02-390-b-project-390x844.png",
+    "flow": "B 模式：项目卡 → RQ 检索 → 七类图谱满血/轻量 → 年限调整 → Word 报告/证据复核/下载",
+    "page": "B 项目卡",
+    "viewport": "390x844",
+    "sha256": "7bd4f28dc9fc31d105430c17c425a4a04800f7826962e46542a858ec23b2662f",
+    "bytes": 345606
+  },
+  {
+    "file": "screenshots/02-390-report-390x844.png",
+    "flow": "B 模式：项目卡 → RQ 检索 → 七类图谱满血/轻量 → 年限调整 → Word 报告/证据复核/下载",
+    "page": "调研交付报告",
+    "viewport": "390x844",
+    "sha256": "d574bccb399d65f130df5f3c698e24c67bbd21094c545d21d1779a18cf1ebf3a",
+    "bytes": 638897
+  },
+  {
+    "file": "screenshots/02-desktop-dashboard-full-1440x900.png",
+    "flow": "B 模式：项目卡 → RQ 检索 → 七类图谱满血/轻量 → 年限调整 → Word 报告/证据复核/下载",
+    "page": "文献图谱仪表盘",
+    "viewport": "1440x900",
+    "sha256": "b2c85c78fa48d5f3f3060c8ee4612d0ed0d1fd2aa16a3e2819f00b9bc3149ed3",
+    "bytes": 1024359
+  },
+  {
+    "file": "screenshots/02-desktop-dashboard-limited-scope-1440x900.png",
+    "flow": "B 模式：项目卡 → RQ 检索 → 七类图谱满血/轻量 → 年限调整 → Word 报告/证据复核/下载",
+    "page": "文献图谱仪表盘",
+    "viewport": "1440x900",
+    "sha256": "b82309c1a283b116ff0e022191e0f2a8b6c84244197dd2ce0786d154bc73f01c",
+    "bytes": 1024902
+  },
+  {
+    "file": "screenshots/02-desktop-report-1440x900.png",
+    "flow": "B 模式：项目卡 → RQ 检索 → 七类图谱满血/轻量 → 年限调整 → Word 报告/证据复核/下载",
+    "page": "调研交付报告",
+    "viewport": "1440x900",
+    "sha256": "5e8152b94267fb5fcf2712dc411958583d8ec9a0510803374cbf1e0c86f9132e",
+    "bytes": 1141430
+  },
+  {
+    "file": "screenshots/02-graph-evidence-panels-1440x900.png",
+    "flow": "B 模式：项目卡 → RQ 检索 → 七类图谱满血/轻量 → 年限调整 → Word 报告/证据复核/下载",
+    "page": "图谱证据交互面板",
+    "viewport": "1440x900",
+    "sha256": "24cb1245189e188cd5cabddce44dc355a653215e134b49224528a30c0338992f",
+    "bytes": 947613
+  },
+  {
+    "file": "screenshots/02-light-evidence-1440x900.png",
+    "flow": "B 模式：项目卡 → RQ 检索 → 七类图谱满血/轻量 → 年限调整 → Word 报告/证据复核/下载",
+    "page": "轻量版图谱",
+    "viewport": "1440x900",
+    "sha256": "fae93193ce03deba854832213e6a11529e59b6ed381b3ffa2ad55f6431e5007a",
+    "bytes": 819412
+  },
+  {
+    "file": "screenshots/03-390-c-dashboard-390x844.png",
+    "flow": "C 模式：三步固定卡 → C1+C2 衔接 → 合并 Word",
+    "page": "文献图谱仪表盘",
+    "viewport": "390x844",
+    "sha256": "63742670e5ff01713215e302567d3ec5e4b9e0a353c5a1dbcc54a09fef9bd062",
+    "bytes": 494430
+  },
+  {
+    "file": "screenshots/03-390-c-info-390x844.png",
+    "flow": "C 模式：三步固定卡 → C1+C2 衔接 → 合并 Word",
+    "page": "C 本文信息卡",
+    "viewport": "390x844",
+    "sha256": "a9f0a804e8097cf0f3cce36c787fe7b5cfd2d1479859b660a932460d66b357f5",
+    "bytes": 213982
+  },
+  {
+    "file": "screenshots/03-390-c-mode-390x844.png",
+    "flow": "C 模式：三步固定卡 → C1+C2 衔接 → 合并 Word",
+    "page": "C 模式卡",
+    "viewport": "390x844",
+    "sha256": "47f98c970bc1092c86d259b53778e6beab369d2be3f2ee885df7ae8c4ffaaf50",
+    "bytes": 234142
+  },
+  {
+    "file": "screenshots/03-390-c-report-390x844.png",
+    "flow": "C 模式：三步固定卡 → C1+C2 衔接 → 合并 Word",
+    "page": "调研交付报告",
+    "viewport": "390x844",
+    "sha256": "a72f9bf42e29ffe3abe874845d591296369beb0d02699ce149cb29573fc66ebc",
+    "bytes": 624408
+  },
+  {
+    "file": "screenshots/03-390-c-route-390x844.png",
+    "flow": "C 模式：三步固定卡 → C1+C2 衔接 → 合并 Word",
+    "page": "C 路线卡",
+    "viewport": "390x844",
+    "sha256": "bbec3caf59624567c6f85663dac71410f49e57500cbaf697e962542415498e86",
+    "bytes": 225598
+  },
+  {
+    "file": "screenshots/03-390-c-years-390x844.png",
+    "flow": "C 模式：三步固定卡 → C1+C2 衔接 → 合并 Word",
+    "page": "年限确认卡",
+    "viewport": "390x844",
+    "sha256": "5c75b31df72ccb9e91c8a7aaac40ce1ef267bf7c0e51541f433814116becd3ae",
+    "bytes": 236245
+  },
+  {
+    "file": "screenshots/03-390-report-390x844.png",
+    "flow": "C 模式：三步固定卡 → C1+C2 衔接 → 合并 Word",
+    "page": "调研交付报告",
+    "viewport": "390x844",
+    "sha256": "029df04c2b9640ea4414d9bc77a9bac026f416fdc0e90bff129a38a6034ede69",
+    "bytes": 625055
+  },
+  {
+    "file": "screenshots/03-three-step-confirmed-390x844.png",
+    "flow": "C 模式：三步固定卡 → C1+C2 衔接 → 合并 Word",
+    "page": "C 三步确认",
+    "viewport": "390x844",
+    "sha256": "ac909ce322e9eaad00a2501619caf45b8939a5089e009030643a08e7baa40924",
+    "bytes": 229234
+  },
+  {
+    "file": "screenshots/04-390-d-dashboard-390x844.png",
+    "flow": "D 模式：团队背景 → 检索 → 20–30 页 PPT 下载",
+    "page": "文献图谱仪表盘",
+    "viewport": "390x844",
+    "sha256": "6738e64e82448d4b772c5f8719ac47268bb5855bb1be50c8f5cb53be68211726",
+    "bytes": 493238
+  },
+  {
+    "file": "screenshots/04-390-d-team-390x844.png",
+    "flow": "D 模式：团队背景 → 检索 → 20–30 页 PPT 下载",
+    "page": "D 团队背景卡",
+    "viewport": "390x844",
+    "sha256": "cdc223f17e3252ce24a0045aa32d8ddaf6b139d54b8ef88f4609d14ec01d35fe",
+    "bytes": 262467
+  },
+  {
+    "file": "screenshots/04-390-d-years-390x844.png",
+    "flow": "D 模式：团队背景 → 检索 → 20–30 页 PPT 下载",
+    "page": "年限确认卡",
+    "viewport": "390x844",
+    "sha256": "2e2697a68dfd208c661706b612e2300d90cf7a6e78d8ab6e938e7a568b126373",
+    "bytes": 221402
+  },
+  {
+    "file": "screenshots/04-390-report-390x844.png",
+    "flow": "D 模式：团队背景 → 检索 → 20–30 页 PPT 下载",
+    "page": "调研交付报告",
+    "viewport": "390x844",
+    "sha256": "61ed0b1689f7f9dc03c2155b2cbf5dca31d88e23ea683b73d51fa71425d11604",
+    "bytes": 641952
+  },
+  {
+    "file": "screenshots/05-390-admin-390x844.png",
+    "flow": "Skill 管理：草稿 → 真实回归 → 发布 → 回退",
+    "page": "Skill 版本管理",
+    "viewport": "390x844",
+    "sha256": "0aefc6abcd699d5ac7bb3bbff4f42d7a6c396e4f58ce706acb3e36c6b5c10578",
+    "bytes": 200743
+  },
+  {
+    "file": "screenshots/05-390-admin-draft-390x844.png",
+    "flow": "Skill 管理：草稿 → 真实回归 → 发布 → 回退",
+    "page": "Skill 版本管理",
+    "viewport": "390x844",
+    "sha256": "ae23ca24c9d210cc65cc3a8da153848546b1deee544c53672d2a77d0d8b1e621",
+    "bytes": 289103
+  },
+  {
+    "file": "screenshots/05-390-published-390x844.png",
+    "flow": "Skill 管理：草稿 → 真实回归 → 发布 → 回退",
+    "page": "Skill 发布结果",
+    "viewport": "390x844",
+    "sha256": "6ecd41440432c30dd345dbdce07b87fff5b634412765bb7ec0f9179e96156cf7",
+    "bytes": 206940
+  },
+  {
+    "file": "screenshots/05-390-rollback-390x844.png",
+    "flow": "Skill 管理：草稿 → 真实回归 → 发布 → 回退",
+    "page": "Skill 回退结果",
+    "viewport": "390x844",
+    "sha256": "0aefc6abcd699d5ac7bb3bbff4f42d7a6c396e4f58ce706acb3e36c6b5c10578",
+    "bytes": 200743
+  },
+  {
+    "file": "screenshots/05-desktop-admin-1440x900.png",
+    "flow": "Skill 管理：草稿 → 真实回归 → 发布 → 回退",
+    "page": "Skill 版本管理",
+    "viewport": "1440x900",
+    "sha256": "ec090e4b6eeed28ef40a250269724349a8ee92939570f95e210f77eeb6fddf5e",
+    "bytes": 433298
+  }
+]

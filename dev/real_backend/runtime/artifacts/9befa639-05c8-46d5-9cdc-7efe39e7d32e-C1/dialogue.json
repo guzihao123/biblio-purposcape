@@ -1,0 +1,32 @@
+{
+  "mode": "C1",
+  "direction": "肝细胞癌免疫治疗耐药机制",
+  "key_points": [
+    "| 背景重要性 | 为何关注耐药与分层 | [1][2] | 收束到机制问题 |",
+    "| 研究进展 | 三条机制链有何证据 | [3][1][4] | 形成比较基础 |",
+    "| 现有研究不足 | 跨证据链如何对解 | [3][1][4] | 提出本文问题 |",
+    "| 研究思路与方法 | 如何分层验证 | [1][4] | 逐项回应不足 |",
+    "| 研究贡献 | 形成何种可追溯框架 | [1][2] | 限定贡献边界 |",
+    "核心论点：免疫治疗进展与耐药并存，可靠标志物仍不足 [1][2]。",
+    "核心论点：S1P、IL-8/CXCR2 与乳酸化研究提供不同层次的干预依据 [3][1][4]。",
+    "核心论点：不同模型与观察终点不能直接拼成协同结论，需要分层对解 [3][1][4]。"
+  ],
+  "references": [
+    {
+      "ref_no": 1,
+      "text": "[1] ZHANG X, LAO M, SUN K, et al. Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma[J]. Science Advances, 2025. DOI:10.1126/sciadv.adv0558."
+    },
+    {
+      "ref_no": 2,
+      "text": "[2] Tsz Tung Kwong, XIONG Z, ZHANG Y, et al. Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling[J]. Molecular Therapy, 2025. DOI:10.1016/j.ymthe.2025.02.002."
+    },
+    {
+      "ref_no": 3,
+      "text": "[3] LIU S, PAN Y, LIU W, et al. Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma[J]. Journal for ImmunoTherapy of Cancer, 2025. DOI:10.1136/jitc-2025-012230."
+    },
+    {
+      "ref_no": 4,
+      "text": "[4] FU Y, GUO X, SUN L, et al. Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance[J]. eLife, 2024. DOI:10.7554/elife.95009."
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "service": "OpenAlex",
+  "result": "passed",
+  "logical_requests": [
+    {
+      "query_kind": "ordinary",
+      "requested_records": 4
+    },
+    {
+      "query_kind": "retracted",
+      "requested_records": 2
+    }
+  ],
+  "http_attempts": [
+    {
+      "endpoint": "api.openalex.org/works",
+      "status": 200,
+      "error_type": null
+    },
+    {
+      "endpoint": "api.openalex.org/works",
+      "status": 200,
+      "error_type": null
+    }
+  ],
+  "paper_count": 6,
+  "papers": [
+    {
+      "id": "https://openalex.org/W4386133691",
+      "doi": "https://doi.org/10.1016/j.intimp.2023.110848",
+      "title": "Mechanism of M2 type macrophage-derived extracellular vesicles regulating PD-L1 expression via the MISP/IQGAP1 axis in hepatocellular carcinoma immunotherapy resistance",
+      "year": 2023,
+      "authors": [
+        "Xiaobo Wang",
+        "Xuxing Ye",
+        "Yanping Chen",
+        "Junmei Lin"
+      ],
+      "venue": "International Immunopharmacology",
+      "type": "article",
+      "abstract_chars": 0,
+      "is_retracted": false
+    },
+    {
+      "id": "https://openalex.org/W4388301636",
+      "doi": "https://doi.org/10.2147/jhc.s291553",
+      "title": "Mechanisms of Resistance to Immunotherapy in Hepatocellular Carcinoma",
+      "year": 2023,
+      "authors": [
+        "Giulia Francesca Manfredi",
+        "Ciro Celsa",
+        "Chloe John",
+        "Charlotte Jones",
+        "Nicole Acuti"
+      ],
+      "venue": "Journal of Hepatocellular Carcinoma",
+      "type": "review",
+      "abstract_chars": 1101,
+      "is_retracted": false
+    },
+    {
+      "id": "https://openalex.org/W4410553523",
+      "doi": "https://doi.org/10.1126/sciadv.adv0558",
+      "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+      "year": 2025,
+      "authors": [
+        "Xiaozhen Zhang",
+        "Mengyi Lao",
+        "Kang Sun",
+        "Hanshen Yang",
+        "Lihong He"
+      ],
+      "venue": "Science Advances",
+      "type": "article",
+      "abstract_chars": 1117,
+      "is_retracted": false
+    },
+    {
+      "id": "https://openalex.org/W4401612664",
+      "doi": "https://doi.org/10.7554/elife.95009",
+      "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+      "year": 2024,
+      "authors": [
+        "Yumin Fu",
+        "Xinyu Guo",
+        "Linmao Sun",
+        "Tianming Cui",
+        "Chenghui Wu"
+      ],
+      "venue": "eLife",
+      "type": "review",
+      "abstract_chars": 1430,
+      "is_retracted": false
+    },
+    {
+      "id": "https://openalex.org/W3027680906",
+      "doi": "https://doi.org/10.1016/s0140-6736(20)31180-6",
+      "title": "RETRACTED: Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19: a multinational registry analysis",
+      "year": 2020,
+      "authors": [
+        "Mandeep R. Mehra",
+        "Sapan S. Desai",
+        "Frank Thomas Ruschitzka",
+        "Amit N. Patel"
+      ],
+      "venue": "The Lancet",
+      "type": "article",
+      "abstract_chars": 0,
+      "is_retracted": true
+    },
+    {
+      "id": "https://openalex.org/W3035365037",
+      "doi": "https://doi.org/10.1016/s0140-6736(20)31324-6",
+      "title": "Retraction—Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19: a multinational registry analysis",
+      "year": 2020,
+      "authors": [
+        "Mandeep R. Mehra",
+        "Frank Thomas Ruschitzka",
+        "Amit N. Patel"
+      ],
+      "venue": "The Lancet",
+      "type": "retraction",
+      "abstract_chars": 0,
+      "is_retracted": true
+    }
+  ],
+  "retained_count": 4,
+  "retracted_input_ids": [
+    "https://openalex.org/W3027680906",
+    "https://openalex.org/W3035365037"
+  ],
+  "retracted_excluded": true,
+  "empty_abstract_ids": [
+    "https://openalex.org/W4386133691",
+    "https://openalex.org/W3027680906",
+    "https://openalex.org/W3035365037"
+  ],
+  "accepted_papers_path": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/dev/acceptance/live-services/mainline-after-patch/accepted_papers.json",
+  "search_log_path": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/dev/acceptance/live-services/mainline-after-patch/search_log.md"
+}

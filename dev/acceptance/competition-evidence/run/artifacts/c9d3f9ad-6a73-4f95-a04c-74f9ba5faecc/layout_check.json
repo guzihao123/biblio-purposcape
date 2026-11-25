@@ -1,0 +1,198 @@
+{
+  "ok": true,
+  "fails": [],
+  "warns": [],
+  "families": {
+    "cover": 1,
+    "toc": 1,
+    "flow_diagram": 2,
+    "flow": 1,
+    "kpi": 1,
+    "chart": 2,
+    "stacked": 4,
+    "asym": 3,
+    "table": 1,
+    "reading": 2,
+    "split_list": 5,
+    "summary": 1,
+    "references": 1
+  },
+  "pages": [
+    {
+      "n": 1,
+      "title": "肝细胞癌免疫治疗耐药机制",
+      "layout": "cover",
+      "variant": {}
+    },
+    {
+      "n": 2,
+      "title": "汇报结构",
+      "layout": "toc",
+      "variant": {}
+    },
+    {
+      "n": 3,
+      "title": "研究背景与科学问题",
+      "layout": "flow_diagram",
+      "variant": {
+        "side": "left"
+      }
+    },
+    {
+      "n": 4,
+      "title": "文献检索策略",
+      "layout": "flow",
+      "variant": {}
+    },
+    {
+      "n": 5,
+      "title": "文献检索概况",
+      "layout": "kpi",
+      "variant": {}
+    },
+    {
+      "n": 6,
+      "title": "年度趋势（真实聚合）",
+      "layout": "chart",
+      "variant": {}
+    },
+    {
+      "n": 7,
+      "title": "主题分布（真实聚合）",
+      "layout": "chart",
+      "variant": {}
+    },
+    {
+      "n": 8,
+      "title": "研究进展｜免疫微环境与耐药总览",
+      "layout": "stacked",
+      "variant": {
+        "side": "left"
+      }
+    },
+    {
+      "n": 9,
+      "title": "研究进展｜巨噬细胞代谢与 S1P",
+      "layout": "asym",
+      "variant": {
+        "side": "right"
+      }
+    },
+    {
+      "n": 10,
+      "title": "研究进展｜IL-8/CXCR2 与动态分层",
+      "layout": "stacked",
+      "variant": {
+        "side": "left"
+      }
+    },
+    {
+      "n": 11,
+      "title": "研究进展｜乳酸化与 PD-L1 稳定性",
+      "layout": "asym",
+      "variant": {
+        "side": "right"
+      }
+    },
+    {
+      "n": 12,
+      "title": "核心方法与技术路线",
+      "layout": "table",
+      "variant": {
+        "side": "left"
+      }
+    },
+    {
+      "n": 13,
+      "title": "核心方法与技术路线",
+      "layout": "asym",
+      "variant": {
+        "side": "right"
+      }
+    },
+    {
+      "n": 14,
+      "title": "代表作精读 [1]｜方法与数据",
+      "layout": "reading",
+      "variant": {
+        "side": "left"
+      }
+    },
+    {
+      "n": 15,
+      "title": "代表作精读 [1]｜发现与启发",
+      "layout": "reading",
+      "variant": {
+        "side": "right"
+      }
+    },
+    {
+      "n": 16,
+      "title": "代表作精读 [2]｜方法与数据",
+      "layout": "split_list",
+      "variant": {
+        "side": "right"
+      }
+    },
+    {
+      "n": 17,
+      "title": "代表作精读 [2]｜发现与启发",
+      "layout": "split_list",
+      "variant": {
+        "side": "left"
+      }
+    },
+    {
+      "n": 18,
+      "title": "代表作精读 [3]｜方法与数据",
+      "layout": "stacked",
+      "variant": {
+        "side": "left"
+      }
+    },
+    {
+      "n": 19,
+      "title": "代表作精读 [3]｜发现与启发",
+      "layout": "stacked",
+      "variant": {
+        "side": "right"
+      }
+    },
+    {
+      "n": 20,
+      "title": "研究不足｜五个角度",
+      "layout": "split_list",
+      "variant": {}
+    },
+    {
+      "n": 21,
+      "title": "研究不足｜五个角度",
+      "layout": "split_list",
+      "variant": {}
+    },
+    {
+      "n": 22,
+      "title": "发展趋势｜不足→潜在突破",
+      "layout": "flow_diagram",
+      "variant": {}
+    },
+    {
+      "n": 23,
+      "title": "总结与下一步建议",
+      "layout": "summary",
+      "variant": {}
+    },
+    {
+      "n": 24,
+      "title": "团队讨论与决策",
+      "layout": "split_list",
+      "variant": {}
+    },
+    {
+      "n": 25,
+      "title": "参考文献",
+      "layout": "references",
+      "variant": {}
+    }
+  ]
+}

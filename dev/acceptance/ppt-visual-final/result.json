@@ -1,0 +1,225 @@
+{
+  "review": "D-mode final independent visual acceptance, page by page, real visual inspection",
+  "date": "2026-11-24",
+  "reviewer": "Kimi Work visual QA (multimodal inspection of rasterized pages)",
+  "pptx_under_test": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/dev/ppt-validation/wps-current/肝细胞癌免疫治疗耐药机制组会汇报.pptx",
+  "evidence_viewed": {
+    "wps_rendered_pages": "dev/ppt-validation/wps-current/rendered/page-01..25.png (1920x1080, from user WPS PDF export)",
+    "libreoffice_rendered_pages": "dev/ppt-validation/libreoffice-fontconfig/rendered/page-01..25.png (1920x1080)",
+    "zoomed_crops": [
+      "wps page-07 bottom legend (native resolution)",
+      "wps page-13 dense text block (native resolution)"
+    ]
+  },
+  "method_note": "Every one of the 25 pages was opened and visually inspected in both WPS and LibreOffice raster sets at full page resolution; two dense regions were additionally inspected at native-resolution crops. No conclusion below is inferred from validation.json/OCR alone.",
+  "global_checks": {
+    "missing_glyphs_or_tofu": "none observed in either engine, all 25 pages",
+    "mojibake": "none observed",
+    "text_overflow_clipping_overlap": "none observed on any page in either engine",
+    "page_aspect_ratio": "16:9 (1920x1080) on all pages",
+    "page_numbers": "present and correct 1..25 on every page in both engines",
+    "references_page": "page 25 complete, 4 references with DOIs, no truncation",
+    "table_page_12": "within bounds; header row tall but not a defect; readable in both engines",
+    "flow_pages_3_12_22": "all nodes and connecting lines complete in both engines; node text is light green on light blue gradient (low-ish contrast, legible at presentation size; identical styling in both engines, design choice)"
+  },
+  "pages": [
+    {
+      "page": 1,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "title page clean"
+    },
+    {
+      "page": 2,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "8-item agenda clean"
+    },
+    {
+      "page": 3,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "4-node flow complete; node label contrast low but legible (same in both engines)"
+    },
+    {
+      "page": 4,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean"
+    },
+    {
+      "page": 5,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean"
+    },
+    {
+      "page": 6,
+      "wps": "pass_with_minor_note",
+      "libreoffice": "pass_with_minor_note",
+      "notes": "line chart complete (2024:1, 2025:3); legend text '文献数' and x-axis year labels are dark gray on dark navy - low contrast but visible in both engines; LibreOffice additionally renders '文献数' as a chart title above the plot, WPS omits the title: engine labeling difference, same class as the registered page-7 note"
+    },
+    {
+      "page": 7,
+      "wps": "pass_with_compatibility_note",
+      "libreoffice": "pass_with_compatibility_note",
+      "notes": "pie chart: 4 categories and values all present and correct in both engines. Registered note stands: WPS omits the separate series name '文献数' (LibreOffice shows it as chart title). NEW minor visual note (not a regression of content): bottom legend entries are tightly packed; the 'IL-8/CXCR2 动态分层' legend text visually collides with the neighboring legend swatch, slightly clipped. Data labels dark on dark background but legible at full size. Annotated crop: annotated-p07-legend.png"
+    },
+    {
+      "page": 8,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean"
+    },
+    {
+      "page": 9,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean; LibreOffice adds inter-script spacing around latin tokens (cosmetic engine difference, all text pages)"
+    },
+    {
+      "page": 10,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean"
+    },
+    {
+      "page": 11,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean"
+    },
+    {
+      "page": 12,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "6-column table fits page, no overflow; bottom flow bar complete"
+    },
+    {
+      "page": 13,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "dense small text; native-resolution crop verified no garbled or missing characters; within bounds"
+    },
+    {
+      "page": 14,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean"
+    },
+    {
+      "page": 15,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean"
+    },
+    {
+      "page": 16,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean"
+    },
+    {
+      "page": 17,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean"
+    },
+    {
+      "page": 18,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean"
+    },
+    {
+      "page": 19,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean"
+    },
+    {
+      "page": 20,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "'五个角度' part 1 (理论/方法/数据), continues on page 21 (机制/应用) - content split across two pages, not a defect"
+    },
+    {
+      "page": 21,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "'五个角度' part 2 (机制/应用)"
+    },
+    {
+      "page": 22,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "flow nodes complete; registered OCR 简繁 '趋势/趋勢' adjudication confirmed false positive (visible text reads 发展趋势 correctly in both engines)"
+    },
+    {
+      "page": 23,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "3-column dense text, within bounds, no garbled characters"
+    },
+    {
+      "page": 24,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "clean"
+    },
+    {
+      "page": 25,
+      "wps": "pass",
+      "libreoffice": "pass",
+      "notes": "references complete"
+    }
+  ],
+  "real_visual_pass": "all 25 pages pass real visual inspection in both WPS and LibreOffice renderings; no page fails on content completeness, one minor layout issue is tracked as FOLLOWUP-P07-LEGEND",
+  "compatibility_issues": [
+    {
+      "page": 7,
+      "status": "registered_kept",
+      "detail": "WPS omits separate series name '文献数'; categories and values complete. Recorded earlier as compatibility_note, re-confirmed visually, not treated as new defect."
+    },
+    {
+      "page": 6,
+      "status": "new_engine_difference",
+      "detail": "LibreOffice renders series name '文献数' as chart title above the line chart; WPS omits it. Same engine-labeling class as page 7; chart data identical (2024:1, 2025:3)."
+    },
+    {
+      "page": 7,
+      "status": "new_minor_visual",
+      "detail": "Bottom legend entry spacing: 'IL-8/CXCR2 动态分层' text collides with next legend swatch, slightly clipped in both engines (design/layout spacing, content complete). Annotated: annotated-p07-legend.png."
+    },
+    {
+      "pages": "9-25 text pages",
+      "status": "cosmetic_engine_difference",
+      "detail": "LibreOffice (fontconfig) inserts extra spacing around latin tokens vs WPS; no content impact."
+    }
+  ],
+  "powerpoint_desktop": {
+    "status": "blocked_not_verified",
+    "detail": "Microsoft PowerPoint is not installed on this machine (/Applications contains only wpsoffice.app; Spotlight finds no PowerPoint). Per instructions nothing was installed. Animations, slide transitions, presenter view and speaker notes could NOT be verified and are explicitly marked 环境阻塞/未验证. WPS was not used as a PowerPoint substitute."
+  },
+  "overall_result": "accepted_with_compatibility_notes_and_minor_layout_followup",
+  "boundaries": [
+    "Inspection is based on the two PDF raster sets (WPS user export + LibreOffice export); live editing-view rendering in WPS/PowerPoint was not re-captured in this pass.",
+    "PowerPoint desktop behaviors (animation/transition/presenter view/notes) unverified due to missing PowerPoint.",
+    "No PPT source, backend code, existing tests or prior evidence files were modified; all new material lives in dev/acceptance/ppt-visual-final/."
+  ],
+  "followups": [
+    {
+      "id": "FOLLOWUP-P07-LEGEND",
+      "severity": "minor / typographic polish; does not affect literature content or data readability",
+      "page": 7,
+      "description": "Bottom legend entries are too tightly packed: the 'IL-8/CXCR2 动态分层' label text collides with the adjacent legend swatch and is slightly clipped (observed in both WPS and LibreOffice renderings).",
+      "evidence": [
+        "annotated-p07-legend.png",
+        "dev/ppt-validation/wps-current/rendered/page-07.png",
+        "dev/ppt-validation/libreoffice-fontconfig/rendered/page-07.png"
+      ],
+      "suggestion": "Increase bottom legend area height and column spacing; wrap long labels if needed so swatches do not intrude into text.",
+      "handling": "No local change to the PPT or mainline code by this acceptance pass; the mainline will fix centrally, re-export, and re-verify both engines."
+    }
+  ]
+}

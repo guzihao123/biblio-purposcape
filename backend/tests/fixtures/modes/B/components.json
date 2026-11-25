@@ -1,0 +1,81 @@
+{
+  "demand": {
+    "text": "免疫检查点抑制剂已改变肝细胞癌治疗策略，但耐药机制和可靠分层标志物仍不足；本项目需要连接髓系代谢、IL-8/CXCR2 信号与乳酸化调控证据。",
+    "evidence": ["general_progress", "general_resistance", "il8_need"]
+  },
+  "assets": [
+    {
+      "name": "巨噬细胞 S1P 代谢干预证据",
+      "research_content": "研究内容（一）髓系代谢机制解析",
+      "evidence": ["macrophage_metabolism", "s1p_targeting"]
+    },
+    {
+      "name": "治疗前后活检的单细胞测序路径",
+      "research_content": "研究内容（二）IL-8/CXCR2 动态验证",
+      "evidence": ["il8_method", "il8_mdsc"]
+    },
+    {
+      "name": "乳酸化调控与 PD-L1 稳定性实验依据",
+      "research_content": "研究内容（三）乳酸化机制与联合干预评价",
+      "evidence": ["lactylation_method", "lactylation_mechanism"]
+    }
+  ],
+  "mappings": [
+    {
+      "limitation": "代谢重编程与免疫耐药之间的项目内因果链尚需统一验证",
+      "scientific_question": "巨噬细胞 S1P 代谢如何影响免疫检查点阻断应答？",
+      "research_content": "研究内容（一）髓系代谢机制解析",
+      "evidence": ["macrophage_metabolism", "s1p_resistance"]
+    },
+    {
+      "limitation": "循环标志物与组织内髓系细胞状态的对应关系需要项目内复核",
+      "scientific_question": "IL-8/CXCR2 动态变化能否解释并预测治疗应答？",
+      "research_content": "研究内容（二）IL-8/CXCR2 动态验证",
+      "evidence": ["il8_association", "il8_method"]
+    },
+    {
+      "limitation": "乳酸化、PD-L1 稳定性与联合干预之间仍需分层评价",
+      "scientific_question": "乳酸化调控如何与髓系信号共同影响耐药？",
+      "research_content": "研究内容（三）乳酸化机制与联合干预评价",
+      "evidence": ["lactylation_mechanism", "lactylation_targeting"]
+    }
+  ],
+  "chain": {
+    "研究需求": {
+      "text": "本项目回应免疫耐药机制不清与分层标志物不足所带来的研究需求。",
+      "evidence": ["general_resistance", "il8_need"]
+    },
+    "已有进展": {
+      "text": "本项目可复用 S1P 代谢、IL-8/CXCR2 与乳酸化调控三条已有证据链。",
+      "evidence": ["s1p_targeting", "il8_targeting", "lactylation_targeting"]
+    },
+    "现有不足": {
+      "text": "本项目需要统一验证不同机制链的适用条件，避免把单篇模型结果直接外推。",
+      "evidence": ["s1p_resistance", "il8_association", "lactylation_mechanism"]
+    },
+    "关键科学问题": {
+      "text": "本项目拟解释髓系代谢、细胞迁移和 PD-L1 稳定性如何共同塑造耐药。",
+      "evidence": ["macrophage_metabolism", "il8_mdsc", "lactylation_mechanism"]
+    },
+    "项目切入点": {
+      "text": "本项目将以动态样本、机制实验和联合干预评价连接三条证据链。",
+      "evidence": ["il8_method", "lactylation_method", "s1p_targeting"]
+    },
+    "预期贡献": {
+      "text": "本项目预期形成可复核的机制对解框架、分层依据与联合干预评价方案。",
+      "evidence": ["general_resistance", "il8_need"]
+    }
+  },
+  "innovations": [
+    {
+      "innovation": "将髓系代谢与 IL-8/CXCR2 动态变化纳入同一项目对解框架",
+      "difference": "区别于分别描述单条机制链的研究设计，属于本项目分析提出的整合方案。",
+      "evidence": ["s1p_resistance", "il8_method"]
+    },
+    {
+      "innovation": "把乳酸化介导的 PD-L1 稳定性纳入联合干预评价",
+      "difference": "区别于只观察单一通路抑制的方案，属于本项目分析提出的验证设计。",
+      "evidence": ["lactylation_mechanism", "il8_targeting"]
+    }
+  ]
+}

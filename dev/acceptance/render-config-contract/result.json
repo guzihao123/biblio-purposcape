@@ -1,0 +1,242 @@
+{
+  "task": "Render B-01/B-03/B-04 阻断离线静态检查（可重复运行）",
+  "date": "2026-11-25 00:30 CST",
+  "root": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web",
+  "scope_note": "纯静态检查：未修改任何主线文件与 render-preflight 工地文件；未安装依赖、未运行 Node/Docker、未启动 HTTP 服务、未连接数据库/Redis、未读取真实密钥、未创建云资源、未部署、未调用付费模型。",
+  "tiers": {
+    "config_declaration": {
+      "label": "配置声明存在（静态，本脚本可判定）",
+      "decidable": true
+    },
+    "runtime_security": {
+      "label": "运行时安全（需真实进程/密钥注入证据，静态不可判定）",
+      "decidable": false
+    },
+    "cloud_verification": {
+      "label": "真实云端验证（需 Render 云端环境，本脚本不触碰云资源）",
+      "decidable": false
+    }
+  },
+  "tier_policy": "status=pass 仅表示 config_declaration 档的静态事实成立；runtime_security 与 cloud_verification 两档在本脚本中恒为 not_verified，任何 pass 都不得被解读为运行时或云端阻断已解除。",
+  "checks": [
+    {
+      "id": "C-01",
+      "tier": "config_declaration",
+      "blocker": "B-01",
+      "description": "Dockerfile VITE_API_BASE_URL 默认值是否适合 FastAPI 同源 /api",
+      "status": "pass",
+      "evidence": [
+        {
+          "file": "Dockerfile",
+          "line": 8,
+          "snippet": "ARG VITE_API_BASE_URL=/api"
+        },
+        {
+          "file": "frontend/src/api.ts",
+          "line": 66,
+          "snippet": "const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'"
+        }
+      ],
+      "unverified_boundaries": [
+        "静态检查只证明文件内容，不等于运行时或云端行为已通过；运行时与云端档位在本脚本中一律记为 not_verified，禁止据此宣称解除阻断。",
+        "前端构建产物内 API_BASE 实际烘焙值未在容器/vite preview 中核验",
+        "未创建 Render 服务、未部署、未执行真实 HTTP 回归（登录/建单/轮询/工件下载）"
+      ]
+    },
+    {
+      "id": "C-02",
+      "tier": "config_declaration",
+      "blocker": "B-01",
+      "description": ".env.example 的 VITE_API_BASE_URL 与 /api 口径是否一致",
+      "status": "pass",
+      "evidence": [
+        {
+          "file": ".env.example",
+          "line": 14,
+          "snippet": "VITE_API_BASE_URL=/api"
+        },
+        {
+          "file": "Dockerfile",
+          "line": 8,
+          "snippet": "ARG VITE_API_BASE_URL=/api"
+        }
+      ]
+    },
+    {
+      "id": "C-03",
+      "tier": "config_declaration",
+      "blocker": null,
+      "description": "render.yaml web/worker 必需变量声明集合一致（DATABASE_URL、SESSION_SECRET、ADMIN_TOKEN 等）",
+      "status": "pass",
+      "evidence": [
+        {
+          "file": "render.yaml",
+          "snippet": "web env keys: ['ADMIN_TOKEN', 'APP_ENV', 'ARTIFACT_ROOT', 'DATABASE_URL', 'QODER_SITES_ORIGIN', 'QWEN_API_KEY', 'QWEN_BASE_URL', 'QWEN_MODEL', 'REDIS_URL', 'SESSION_SECRET', 'WORKER_SHARED_SECRET']"
+        },
+        {
+          "file": "render.yaml",
+          "snippet": "worker env keys: ['ADMIN_TOKEN', 'APP_ENV', 'ARTIFACT_ROOT', 'DATABASE_URL', 'QODER_SITES_ORIGIN', 'QWEN_API_KEY', 'QWEN_BASE_URL', 'QWEN_MODEL', 'REDIS_URL', 'SESSION_SECRET', 'WORKER_SHARED_SECRET']"
+        },
+        {
+          "file": "render.yaml",
+          "line": 10,
+          "snippet": "- key: DATABASE_URL"
+        },
+        {
+          "file": "render.yaml",
+          "line": 23,
+          "snippet": "- key: SESSION_SECRET"
+        },
+        {
+          "file": "render.yaml",
+          "line": 25,
+          "snippet": "- key: ADMIN_TOKEN"
+        },
+        {
+          "file": "render.yaml",
+          "line": 12,
+          "snippet": "- key: REDIS_URL"
+        }
+      ]
+    },
+    {
+      "id": "C-04",
+      "tier": "config_declaration",
+      "blocker": null,
+      "description": "DATABASE_URL/SESSION_SECRET/ADMIN_TOKEN 等必需变量在 web/worker 均以 sync:false 声明（仅证明声明存在，不证明值已注入）",
+      "status": "pass",
+      "evidence": [
+        {
+          "file": "render.yaml",
+          "line": 10,
+          "snippet": "- key: DATABASE_URL"
+        },
+        {
+          "file": "render.yaml",
+          "line": 23,
+          "snippet": "- key: SESSION_SECRET"
+        },
+        {
+          "file": "render.yaml",
+          "line": 25,
+          "snippet": "- key: ADMIN_TOKEN"
+        },
+        {
+          "file": "render.yaml",
+          "line": 27,
+          "snippet": "- key: QODER_SITES_ORIGIN"
+        },
+        {
+          "file": "render.yaml",
+          "line": 29,
+          "snippet": "- key: WORKER_SHARED_SECRET"
+        },
+        {
+          "file": "render.yaml",
+          "line": 17,
+          "snippet": "- key: QWEN_API_KEY"
+        }
+      ],
+      "unverified_boundaries": [
+        "sync:false 仅声明'由部署者在创建服务时注入'，本脚本无法验证真实值是否已设置",
+        "本脚本不读取任何真实密钥值"
+      ]
+    },
+    {
+      "id": "C-05",
+      "tier": "config_declaration",
+      "blocker": null,
+      "description": "REDIS_URL 经 fromService 自动注入且 web/worker 一致",
+      "status": "pass",
+      "evidence": [
+        {
+          "file": "render.yaml",
+          "line": 15,
+          "snippet": "landscape-redis"
+        }
+      ]
+    },
+    {
+      "id": "C-06",
+      "tier": "config_declaration",
+      "blocker": "B-03",
+      "description": "DATABASE_URL 漏配回落 SQLite 的危险证据是否仍在（B-03）",
+      "status": "pass",
+      "evidence": [
+        {
+          "file": "backend/app/config.py",
+          "line": 15,
+          "snippet": "database_url: str = ''"
+        },
+        {
+          "file": "render.yaml",
+          "line": 10,
+          "snippet": "- key: DATABASE_URL / sync: false"
+        },
+        {
+          "file": "render.yaml",
+          "snippet": "render.yaml 未声明 Postgres 服务；DATABASE_URL 依赖人工注入"
+        }
+      ],
+      "unverified_boundaries": [
+        "静态检查只证明文件内容，不等于运行时或云端行为已通过；运行时与云端档位在本脚本中一律记为 not_verified，禁止据此宣称解除阻断。",
+        "外部 Postgres 上的增量迁移（initialize_database ALTER）未实测",
+        "未连接真实 Postgres，web/worker 同实例一致性未核对"
+      ]
+    },
+    {
+      "id": "C-07",
+      "tier": "config_declaration",
+      "blocker": "B-04",
+      "description": "SESSION_SECRET/ADMIN_TOKEN 漏配随机轮换风险证据是否仍在（B-04）",
+      "status": "pass",
+      "evidence": [],
+      "unverified_boundaries": [
+        "静态检查只证明文件内容，不等于运行时或云端行为已通过；运行时与云端档位在本脚本中一律记为 not_verified，禁止据此宣称解除阻断。",
+        "无启动守卫证据：漏配密钥时生产模式是否拒绝启动未验证",
+        "云端重启/重部署后会话保持性未验证"
+      ]
+    },
+    {
+      "id": "R-01",
+      "tier": "runtime_security",
+      "blocker": "B-01/B-03/B-04",
+      "description": "运行时安全档位：启动守卫、真实密钥注入、构建产物烘焙值核验",
+      "status": "not_verified",
+      "evidence": [],
+      "unverified_boundaries": [
+        "未设置 SESSION_SECRET/ADMIN_TOKEN 时生产模式是否启动即报错（无启动守卫证据）",
+        "真实密钥值是否已在创建服务时注入并离线存档（本脚本不读取任何真实密钥）",
+        "数据库增量迁移（initialize_database 的 ALTER）未在外部 Postgres 实测",
+        "前端构建产物内 API_BASE 实际烘焙值未在容器/vite preview 中核验"
+      ]
+    },
+    {
+      "id": "R-02",
+      "tier": "cloud_verification",
+      "blocker": "B-01/B-03/B-04",
+      "description": "真实云端验证档位：Render 部署、真实 HTTP 回归、真实 Postgres 一致性",
+      "status": "not_verified",
+      "evidence": [],
+      "unverified_boundaries": [
+        "未创建 Render 服务、未部署、未执行真实 HTTP 回归（登录/建单/轮询/工件下载）",
+        "未连接真实 Postgres，web/worker 同实例一致性未核对",
+        "未验证重启/重新部署后会话保持有效、ADMIN_TOKEN 可调通受保护端点",
+        "未调用任何付费模型、未做云端故障注入"
+      ]
+    }
+  ],
+  "blocker_status": {
+    "B-01": "pass",
+    "B-03": "pass",
+    "B-04": "pass",
+    "B-01/B-03/B-04": "not_verified"
+  },
+  "overall_verdict": "STATIC_PASS",
+  "overall_reason": "静态声明档全部通过；运行时与云端档位仍未验证，不得宣称部署就绪。",
+  "historical_reference": {
+    "file": "dev/acceptance/render-preflight/mainline-recheck.json",
+    "role": "历史快照（只读参考）；冲突时以最新复核口径为准，本脚本不改写 render-preflight 下任何文件"
+  },
+  "generated_by": "dev/acceptance/render-config-contract/check_render_contract.py"
+}

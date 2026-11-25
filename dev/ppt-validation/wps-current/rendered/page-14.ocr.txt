@@ -1,0 +1,14 @@
+代表作精读［1］｜方法与数据
+Sphingolipid synthesis in tumor-associated
+macrophages confers immunotherapy resistance in
+hepatocellular carcinoma
+数据：摘要涉及患者相关指标、肿瘤相关巨噬细胞和
+干预实验；详细样本量、分组与数据清洗流程未在摘
+要中完整给出。
+阅读深度：仅摘要（离线真实摘要，未读全文）
+研究问题：肿瘤相关巨噬细胞的鞘脂代谢，尤其 NEK2
+相关 S1P产生，如何参与肝细胞癌进展和免疫治疗耐
+药。
+方法：围绕巨嗲细胞代谢重编程、NEK2相关 S1P生
+物合成和免疫抑制功能开展机制分析，并采用 NEK2
+抑制剂或 S1P 拮抗策略评价干预效果。

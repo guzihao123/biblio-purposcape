@@ -1,0 +1,10 @@
+[
+  {
+    "id": "backend/tests/test_rate_limit.py::test_ipv4_ipv6_and_ipv4_mapped_ipv6_have_explicit_trust_behavior[::ffff:10.0.0.1-::ffff:203.0.113.50-::ffff:10.0.0.1-::ffff:cb00:7132]",
+    "reason": "Python stdlib rendering drift: the production image runs Python 3.11.18, whose ipaddress module renders IPv4-mapped IPv6 .compressed form as dotted quad (::ffff:203.0.113.50), while these tests were written against the Python 3.9.6 host baseline rendering (::ffff:cb00:7132). Same address, different string. Fixing it would require editing tests or production source, which is out of bounds for this profile."
+  },
+  {
+    "id": "backend/tests/test_rate_limit.py::test_ipv4_ipv6_and_ipv4_mapped_ipv6_have_explicit_trust_behavior[::ffff:10.0.0.1-203.0.113.50-10.0.0.0/8-::ffff:a00:1]",
+    "reason": "Same root cause as the sibling case: Python 3.11.18 renders IPv4-mapped IPv6 compressed form in dotted-quad notation, so the returned address string differs from the Python 3.9-era expectation."
+  }
+]

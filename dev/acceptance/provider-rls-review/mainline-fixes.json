@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-24",
+  "scope": "Application-layer fixes only; no RLS migration or real Provider operation",
+  "fixes": [
+    {
+      "issue": "ISSUE-05",
+      "change": "createTask now rejects revoked or expired sessions inside the same transaction as task and quota creation, with no task or quota residue.",
+      "regression": "revoked and expired sessions cannot create tasks",
+      "result": "passed"
+    },
+    {
+      "issue": "ISSUE-08",
+      "change": "GET /sessions/:id now requires x-session-id to match the path id; the Python client forwards the same owner header.",
+      "regression": "session read requires the owner header to match the path id plus test_primary_store_slice.py",
+      "result": "passed"
+    }
+  ],
+  "verification": {
+    "node_function_tests": "41 passed",
+    "deno_function_tests": "41 passed",
+    "cross_stack_tests": "13 passed",
+    "backend_suite": "422 passed, 4 skipped"
+  },
+  "remaining_boundary": "Other RLS draft issues remain unresolved. No real Provider, PostgreSQL, RLS, cloud migration, or authoritative-store switch has been performed."
+}

@@ -1,0 +1,4 @@
+{
+  "pattern": "api-key / bearer / raw ADMIN_TOKEN / raw SESSION_SECRET",
+  "findings": []
+}

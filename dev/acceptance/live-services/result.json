@@ -1,0 +1,122 @@
+{
+  "task": "真实 OpenAlex、千问及在线异常独立验收",
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "workspace_copy": "/Users/crisprcas_9/Documents/kimi/tasks/2026-11-24/18-57-04-e4d02b59/purpose-landscape-web",
+  "environment": {
+    "api_port": 8022,
+    "frontend_port": 5191,
+    "redis_port": 6391,
+    "mainline_runtime_touched": false,
+    "note": "全部操作在独立工作区副本执行；未使用主线 dev/real_backend/runtime、test.db 或其他工地 test-results。项目 .venv 以只读方式调用，未安装任何依赖。"
+  },
+  "openalex": {
+    "status": "completed_with_preserved_original_failure",
+    "real_requests": {
+      "total_http_attempts": 4,
+      "logical_requests": 3,
+      "all_status_200": true,
+      "real_429_observed": false,
+      "note_429": "本轮未观察到 OpenAlex 真实 429；未为触发 429 扩大请求量。429 语义（Retry-After、退避、失败恢复）由进程级故障注入在受控本地端点验证，已明确标注，不冒充实测。",
+      "breakdown": [
+        {"purpose": "普通场景检索（既有测试）", "query": "hepatocellular carcinoma immunotherapy resistance", "records": 4, "http_attempts": 1, "status": 200},
+        {"purpose": "撤稿场景检索（既有测试）", "query": "Hydroxychloroquine or chloroquine ... COVID-19 multinational registry analysis", "records": 1, "http_attempts": 1, "status": 200},
+        {"purpose": "定向撤稿检索（is_retracted:true 过滤）", "query": "同上", "records": 2, "http_attempts": 1, "status": 200},
+        {"purpose": "意外直连（首轮代理故障注入在 macOS 因系统代理优先级未生效，如实计入）", "records": 1, "http_attempts": 1, "status": 200}
+      ]
+    },
+    "original_test_failure_preserved": {
+      "test": "tests/test_live_services.py::test_live_openalex_five_records_metadata_retraction_and_log",
+      "result": "failed（原始失败记录保留，证据：openalex-live/live_acceptance_summary.json result=failed、openalex-live/retracted.json）",
+      "what_happened": "撤稿场景按 relevance 排序取回 1 条，为真实的 'Faculty Opinions recommendation of Hydroxychloroquine...'（OpenAlex W4213234079，type=peer-review，is_retracted=false 的述评），断言 retracted_raw['results'][0].get('is_retracted') is True 失败。",
+      "wrong_assessment": "是。该测试错误地假设 OpenAlex relevance 排序的首条必为撤稿原文；排序是相关性启发式，不保证撤稿主记录居首（本轮真实数据中首条为相关述评）。该断言对在线数据具有固有不确定性，属测试假设缺陷而非检索代码缺陷。",
+      "handling": "未删除、跳过或放宽该断言；未挑选容易通过的样本掩盖失败。改用确定性 is_retracted:true 过滤取样，由本任务新增测试完成等价属性验证（见 deterministic_retraction_checks），并建议主线将该测试的撤稿样本获取改为确定性过滤。"
+    },
+    "deterministic_retraction_checks": {
+      "note": "全部基于真实在线响应（retracted_targeted_raw.json，meta.count=3），无新网络请求；未挑选容易样本——检索式与原失败查询完全一致，仅追加确定性过滤。",
+      "a_query_constrains_is_retracted_true": "通过：留档请求 URL（retracted_targeted_request.txt）含 is_retracted%3Atrue；返回全部结果 is_retracted 均为 true",
+      "b_candidates_include_original_research": "通过：候选同时含撤稿原文研究（W3027680906，type=article，标题 'RETRACTED: Hydroxychloroquine...'）与撤稿声明（W3035365037，type=retraction），至少一篇为原文研究",
+      "c_commentary_not_misjudged": "通过：Faculty Opinions 述评（W4213234079）is_retracted 保持 false，未被标题关联误判为撤稿；其不入池原因是 type=peer-review 不在 article/review/preprint 池策略内，与撤稿无关",
+      "d_excluded_from_both_scope_pools_and_logged": "通过：真实撤稿原文在 limited(from_year=2023) 与 unlimited 双池均被剔除；search_log.md 含 retracted_targeted 条目（Hit count 3 / Returned count 1）"
+    },
+    "other_validated": [
+      "真实题录：title/year/doi/type 与 OpenAlex 原始字段逐字段一致（source 均为 openalex）",
+      "真实摘要：与 abstract_inverted_index 重建结果一致；证据等级 A/B/C 与 oa_url/abstract 存在性一致",
+      "稳定 ref_no：合并池 ref_no 严格 1..count 连续编号",
+      "双范围合并去重：DOI/标题同一身份合并，_duplicate_count 正确累加；OpenAlex 记录为合并主体，非 OpenAlex 镜像仅补全字段",
+      "from_year 范围：limited 池全部满足年份下限，unlimited 池保留更早记录"
+    ],
+    "fault_injection": {
+      "label": "进程级故障注入（受控本地 127.0.0.1 端点，非 OpenAlex 真实响应，不产生外部流量）",
+      "cases": [
+        {"case": "429 + Retry-After", "result": "修复前回归失败（固定 10s/20s 退避，未读 Retry-After）→ 修复后通过（按 Retry-After: 1 退避，3 次尝试后成功）"},
+        {"case": "429 Retry-After 上限", "result": "第二轮回归失败（999999 秒原样转发）→ 补丁加 60s 封顶后通过；Retry-After 是等待提示而非无限等待许可"},
+        {"case": "429 Retry-After 边界", "result": "缺失头/'abc'/'-5'/HTTP-date 均回退固定 10s 退避；'2' 按 2s 处理（sleep 被桩录制，无真实等待）"},
+        {"case": "429 重试不泄漏凭据", "result": "通过：耗尽重试的 RuntimeError 不含 user:pass、Bearer、api_key、token、secret（URL 内嵌凭据与 401 风格响应头均不入错误消息）"},
+        {"case": "503 连续两次后恢复", "result": "通过：1.5s/3s 退避后第 3 次尝试成功（既有失败恢复行为）"},
+        {"case": "连接拒绝（本地关闭端口）", "result": "通过：URLError 映射 RuntimeError，2 次尝试，秒级失败，零外部流量"}
+      ]
+    },
+    "retry_after_patch": {
+      "file": "skill_runtime/scripts/search_papers.py（主线共享文件，仅给补丁建议，未直接改动主线）",
+      "function": "fetch()",
+      "baseline_lines": "主线第 41–57 行；被替换语句为第 56 行 time.sleep((10 if code == 429 else 1.5) * (i + 1))",
+      "baseline_sha256": "84fd64fc211a2db36eb3134c432bda8ece3eab681ed55b896bae75c98e23fd95",
+      "diff": "openalex-live/retry_after_patch.diff（含 Retry-After 解析 + 60s 封顶）",
+      "applies_cleanly_to_baseline": true,
+      "verified": ["数字秒解析", "缺失/非法/负数/HTTP-date 头回退默认退避", "封顶 60s 防无限等待", "重试错误消息无凭据泄漏", "回归测试先失败后通过"],
+      "mainline_action": "待主线审查后合入"
+    },
+    "log_hygiene": {
+      "boundary_statement": "日志不是完全脱敏：search_log.md 按 _append_log 设计含检索命令行与本地输出绝对路径（含工作区与 .venv 路径），此点继续标为边界，不宣称'完全脱敏'。",
+      "absent_verified": ["密钥值", "Bearer/Authorization/x-api-key 等连接凭据", "Provider 请求/响应正文", "故障注入串"],
+      "checked_artifacts": ["search_log.md", "live_acceptance_summary.json", "accepted_papers.json", "ordinary.json", "retracted.json", "retracted_targeted_raw.json", "retracted_targeted_request.txt", "pytest_run.log"],
+      "note": "OpenAlex 响应 meta 自带 'api_key=YOUR_KEY' 官方说明文字（Provider 文档语，非凭据），测试精确校验仅允许该占位符、禁止任何真实 key 形态；如主线希望连该说明文字也不留档，可在写证据时剥离 meta.notice。"
+    },
+    "evidence_dir": "openalex-live/"
+  },
+  "qwen": {
+    "status": "not_authorized_not_executed",
+    "authorization_required": true,
+    "authorization_received": false,
+    "real_requests": 0,
+    "tokens": null,
+    "cost": "未确认（无任何真实调用，无账单证据，未估算冒充实测）",
+    "env_state": "QWEN_API_KEY/QWEN_BASE_URL 均未设置；密钥只从环境变量读取",
+    "required_authorization": ["模型名称（默认仅 qwen-plus）", "最大调用次数", "明确费用上限及输入/输出 token 限制"],
+    "error_mapping_verification": "未执行真实验证；401/429/超时/空响应/无效 JSON/欠费映射全部列入未验证边界，未用 Mock 冒充实测",
+    "evidence_dir": "qwen/"
+  },
+  "unverified_boundaries": [
+    "千问全部真实行为（token usage、计费、配额、401/429/超时/空响应/无效 JSON/欠费映射）——等待用户明确授权（模型、最大调用次数、费用上限及输入/输出 token 限制），授权后先做 1 次最小非敏感请求再决定是否继续",
+    "OpenAlex 真实 429（本轮未发生，仅以进程级故障注入验证语义，未扩大流量触发）",
+    "真实网络超时（30s 级；连接拒绝已验证）",
+    "Retry-After 补丁未合入主线，仅工作区副本验证，待主线审查",
+    "前端 5191/API 8022/Redis 6391 全链路联调不在本轮范围"
+  ],
+  "review_patches": {
+    "location": "patches/",
+    "manifest": "patches/CHANGES.md",
+    "patch_1_retry_after": {
+      "file": "patches/retry_after_patch.diff",
+      "scope": "仅 skill_runtime/scripts/search_papers.py fetch()，单 hunk",
+      "baseline_sha256": "84fd64fc211a2db36eb3134c432bda8ece3eab681ed55b896bae75c98e23fd95",
+      "apply_check": ["git apply --check: OK", "patch --dry-run -p1: OK"],
+      "fail_pass_evidence": "两轮先失败后通过回归（Retry-After 解析、60s 封顶）"
+    },
+    "patch_2_deterministic_test": {
+      "file": "patches/live_openalex_deterministic_test.patch",
+      "scope": "仅 backend/tests/test_live_services.py，11 hunks，不含生产检索代码",
+      "baseline_sha256": "d0f63ab43d62bea2de5a31b9faa4626dbe374c4bbc0f131d4c5174b3ae0ee64a",
+      "apply_check": ["git apply --check: OK", "patch --dry-run -p1: OK"],
+      "offline_regression": "61 passed, 4 skipped（3 个 LIVE opt-in 跳过），见 patches/offline_regression.log"
+    },
+    "no_extra_traffic": true,
+    "qwen_calls": 0
+  },
+  "test_files": {
+    "new": "backend/tests/test_live_openalex_acceptance.py（20 用例全部通过；含 Retry-After 解析与封顶两条先失败后通过的回归）",
+    "existing_modified": "无（未删除、跳过或放宽任何既有检查；旧测试失败原样保留为证据）",
+    "offline_regression": "tests/test_search.py、tests/test_rate_limit.py、tests/test_policy_search.py 共 60 passed 1 skipped，无回归"
+  }
+}

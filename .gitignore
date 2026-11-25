@@ -1,0 +1,40 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.db
+*.sqlite
+task_artifacts/
+deliverables/
+
+# Node / frontend build
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.npm-cache/
+frontend/test-results/
+frontend/playwright-report/
+*.tsbuildinfo
+
+# Local env and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Tooling and logs
+.slidep/
+*.log
+.DS_Store
+dev/acceptance/**/oa_pdfs/
+dev/acceptance/**/fulltext/
+dev/acceptance/**/figures/
+dev/acceptance/**/logs/
+
+# Large local acceptance outputs
+dev/acceptance/ppt-legend-fix/
+dev/acceptance/docker-amd64/
+dev/acceptance/docker-native/
+dev/acceptance/provider-live/rls-verification-*.json

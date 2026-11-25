@@ -1,0 +1,50 @@
+{
+  "network": "disabled by test fixture; all responses are local fakes",
+  "calls": [
+    {
+      "kind": "binary",
+      "url": "https://offline.example.test/tier0.pdf",
+      "tries_passed_to_downloader": 2
+    },
+    {
+      "kind": "binary",
+      "url": "https://offline.example.test/tier1.pdf",
+      "tries_passed_to_downloader": 1
+    },
+    {
+      "kind": "xml",
+      "url": "https://offline.example.test/tier2.xml",
+      "tries_passed_to_downloader": 2
+    },
+    {
+      "kind": "binary",
+      "url": "https://offline.example.test/tier3.pdf",
+      "tries_passed_to_downloader": 1
+    }
+  ],
+  "result": {
+    "depth": "仅摘要",
+    "version": "未确认",
+    "data_availability": "未确认",
+    "original_abstract_quote": "Only the original abstract supports claims.",
+    "claim_evidence_default": "abstract",
+    "fulltext_path": null,
+    "full_text_length": 0,
+    "figure_paths": [],
+    "ledger_channels": [],
+    "failures": [
+      "offline_tier0 https://offline.example.test/tier0.pdf: 非 PDF 响应：OA 链接返回网页/下载中转页",
+      "low_success_publisher https://offline.example.test/tier1.pdf: offline simulated HTTP 403",
+      "offline_tier2 https://offline.example.test/tier2.xml: XML 候选返回网页",
+      "pmc_pdf https://offline.example.test/tier3.pdf: PDF 响应不完整：末尾缺少有效的 startxref/%%EOF"
+    ]
+  },
+  "ledger": {
+    "abstract_quote": "Only the original abstract supports claims.",
+    "fulltext_channels": []
+  },
+  "persisted_files": [
+    "search_log.md"
+  ],
+  "forged_pdf_or_figure_files": []
+}

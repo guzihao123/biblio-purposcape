@@ -1,0 +1,22 @@
+{
+  "01-browser-events.json": {
+    "unexpected_event_count": 0,
+    "events": []
+  },
+  "02-browser-events.json": {
+    "unexpected_event_count": 0,
+    "events": []
+  },
+  "03-browser-events.json": {
+    "unexpected_event_count": 0,
+    "events": []
+  },
+  "04-browser-events.json": {
+    "unexpected_event_count": 0,
+    "events": []
+  },
+  "05-browser-events.json": {
+    "unexpected_event_count": 0,
+    "events": []
+  }
+}

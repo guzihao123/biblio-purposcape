@@ -1,0 +1,1688 @@
+{
+  "meta": {
+    "notice": "No API key, so this request shares one free daily budget ($0.10) with everyone on your network's IP address. Get a free key with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY to your requests. An AI agent can get one for its user in one call: POST https://api.openalex.org/api-keys with {\"email\": \"<your user's email>\"}; we email them a link, and the key works once they click it. Docs for agents: https://help.openalex.org/llms.txt",
+    "count": 3,
+    "db_response_time_ms": 42,
+    "page": 1,
+    "per_page": 2,
+    "groups_count": null,
+    "x_query": {
+      "oql": "get retracted works with (Hydroxychloroquine \"or\" chloroquine with \"or\" without a macrolide for treatment of COVID-19 multinational registry analysis) in the title or abstract",
+      "x_new_oql": "get retracted works with (Hydroxychloroquine \"or\" chloroquine with \"or\" without a macrolide for treatment of COVID-19 multinational registry analysis) in the title or abstract",
+      "oqo": {
+        "get_rows": "works",
+        "filter_rows": [
+          {
+            "column_id": "is_retracted",
+            "value": true
+          },
+          {
+            "column_id": "title_and_abstract.search",
+            "value": "Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19 multinational registry analysis",
+            "operator": "has"
+          }
+        ]
+      },
+      "url": "/works?filter=is_retracted:true,title_and_abstract.search:Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19 multinational registry analysis&per_page=2",
+      "order": "best matches first",
+      "order_default": true
+    },
+    "cost_usd": 0.001
+  },
+  "results": [
+    {
+      "id": "https://openalex.org/W3027680906",
+      "doi": "https://doi.org/10.1016/s0140-6736(20)31180-6",
+      "title": "RETRACTED: Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19: a multinational registry analysis",
+      "display_name": "RETRACTED: Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19: a multinational registry analysis",
+      "alternate_titles": [],
+      "relevance_score": 196.54648,
+      "publication_year": 2020,
+      "publication_date": "2020-05-01",
+      "ids": {
+        "openalex": "https://openalex.org/W3027680906",
+        "doi": "https://doi.org/10.1016/s0140-6736(20)31180-6",
+        "mag": "3027680906",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/32450107",
+        "pmcid": "https://www.ncbi.nlm.nih.gov/pmc/articles/7255293"
+      },
+      "language": "en",
+      "primary_location": {
+        "id": "doi:10.1016/s0140-6736(20)31180-6",
+        "doi": "https://doi.org/10.1016/s0140-6736(20)31180-6",
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.1016/s0140-6736(20)31180-6",
+        "pdf_url": "http://www.thelancet.com/article/S0140673620311806/pdf",
+        "source": {
+          "id": "https://openalex.org/S49861241",
+          "display_name": "The Lancet",
+          "issn_l": "0099-5355",
+          "issn": [
+            "0099-5355",
+            "0140-6736",
+            "1474-547X"
+          ],
+          "is_oa": false,
+          "is_in_doaj": false,
+          "is_core": true,
+          "listed_in": [
+            "anvur-class-a",
+            "anvur-scientific",
+            "cwts-core",
+            "dongbi-a",
+            "doyens",
+            "jufo-3",
+            "ki-jl-3",
+            "medline",
+            "norway-2",
+            "poland-200",
+            "russia-white-list-1",
+            "vabb-shw"
+          ],
+          "host_organization": "https://openalex.org/P4310320990",
+          "host_organization_name": "Elsevier BV",
+          "host_organization_lineage": [
+            "https://openalex.org/P4310320990"
+          ],
+          "host_organization_lineage_names": [
+            "Elsevier BV"
+          ],
+          "type": "journal"
+        },
+        "license": null,
+        "license_id": null,
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "The Lancet",
+        "raw_type": "journal-article"
+      },
+      "parent_works": [],
+      "lineage": [
+        "https://openalex.org/W3027680906"
+      ],
+      "child_works_count": 0,
+      "pull_notice_works": [
+        {
+          "id": "https://openalex.org/W3035365037",
+          "display_name": "Retraction—Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19: a multinational registry analysis",
+          "link_type": "retraction"
+        },
+        {
+          "id": "https://openalex.org/W3041438314",
+          "display_name": "Retraction and republication: cardiac toxicity of hydroxychloroquine in COVID-19",
+          "link_type": "retraction"
+        }
+      ],
+      "type": "article",
+      "is_traditional": true,
+      "indexed_in": [
+        "crossref",
+        "pubmed"
+      ],
+      "open_access": {
+        "is_oa": true,
+        "oa_status": "bronze",
+        "oa_url": "http://www.thelancet.com/article/S0140673620311806/pdf",
+        "any_repository_has_fulltext": true
+      },
+      "authorships": [
+        {
+          "author_position": "first",
+          "author": {
+            "id": "https://openalex.org/A5056960938",
+            "display_name": "Mandeep R. Mehra",
+            "type": null,
+            "orcid": "https://orcid.org/0000-0001-8683-7044",
+            "observed_orcids": [
+              "https://orcid.org/0000-0001-8683-7044"
+            ]
+          },
+          "acted_on_behalf_of": [],
+          "institutions": [
+            {
+              "id": "https://openalex.org/I1283280774",
+              "display_name": "Brigham and Women's Hospital",
+              "ror": "https://ror.org/04b6nzv94",
+              "country_code": "US",
+              "type": "healthcare",
+              "lineage": [
+                "https://openalex.org/I121934306",
+                "https://openalex.org/I1283280774",
+                "https://openalex.org/I48633490"
+              ]
+            },
+            {
+              "id": "https://openalex.org/I136199984",
+              "display_name": "Harvard University",
+              "ror": "https://ror.org/03vek6s52",
+              "country_code": "US",
+              "type": "education",
+              "lineage": [
+                "https://openalex.org/I136199984"
+              ]
+            }
+          ],
+          "countries": [
+            "US"
+          ],
+          "is_corresponding": true,
+          "contributor_roles": [],
+          "raw_author_name": "Mandeep R Mehra",
+          "raw_affiliation_strings": [
+            "Brigham and Women's Hospital Heart and Vascular Center and Harvard Medical School, Boston, MA, USA. Electronic address: mmehra@bwh.harvard.edu",
+            "Brigham and Women's Hospital Heart and Vascular Center and Harvard Medical School, Boston, MA, USA"
+          ],
+          "raw_orcid": null,
+          "affiliations": [
+            {
+              "raw_affiliation_string": "Brigham and Women's Hospital Heart and Vascular Center and Harvard Medical School, Boston, MA, USA. Electronic address: mmehra@bwh.harvard.edu",
+              "institution_ids": [
+                "https://openalex.org/I1283280774",
+                "https://openalex.org/I136199984"
+              ]
+            },
+            {
+              "raw_affiliation_string": "Brigham and Women's Hospital Heart and Vascular Center and Harvard Medical School, Boston, MA, USA",
+              "institution_ids": [
+                "https://openalex.org/I1283280774",
+                "https://openalex.org/I136199984"
+              ]
+            }
+          ]
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": "https://openalex.org/A5020874464",
+            "display_name": "Sapan S. Desai",
+            "type": null,
+            "orcid": "https://orcid.org/0000-0002-5402-0176",
+            "observed_orcids": [
+              "https://orcid.org/0000-0002-5402-0176"
+            ]
+          },
+          "acted_on_behalf_of": [],
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "contributor_roles": [],
+          "raw_author_name": "Sapan S Desai",
+          "raw_affiliation_strings": [
+            "Surgisphere Corporation, Chicago, IL, USA"
+          ],
+          "raw_orcid": null,
+          "affiliations": [
+            {
+              "raw_affiliation_string": "Surgisphere Corporation, Chicago, IL, USA",
+              "institution_ids": []
+            }
+          ]
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": "https://openalex.org/A5013727186",
+            "display_name": "Frank Thomas Ruschitzka",
+            "type": null,
+            "orcid": "https://orcid.org/0000-0001-5972-0596",
+            "observed_orcids": [
+              "https://orcid.org/0000-0001-5972-0596"
+            ]
+          },
+          "acted_on_behalf_of": [],
+          "institutions": [
+            {
+              "id": "https://openalex.org/I4210100468",
+              "display_name": "University Hospital Zurich",
+              "ror": "https://ror.org/01462r250",
+              "country_code": "CH",
+              "type": "healthcare",
+              "lineage": [
+                "https://openalex.org/I4210100468"
+              ]
+            }
+          ],
+          "countries": [
+            "CH"
+          ],
+          "is_corresponding": false,
+          "contributor_roles": [],
+          "raw_author_name": "Frank Ruschitzka",
+          "raw_affiliation_strings": [
+            "University Heart Center, University Hospital Zurich, Zurich, Switzerland"
+          ],
+          "raw_orcid": null,
+          "affiliations": [
+            {
+              "raw_affiliation_string": "University Heart Center, University Hospital Zurich, Zurich, Switzerland",
+              "institution_ids": [
+                "https://openalex.org/I4210100468"
+              ]
+            }
+          ]
+        },
+        {
+          "author_position": "last",
+          "author": {
+            "id": "https://openalex.org/A5076233641",
+            "display_name": "Amit N. Patel",
+            "type": null,
+            "orcid": "https://orcid.org/0000-0002-7458-2248",
+            "observed_orcids": [
+              "https://orcid.org/0000-0002-7458-2248"
+            ]
+          },
+          "acted_on_behalf_of": [],
+          "institutions": [
+            {
+              "id": "https://openalex.org/I223532165",
+              "display_name": "University of Utah",
+              "ror": "https://ror.org/03r0ha626",
+              "country_code": "US",
+              "type": "education",
+              "lineage": [
+                "https://openalex.org/I223532165"
+              ]
+            },
+            {
+              "id": "https://openalex.org/I2801024494",
+              "display_name": "HCA Healthcare",
+              "ror": "https://ror.org/0237c2m81",
+              "country_code": "US",
+              "type": "healthcare",
+              "lineage": [
+                "https://openalex.org/I2801024494"
+              ]
+            }
+          ],
+          "countries": [
+            "US"
+          ],
+          "is_corresponding": false,
+          "contributor_roles": [],
+          "raw_author_name": "Amit N Patel",
+          "raw_affiliation_strings": [
+            "Department of Biomedical Engineering, University of Utah, Salt Lake City, UT, USA; HCA Research Institute, Nashville, TN, USA",
+            "Department of Biomedical Engineering, University of Utah, Salt Lake City, UT, USA",
+            "HCA Research Institute, Nashville, TN, USA"
+          ],
+          "raw_orcid": null,
+          "affiliations": [
+            {
+              "raw_affiliation_string": "Department of Biomedical Engineering, University of Utah, Salt Lake City, UT, USA; HCA Research Institute, Nashville, TN, USA",
+              "institution_ids": [
+                "https://openalex.org/I223532165"
+              ]
+            },
+            {
+              "raw_affiliation_string": "Department of Biomedical Engineering, University of Utah, Salt Lake City, UT, USA",
+              "institution_ids": [
+                "https://openalex.org/I223532165"
+              ]
+            },
+            {
+              "raw_affiliation_string": "HCA Research Institute, Nashville, TN, USA",
+              "institution_ids": [
+                "https://openalex.org/I2801024494"
+              ]
+            }
+          ]
+        }
+      ],
+      "institutions": [],
+      "countries_distinct_count": 2,
+      "institutions_distinct_count": 5,
+      "corresponding_author_ids": [
+        "https://openalex.org/A5056960938"
+      ],
+      "corresponding_institution_ids": [
+        "https://openalex.org/I1283280774",
+        "https://openalex.org/I136199984"
+      ],
+      "apc_list": {
+        "value": 5000,
+        "currency": "USD",
+        "value_usd": 5000
+      },
+      "apc_paid": null,
+      "fwci": 40.3152,
+      "is_authors_truncated": false,
+      "has_fulltext": true,
+      "cited_by_count": 1316,
+      "reviewed_by_count": 1,
+      "citation_normalized_percentile": {
+        "value": 0.9968979,
+        "is_in_top_1_percent": true,
+        "is_in_top_10_percent": true
+      },
+      "cited_by_percentile_year": {
+        "min": 86,
+        "max": 100
+      },
+      "biblio": {
+        "volume": null,
+        "issue": null,
+        "first_page": null,
+        "last_page": null
+      },
+      "is_retracted": true,
+      "is_pulled": true,
+      "is_paratext": false,
+      "is_xpac": false,
+      "primary_topic": {
+        "id": "https://openalex.org/T10041",
+        "display_name": "COVID-19 Clinical Research Studies",
+        "score": 0.9994999766349792,
+        "subfield": {
+          "id": "https://openalex.org/subfields/2725",
+          "display_name": "Infectious Diseases"
+        },
+        "field": {
+          "id": "https://openalex.org/fields/27",
+          "display_name": "Medicine"
+        },
+        "domain": {
+          "id": "https://openalex.org/domains/4",
+          "display_name": "Health Sciences"
+        }
+      },
+      "topics": [
+        {
+          "id": "https://openalex.org/T10041",
+          "display_name": "COVID-19 Clinical Research Studies",
+          "score": 0.9994999766349792,
+          "subfield": {
+            "id": "https://openalex.org/subfields/2725",
+            "display_name": "Infectious Diseases"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/27",
+            "display_name": "Medicine"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/4",
+            "display_name": "Health Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T10118",
+          "display_name": "SARS-CoV-2 and COVID-19 Research",
+          "score": 0.00019999999494757503,
+          "subfield": {
+            "id": "https://openalex.org/subfields/2725",
+            "display_name": "Infectious Diseases"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/27",
+            "display_name": "Medicine"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/4",
+            "display_name": "Health Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T11296",
+          "display_name": "COVID-19 and healthcare impacts",
+          "score": 0.0,
+          "subfield": {
+            "id": "https://openalex.org/subfields/2730",
+            "display_name": "Oncology"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/27",
+            "display_name": "Medicine"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/4",
+            "display_name": "Health Sciences"
+          }
+        }
+      ],
+      "keywords": [
+        {
+          "id": "https://openalex.org/keywords/hydroxychloroquine",
+          "display_name": "hydroxychloroquine",
+          "score": 0.8859999775886536
+        },
+        {
+          "id": "https://openalex.org/keywords/chloroquine",
+          "display_name": "chloroquine",
+          "score": 1.0
+        },
+        {
+          "id": "https://openalex.org/keywords/macrolides",
+          "display_name": "macrolides",
+          "score": 0.9359999895095825
+        },
+        {
+          "id": "https://openalex.org/keywords/covid-19",
+          "display_name": "COVID-19 pandemic",
+          "score": 0.9409999847412109
+        },
+        {
+          "id": "https://openalex.org/keywords/sars-cov-2",
+          "display_name": "SARS-CoV-2",
+          "score": 0.9580000042915344
+        },
+        {
+          "id": "https://openalex.org/keywords/in-hospital-mortality",
+          "display_name": "in-hospital mortality",
+          "score": 0.9139999747276306
+        },
+        {
+          "id": "https://openalex.org/keywords/ventricular-arrhythmias",
+          "display_name": "ventricular arrhythmias",
+          "score": 0.9729999899864197
+        },
+        {
+          "id": "https://openalex.org/keywords/drug-safety",
+          "display_name": "drug safety",
+          "score": 0.5820000171661377
+        },
+        {
+          "id": "https://openalex.org/keywords/retracted-study",
+          "display_name": "retracted study",
+          "score": 0.3790000081062317
+        },
+        {
+          "id": "https://openalex.org/keywords/antimalarial-drugs",
+          "display_name": "antimalarial drugs",
+          "score": 0.5109999775886536
+        },
+        {
+          "id": "https://openalex.org/keywords/hospitalized-patients",
+          "display_name": "hospitalized patients",
+          "score": 0.6269999742507935
+        },
+        {
+          "id": "https://openalex.org/keywords/treatment-outcomes",
+          "display_name": "treatment outcomes",
+          "score": 0.3319999873638153
+        },
+        {
+          "id": "https://openalex.org/keywords/confounding-by-indication",
+          "display_name": "confounding by indication",
+          "score": 0.5329999923706055
+        },
+        {
+          "id": "https://openalex.org/keywords/confounding-by-treatment",
+          "display_name": "confounding by treatment",
+          "score": 0.503000020980835
+        }
+      ],
+      "concepts": [
+        {
+          "id": "https://openalex.org/C2779123688",
+          "wikidata": "https://www.wikidata.org/wiki/Q421094",
+          "display_name": "Hydroxychloroquine",
+          "level": 5,
+          "score": 0.9805880784988403
+        },
+        {
+          "id": "https://openalex.org/C2777425658",
+          "wikidata": "https://www.wikidata.org/wiki/Q422438",
+          "display_name": "Chloroquine",
+          "level": 3,
+          "score": 0.884227454662323
+        },
+        {
+          "id": "https://openalex.org/C71924100",
+          "wikidata": "https://www.wikidata.org/wiki/Q11190",
+          "display_name": "Medicine",
+          "level": 0,
+          "score": 0.8510720729827881
+        },
+        {
+          "id": "https://openalex.org/C126322002",
+          "wikidata": "https://www.wikidata.org/wiki/Q11180",
+          "display_name": "Internal medicine",
+          "level": 1,
+          "score": 0.5339226722717285
+        },
+        {
+          "id": "https://openalex.org/C3008058167",
+          "wikidata": "https://www.wikidata.org/wiki/Q84263196",
+          "display_name": "Coronavirus disease 2019 (COVID-19)",
+          "level": 4,
+          "score": 0.4018101990222931
+        },
+        {
+          "id": "https://openalex.org/C187212893",
+          "wikidata": "https://www.wikidata.org/wiki/Q123028",
+          "display_name": "Pediatrics",
+          "level": 1,
+          "score": 0.36042749881744385
+        },
+        {
+          "id": "https://openalex.org/C2778048844",
+          "wikidata": "https://www.wikidata.org/wiki/Q12156",
+          "display_name": "Malaria",
+          "level": 2,
+          "score": 0.35500872135162354
+        },
+        {
+          "id": "https://openalex.org/C2779134260",
+          "wikidata": "https://www.wikidata.org/wiki/Q12136",
+          "display_name": "Disease",
+          "level": 2,
+          "score": 0.18890893459320068
+        },
+        {
+          "id": "https://openalex.org/C203014093",
+          "wikidata": "https://www.wikidata.org/wiki/Q101929",
+          "display_name": "Immunology",
+          "level": 1,
+          "score": 0.1200380027294159
+        },
+        {
+          "id": "https://openalex.org/C524204448",
+          "wikidata": "https://www.wikidata.org/wiki/Q788926",
+          "display_name": "Infectious disease (medical specialty)",
+          "level": 3,
+          "score": 0.07282751798629761
+        }
+      ],
+      "mesh": [],
+      "locations_count": 3,
+      "locations": [
+        {
+          "id": "doi:10.1016/s0140-6736(20)31180-6",
+          "doi": "https://doi.org/10.1016/s0140-6736(20)31180-6",
+          "is_oa": true,
+          "landing_page_url": "https://doi.org/10.1016/s0140-6736(20)31180-6",
+          "pdf_url": "http://www.thelancet.com/article/S0140673620311806/pdf",
+          "source": {
+            "id": "https://openalex.org/S49861241",
+            "display_name": "The Lancet",
+            "issn_l": "0099-5355",
+            "issn": [
+              "0099-5355",
+              "0140-6736",
+              "1474-547X"
+            ],
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": true,
+            "listed_in": [
+              "anvur-class-a",
+              "anvur-scientific",
+              "cwts-core",
+              "dongbi-a",
+              "doyens",
+              "jufo-3",
+              "ki-jl-3",
+              "medline",
+              "norway-2",
+              "poland-200",
+              "russia-white-list-1",
+              "vabb-shw"
+            ],
+            "host_organization": "https://openalex.org/P4310320990",
+            "host_organization_name": "Elsevier BV",
+            "host_organization_lineage": [
+              "https://openalex.org/P4310320990"
+            ],
+            "host_organization_lineage_names": [
+              "Elsevier BV"
+            ],
+            "type": "journal"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "publishedVersion",
+          "is_accepted": true,
+          "is_published": true,
+          "raw_source_name": "The Lancet",
+          "raw_type": "journal-article"
+        },
+        {
+          "id": "pmh:oai:pubmedcentral.nih.gov:7255293",
+          "doi": null,
+          "is_oa": true,
+          "landing_page_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7255293/",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S2764455111",
+            "display_name": "PubMed Central",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": true,
+            "is_in_doaj": false,
+            "is_core": false,
+            "listed_in": [],
+            "host_organization": "https://openalex.org/I1299303238",
+            "host_organization_name": "National Institutes of Health",
+            "host_organization_lineage": [
+              "https://openalex.org/I1299303238"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "publishedVersion",
+          "is_accepted": true,
+          "is_published": true,
+          "raw_source_name": "Lancet",
+          "raw_type": "Text"
+        },
+        {
+          "id": "pmid:32450107",
+          "doi": null,
+          "is_oa": false,
+          "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/32450107",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S4306525036",
+            "display_name": "PubMed",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": false,
+            "listed_in": [],
+            "host_organization": "https://openalex.org/I1299303238",
+            "host_organization_name": "National Institutes of Health",
+            "host_organization_lineage": [
+              "https://openalex.org/I1299303238"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "publishedVersion",
+          "is_accepted": true,
+          "is_published": true,
+          "raw_source_name": "Lancet (London, England)",
+          "raw_type": "Journal Article"
+        }
+      ],
+      "best_oa_location": {
+        "id": "doi:10.1016/s0140-6736(20)31180-6",
+        "doi": "https://doi.org/10.1016/s0140-6736(20)31180-6",
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.1016/s0140-6736(20)31180-6",
+        "pdf_url": "http://www.thelancet.com/article/S0140673620311806/pdf",
+        "source": {
+          "id": "https://openalex.org/S49861241",
+          "display_name": "The Lancet",
+          "issn_l": "0099-5355",
+          "issn": [
+            "0099-5355",
+            "0140-6736",
+            "1474-547X"
+          ],
+          "is_oa": false,
+          "is_in_doaj": false,
+          "is_core": true,
+          "listed_in": [
+            "anvur-class-a",
+            "anvur-scientific",
+            "cwts-core",
+            "dongbi-a",
+            "doyens",
+            "jufo-3",
+            "ki-jl-3",
+            "medline",
+            "norway-2",
+            "poland-200",
+            "russia-white-list-1",
+            "vabb-shw"
+          ],
+          "host_organization": "https://openalex.org/P4310320990",
+          "host_organization_name": "Elsevier BV",
+          "host_organization_lineage": [
+            "https://openalex.org/P4310320990"
+          ],
+          "host_organization_lineage_names": [
+            "Elsevier BV"
+          ],
+          "type": "journal"
+        },
+        "license": null,
+        "license_id": null,
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "The Lancet",
+        "raw_type": "journal-article"
+      },
+      "sustainable_development_goals": [
+        {
+          "id": "https://metadata.un.org/sdg/3",
+          "score": 1.0,
+          "display_name": "Good health and well-being"
+        }
+      ],
+      "study_designs": [
+        {
+          "id": "https://openalex.org/study-designs/observational-study",
+          "display_name": "Observational Study"
+        }
+      ],
+      "awards": [],
+      "funders": [
+        {
+          "id": "https://openalex.org/F4320308347",
+          "display_name": "Brigham and Women's Hospital",
+          "ror": "https://ror.org/04b6nzv94"
+        }
+      ],
+      "has_content": {
+        "pdf": true,
+        "grobid_xml": true
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W3027680906.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W3027680906.grobid-xml"
+      },
+      "referenced_works_count": 33,
+      "referenced_works": [
+        "https://openalex.org/W2007760422",
+        "https://openalex.org/W2017194393",
+        "https://openalex.org/W2119425860",
+        "https://openalex.org/W2615242605",
+        "https://openalex.org/W2741252257",
+        "https://openalex.org/W3008763357",
+        "https://openalex.org/W3010673910",
+        "https://openalex.org/W3010930696",
+        "https://openalex.org/W3010992334",
+        "https://openalex.org/W3011384508",
+        "https://openalex.org/W3011976215",
+        "https://openalex.org/W3012747666",
+        "https://openalex.org/W3013231340",
+        "https://openalex.org/W3013619034",
+        "https://openalex.org/W3015547183",
+        "https://openalex.org/W3015907249",
+        "https://openalex.org/W3016271633",
+        "https://openalex.org/W3016449286",
+        "https://openalex.org/W3017125154",
+        "https://openalex.org/W3020239101",
+        "https://openalex.org/W3022358203",
+        "https://openalex.org/W3023826646",
+        "https://openalex.org/W3025048372",
+        "https://openalex.org/W3025795175",
+        "https://openalex.org/W3025972894",
+        "https://openalex.org/W3033716792",
+        "https://openalex.org/W3033884900",
+        "https://openalex.org/W3036192231",
+        "https://openalex.org/W3045957828",
+        "https://openalex.org/W3087588044",
+        "https://openalex.org/W3094553382",
+        "https://openalex.org/W3183279869",
+        "https://openalex.org/W6776564347"
+      ],
+      "related_works": [
+        "https://openalex.org/W3018389189",
+        "https://openalex.org/W3098176661",
+        "https://openalex.org/W4387212138",
+        "https://openalex.org/W3031307765",
+        "https://openalex.org/W4200607045",
+        "https://openalex.org/W3091868035",
+        "https://openalex.org/W3034045651",
+        "https://openalex.org/W3044841622",
+        "https://openalex.org/W3199948517",
+        "https://openalex.org/W3111358613"
+      ],
+      "abstract_inverted_index": null,
+      "cited_by_api_url": "https://api.openalex.org/works?filter=cites:W3027680906",
+      "counts_by_year": [
+        {
+          "year": 2026,
+          "cited_by_count": 8
+        },
+        {
+          "year": 2025,
+          "cited_by_count": 28
+        },
+        {
+          "year": 2024,
+          "cited_by_count": 43
+        },
+        {
+          "year": 2023,
+          "cited_by_count": 87
+        },
+        {
+          "year": 2022,
+          "cited_by_count": 142
+        },
+        {
+          "year": 2021,
+          "cited_by_count": 336
+        },
+        {
+          "year": 2020,
+          "cited_by_count": 667
+        },
+        {
+          "year": 2019,
+          "cited_by_count": 2
+        },
+        {
+          "year": 2016,
+          "cited_by_count": 1
+        },
+        {
+          "year": 2014,
+          "cited_by_count": 1
+        }
+      ],
+      "updated_date": "2026-11-23T12:01:36.302904",
+      "created_date": "2020-05-29T00:00:00"
+    },
+    {
+      "id": "https://openalex.org/W3035365037",
+      "doi": "https://doi.org/10.1016/s0140-6736(20)31324-6",
+      "title": "Retraction—Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19: a multinational registry analysis",
+      "display_name": "Retraction—Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19: a multinational registry analysis",
+      "alternate_titles": [],
+      "relevance_score": 192.9005,
+      "publication_year": 2020,
+      "publication_date": "2020-06-01",
+      "ids": {
+        "openalex": "https://openalex.org/W3035365037",
+        "doi": "https://doi.org/10.1016/s0140-6736(20)31324-6",
+        "mag": "3035365037",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/32511943",
+        "pmcid": "https://www.ncbi.nlm.nih.gov/pmc/articles/7274621"
+      },
+      "language": "en",
+      "primary_location": {
+        "id": "doi:10.1016/s0140-6736(20)31324-6",
+        "doi": "https://doi.org/10.1016/s0140-6736(20)31324-6",
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.1016/s0140-6736(20)31324-6",
+        "pdf_url": "http://www.thelancet.com/article/S0140673620313246/pdf",
+        "source": {
+          "id": "https://openalex.org/S49861241",
+          "display_name": "The Lancet",
+          "issn_l": "0099-5355",
+          "issn": [
+            "0099-5355",
+            "0140-6736",
+            "1474-547X"
+          ],
+          "is_oa": false,
+          "is_in_doaj": false,
+          "is_core": true,
+          "listed_in": [
+            "anvur-class-a",
+            "anvur-scientific",
+            "cwts-core",
+            "dongbi-a",
+            "doyens",
+            "jufo-3",
+            "ki-jl-3",
+            "medline",
+            "norway-2",
+            "poland-200",
+            "russia-white-list-1",
+            "vabb-shw"
+          ],
+          "host_organization": "https://openalex.org/P4310320990",
+          "host_organization_name": "Elsevier BV",
+          "host_organization_lineage": [
+            "https://openalex.org/P4310320990"
+          ],
+          "host_organization_lineage_names": [
+            "Elsevier BV"
+          ],
+          "type": "journal"
+        },
+        "license": null,
+        "license_id": null,
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "The Lancet",
+        "raw_type": "journal-article"
+      },
+      "parent_works": [],
+      "lineage": [
+        "https://openalex.org/W3035365037"
+      ],
+      "child_works_count": 0,
+      "pull_notice_works": [],
+      "type": "retraction",
+      "is_traditional": true,
+      "indexed_in": [
+        "crossref",
+        "pubmed"
+      ],
+      "open_access": {
+        "is_oa": true,
+        "oa_status": "bronze",
+        "oa_url": "http://www.thelancet.com/article/S0140673620313246/pdf",
+        "any_repository_has_fulltext": true
+      },
+      "authorships": [
+        {
+          "author_position": "first",
+          "author": {
+            "id": "https://openalex.org/A5056960938",
+            "display_name": "Mandeep R. Mehra",
+            "type": null,
+            "orcid": "https://orcid.org/0000-0001-8683-7044",
+            "observed_orcids": [
+              "https://orcid.org/0000-0001-8683-7044"
+            ]
+          },
+          "acted_on_behalf_of": [],
+          "institutions": [
+            {
+              "id": "https://openalex.org/I1283280774",
+              "display_name": "Brigham and Women's Hospital",
+              "ror": "https://ror.org/04b6nzv94",
+              "country_code": "US",
+              "type": "healthcare",
+              "lineage": [
+                "https://openalex.org/I121934306",
+                "https://openalex.org/I1283280774",
+                "https://openalex.org/I48633490"
+              ]
+            },
+            {
+              "id": "https://openalex.org/I136199984",
+              "display_name": "Harvard University",
+              "ror": "https://ror.org/03vek6s52",
+              "country_code": "US",
+              "type": "education",
+              "lineage": [
+                "https://openalex.org/I136199984"
+              ]
+            }
+          ],
+          "countries": [
+            "US"
+          ],
+          "is_corresponding": true,
+          "contributor_roles": [],
+          "raw_author_name": "Mandeep R Mehra",
+          "raw_affiliation_strings": [
+            "Brigham and Women's Hospital Heart and Vascular Center and Harvard Medical School, Boston, MA 02115, USA. Electronic address: mmehra@bwh.harvard.edu",
+            "Brigham and Women's Hospital Heart and Vascular Center and Harvard Medical School, Boston, MA 02115, USA"
+          ],
+          "raw_orcid": null,
+          "affiliations": [
+            {
+              "raw_affiliation_string": "Brigham and Women's Hospital Heart and Vascular Center and Harvard Medical School, Boston, MA 02115, USA. Electronic address: mmehra@bwh.harvard.edu",
+              "institution_ids": [
+                "https://openalex.org/I1283280774",
+                "https://openalex.org/I136199984"
+              ]
+            },
+            {
+              "raw_affiliation_string": "Brigham and Women's Hospital Heart and Vascular Center and Harvard Medical School, Boston, MA 02115, USA",
+              "institution_ids": [
+                "https://openalex.org/I1283280774",
+                "https://openalex.org/I136199984"
+              ]
+            }
+          ]
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": "https://openalex.org/A5013727186",
+            "display_name": "Frank Thomas Ruschitzka",
+            "type": null,
+            "orcid": "https://orcid.org/0000-0001-5972-0596",
+            "observed_orcids": [
+              "https://orcid.org/0000-0001-5972-0596"
+            ]
+          },
+          "acted_on_behalf_of": [],
+          "institutions": [
+            {
+              "id": "https://openalex.org/I4210100468",
+              "display_name": "University Hospital Zurich",
+              "ror": "https://ror.org/01462r250",
+              "country_code": "CH",
+              "type": "healthcare",
+              "lineage": [
+                "https://openalex.org/I4210100468"
+              ]
+            }
+          ],
+          "countries": [
+            "CH"
+          ],
+          "is_corresponding": false,
+          "contributor_roles": [],
+          "raw_author_name": "Frank Ruschitzka",
+          "raw_affiliation_strings": [
+            "University Heart Center, University Hospital Zurich, Zurich, Switzerland"
+          ],
+          "raw_orcid": null,
+          "affiliations": [
+            {
+              "raw_affiliation_string": "University Heart Center, University Hospital Zurich, Zurich, Switzerland",
+              "institution_ids": [
+                "https://openalex.org/I4210100468"
+              ]
+            }
+          ]
+        },
+        {
+          "author_position": "last",
+          "author": {
+            "id": "https://openalex.org/A5076233641",
+            "display_name": "Amit N. Patel",
+            "type": null,
+            "orcid": "https://orcid.org/0000-0002-7458-2248",
+            "observed_orcids": [
+              "https://orcid.org/0000-0002-7458-2248"
+            ]
+          },
+          "acted_on_behalf_of": [],
+          "institutions": [
+            {
+              "id": "https://openalex.org/I223532165",
+              "display_name": "University of Utah",
+              "ror": "https://ror.org/03r0ha626",
+              "country_code": "US",
+              "type": "education",
+              "lineage": [
+                "https://openalex.org/I223532165"
+              ]
+            },
+            {
+              "id": "https://openalex.org/I2801024494",
+              "display_name": "HCA Healthcare",
+              "ror": "https://ror.org/0237c2m81",
+              "country_code": "US",
+              "type": "healthcare",
+              "lineage": [
+                "https://openalex.org/I2801024494"
+              ]
+            }
+          ],
+          "countries": [
+            "US"
+          ],
+          "is_corresponding": false,
+          "contributor_roles": [],
+          "raw_author_name": "Amit N Patel",
+          "raw_affiliation_strings": [
+            "Department of Biomedical Engineering, University of Utah, Salt Lake City, UT, USA; HCA Research Institute, Nashville, TN, USA",
+            "Department of Biomedical Engineering, University of Utah, Salt Lake City, UT, USA",
+            "HCA Research Institute, Nashville, TN, USA"
+          ],
+          "raw_orcid": null,
+          "affiliations": [
+            {
+              "raw_affiliation_string": "Department of Biomedical Engineering, University of Utah, Salt Lake City, UT, USA; HCA Research Institute, Nashville, TN, USA",
+              "institution_ids": [
+                "https://openalex.org/I223532165"
+              ]
+            },
+            {
+              "raw_affiliation_string": "Department of Biomedical Engineering, University of Utah, Salt Lake City, UT, USA",
+              "institution_ids": [
+                "https://openalex.org/I223532165"
+              ]
+            },
+            {
+              "raw_affiliation_string": "HCA Research Institute, Nashville, TN, USA",
+              "institution_ids": [
+                "https://openalex.org/I2801024494"
+              ]
+            }
+          ]
+        }
+      ],
+      "institutions": [],
+      "countries_distinct_count": 2,
+      "institutions_distinct_count": 5,
+      "corresponding_author_ids": [
+        "https://openalex.org/A5056960938"
+      ],
+      "corresponding_institution_ids": [
+        "https://openalex.org/I1283280774",
+        "https://openalex.org/I136199984"
+      ],
+      "apc_list": {
+        "value": 5000,
+        "currency": "USD",
+        "value_usd": 5000
+      },
+      "apc_paid": null,
+      "fwci": null,
+      "is_authors_truncated": false,
+      "has_fulltext": true,
+      "cited_by_count": 632,
+      "reviewed_by_count": 0,
+      "citation_normalized_percentile": null,
+      "cited_by_percentile_year": null,
+      "biblio": {
+        "volume": "395",
+        "issue": "10240",
+        "first_page": "1820",
+        "last_page": "1820"
+      },
+      "is_retracted": true,
+      "is_pulled": true,
+      "is_paratext": false,
+      "is_xpac": false,
+      "primary_topic": {
+        "id": "https://openalex.org/T10041",
+        "display_name": "COVID-19 Clinical Research Studies",
+        "score": 0.9164999723434448,
+        "subfield": {
+          "id": "https://openalex.org/subfields/2725",
+          "display_name": "Infectious Diseases"
+        },
+        "field": {
+          "id": "https://openalex.org/fields/27",
+          "display_name": "Medicine"
+        },
+        "domain": {
+          "id": "https://openalex.org/domains/4",
+          "display_name": "Health Sciences"
+        }
+      },
+      "topics": [
+        {
+          "id": "https://openalex.org/T10041",
+          "display_name": "COVID-19 Clinical Research Studies",
+          "score": 0.9164999723434448,
+          "subfield": {
+            "id": "https://openalex.org/subfields/2725",
+            "display_name": "Infectious Diseases"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/27",
+            "display_name": "Medicine"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/4",
+            "display_name": "Health Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T13607",
+          "display_name": "Academic Publishing and Open Access",
+          "score": 0.02500000037252903,
+          "subfield": {
+            "id": "https://openalex.org/subfields/3309",
+            "display_name": "Library and Information Sciences"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/33",
+            "display_name": "Social Sciences"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T10118",
+          "display_name": "SARS-CoV-2 and COVID-19 Research",
+          "score": 0.01720000058412552,
+          "subfield": {
+            "id": "https://openalex.org/subfields/2725",
+            "display_name": "Infectious Diseases"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/27",
+            "display_name": "Medicine"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/4",
+            "display_name": "Health Sciences"
+          }
+        }
+      ],
+      "keywords": [
+        {
+          "id": "https://openalex.org/keywords/covid-19",
+          "display_name": "COVID-19 pandemic",
+          "score": 0.8050000071525574
+        },
+        {
+          "id": "https://openalex.org/keywords/hydroxychloroquine",
+          "display_name": "hydroxychloroquine",
+          "score": 0.9990000128746033
+        },
+        {
+          "id": "https://openalex.org/keywords/chloroquine",
+          "display_name": "chloroquine",
+          "score": 0.9990000128746033
+        },
+        {
+          "id": "https://openalex.org/keywords/macrolides",
+          "display_name": "macrolides",
+          "score": 0.9150000214576721
+        },
+        {
+          "id": "https://openalex.org/keywords/data-veracity",
+          "display_name": "data veracity",
+          "score": 0.6460000276565552
+        },
+        {
+          "id": "https://openalex.org/keywords/research-ethics",
+          "display_name": "research ethics",
+          "score": 0.4869999885559082
+        },
+        {
+          "id": "https://openalex.org/keywords/conflict-of-interest-disclosure",
+          "display_name": "conflict of interest disclosure",
+          "score": 0.7059999704360962
+        },
+        {
+          "id": "https://openalex.org/keywords/research-misconduct-allegations",
+          "display_name": "research misconduct allegations",
+          "score": 0.3959999978542328
+        }
+      ],
+      "concepts": [
+        {
+          "id": "https://openalex.org/C71745522",
+          "wikidata": "https://www.wikidata.org/wiki/Q2476929",
+          "display_name": "Confidentiality",
+          "level": 2,
+          "score": 0.6401970386505127
+        },
+        {
+          "id": "https://openalex.org/C2779123688",
+          "wikidata": "https://www.wikidata.org/wiki/Q421094",
+          "display_name": "Hydroxychloroquine",
+          "level": 5,
+          "score": 0.6391793489456177
+        },
+        {
+          "id": "https://openalex.org/C158016649",
+          "wikidata": "https://www.wikidata.org/wiki/Q161726",
+          "display_name": "Multinational corporation",
+          "level": 2,
+          "score": 0.612953782081604
+        },
+        {
+          "id": "https://openalex.org/C108827166",
+          "wikidata": "https://www.wikidata.org/wiki/Q175975",
+          "display_name": "Internet privacy",
+          "level": 1,
+          "score": 0.5128974914550781
+        },
+        {
+          "id": "https://openalex.org/C199521495",
+          "wikidata": "https://www.wikidata.org/wiki/Q181487",
+          "display_name": "Audit",
+          "level": 2,
+          "score": 0.49464794993400574
+        },
+        {
+          "id": "https://openalex.org/C2779056723",
+          "wikidata": "https://www.wikidata.org/wiki/Q329717",
+          "display_name": "Warranty",
+          "level": 2,
+          "score": 0.4595261216163635
+        },
+        {
+          "id": "https://openalex.org/C68122502",
+          "wikidata": "https://www.wikidata.org/wiki/Q764527",
+          "display_name": "Informed consent",
+          "level": 3,
+          "score": 0.4278532862663269
+        },
+        {
+          "id": "https://openalex.org/C3008058167",
+          "wikidata": "https://www.wikidata.org/wiki/Q84263196",
+          "display_name": "Coronavirus disease 2019 (COVID-19)",
+          "level": 4,
+          "score": 0.4238972067832947
+        },
+        {
+          "id": "https://openalex.org/C71924100",
+          "wikidata": "https://www.wikidata.org/wiki/Q11190",
+          "display_name": "Medicine",
+          "level": 0,
+          "score": 0.4163368046283722
+        },
+        {
+          "id": "https://openalex.org/C144133560",
+          "wikidata": "https://www.wikidata.org/wiki/Q4830453",
+          "display_name": "Business",
+          "level": 0,
+          "score": 0.3741178810596466
+        },
+        {
+          "id": "https://openalex.org/C17744445",
+          "wikidata": "https://www.wikidata.org/wiki/Q36442",
+          "display_name": "Political science",
+          "level": 0,
+          "score": 0.3603461682796478
+        },
+        {
+          "id": "https://openalex.org/C41008148",
+          "wikidata": "https://www.wikidata.org/wiki/Q21198",
+          "display_name": "Computer science",
+          "level": 0,
+          "score": 0.3130634129047394
+        },
+        {
+          "id": "https://openalex.org/C199539241",
+          "wikidata": "https://www.wikidata.org/wiki/Q7748",
+          "display_name": "Law",
+          "level": 1,
+          "score": 0.2496410310268402
+        },
+        {
+          "id": "https://openalex.org/C204787440",
+          "wikidata": "https://www.wikidata.org/wiki/Q188504",
+          "display_name": "Alternative medicine",
+          "level": 2,
+          "score": 0.20690327882766724
+        },
+        {
+          "id": "https://openalex.org/C142724271",
+          "wikidata": "https://www.wikidata.org/wiki/Q7208",
+          "display_name": "Pathology",
+          "level": 1,
+          "score": 0.1294642984867096
+        },
+        {
+          "id": "https://openalex.org/C121955636",
+          "wikidata": "https://www.wikidata.org/wiki/Q4116214",
+          "display_name": "Accounting",
+          "level": 1,
+          "score": 0.0
+        },
+        {
+          "id": "https://openalex.org/C2779134260",
+          "wikidata": "https://www.wikidata.org/wiki/Q12136",
+          "display_name": "Disease",
+          "level": 2,
+          "score": 0.0
+        },
+        {
+          "id": "https://openalex.org/C524204448",
+          "wikidata": "https://www.wikidata.org/wiki/Q788926",
+          "display_name": "Infectious disease (medical specialty)",
+          "level": 3,
+          "score": 0.0
+        }
+      ],
+      "mesh": [],
+      "locations_count": 3,
+      "locations": [
+        {
+          "id": "doi:10.1016/s0140-6736(20)31324-6",
+          "doi": "https://doi.org/10.1016/s0140-6736(20)31324-6",
+          "is_oa": true,
+          "landing_page_url": "https://doi.org/10.1016/s0140-6736(20)31324-6",
+          "pdf_url": "http://www.thelancet.com/article/S0140673620313246/pdf",
+          "source": {
+            "id": "https://openalex.org/S49861241",
+            "display_name": "The Lancet",
+            "issn_l": "0099-5355",
+            "issn": [
+              "0099-5355",
+              "0140-6736",
+              "1474-547X"
+            ],
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": true,
+            "listed_in": [
+              "anvur-class-a",
+              "anvur-scientific",
+              "cwts-core",
+              "dongbi-a",
+              "doyens",
+              "jufo-3",
+              "ki-jl-3",
+              "medline",
+              "norway-2",
+              "poland-200",
+              "russia-white-list-1",
+              "vabb-shw"
+            ],
+            "host_organization": "https://openalex.org/P4310320990",
+            "host_organization_name": "Elsevier BV",
+            "host_organization_lineage": [
+              "https://openalex.org/P4310320990"
+            ],
+            "host_organization_lineage_names": [
+              "Elsevier BV"
+            ],
+            "type": "journal"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "publishedVersion",
+          "is_accepted": true,
+          "is_published": true,
+          "raw_source_name": "The Lancet",
+          "raw_type": "journal-article"
+        },
+        {
+          "id": "pmh:oai:pubmedcentral.nih.gov:7274621",
+          "doi": null,
+          "is_oa": true,
+          "landing_page_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7274621/",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S2764455111",
+            "display_name": "PubMed Central",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": true,
+            "is_in_doaj": false,
+            "is_core": false,
+            "listed_in": [],
+            "host_organization": "https://openalex.org/I1299303238",
+            "host_organization_name": "National Institutes of Health",
+            "host_organization_lineage": [
+              "https://openalex.org/I1299303238"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "publishedVersion",
+          "is_accepted": true,
+          "is_published": true,
+          "raw_source_name": "Lancet",
+          "raw_type": "Text"
+        },
+        {
+          "id": "pmid:32511943",
+          "doi": null,
+          "is_oa": false,
+          "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/32511943",
+          "pdf_url": null,
+          "source": {
+            "id": "https://openalex.org/S4306525036",
+            "display_name": "PubMed",
+            "issn_l": null,
+            "issn": null,
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": false,
+            "listed_in": [],
+            "host_organization": "https://openalex.org/I1299303238",
+            "host_organization_name": "National Institutes of Health",
+            "host_organization_lineage": [
+              "https://openalex.org/I1299303238"
+            ],
+            "host_organization_lineage_names": [],
+            "type": "repository"
+          },
+          "license": null,
+          "license_id": null,
+          "version": "publishedVersion",
+          "is_accepted": true,
+          "is_published": true,
+          "raw_source_name": "Lancet (London, England)",
+          "raw_type": "Journal Article"
+        }
+      ],
+      "best_oa_location": {
+        "id": "doi:10.1016/s0140-6736(20)31324-6",
+        "doi": "https://doi.org/10.1016/s0140-6736(20)31324-6",
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.1016/s0140-6736(20)31324-6",
+        "pdf_url": "http://www.thelancet.com/article/S0140673620313246/pdf",
+        "source": {
+          "id": "https://openalex.org/S49861241",
+          "display_name": "The Lancet",
+          "issn_l": "0099-5355",
+          "issn": [
+            "0099-5355",
+            "0140-6736",
+            "1474-547X"
+          ],
+          "is_oa": false,
+          "is_in_doaj": false,
+          "is_core": true,
+          "listed_in": [
+            "anvur-class-a",
+            "anvur-scientific",
+            "cwts-core",
+            "dongbi-a",
+            "doyens",
+            "jufo-3",
+            "ki-jl-3",
+            "medline",
+            "norway-2",
+            "poland-200",
+            "russia-white-list-1",
+            "vabb-shw"
+          ],
+          "host_organization": "https://openalex.org/P4310320990",
+          "host_organization_name": "Elsevier BV",
+          "host_organization_lineage": [
+            "https://openalex.org/P4310320990"
+          ],
+          "host_organization_lineage_names": [
+            "Elsevier BV"
+          ],
+          "type": "journal"
+        },
+        "license": null,
+        "license_id": null,
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "The Lancet",
+        "raw_type": "journal-article"
+      },
+      "sustainable_development_goals": [
+        {
+          "id": "https://metadata.un.org/sdg/3",
+          "score": 0.5683000087738037,
+          "display_name": "Good health and well-being"
+        }
+      ],
+      "study_designs": [],
+      "awards": [],
+      "funders": [
+        {
+          "id": "https://openalex.org/F4320307105",
+          "display_name": "Amgen",
+          "ror": "https://ror.org/03g03ge92"
+        },
+        {
+          "id": "https://openalex.org/F4320307765",
+          "display_name": "Pfizer",
+          "ror": "https://ror.org/01xdqrp08"
+        },
+        {
+          "id": "https://openalex.org/F4320307779",
+          "display_name": "Roche",
+          "ror": "https://ror.org/00by1q217"
+        },
+        {
+          "id": "https://openalex.org/F4320307781",
+          "display_name": "Sanofi",
+          "ror": "https://ror.org/027vj4x92"
+        },
+        {
+          "id": "https://openalex.org/F4320312419",
+          "display_name": "HeartWare",
+          "ror": "https://ror.org/054ykvg32"
+        },
+        {
+          "id": "https://openalex.org/F4320323874",
+          "display_name": "Universität Zürich",
+          "ror": "https://ror.org/02crff812"
+        },
+        {
+          "id": "https://openalex.org/F4320327235",
+          "display_name": "Servier",
+          "ror": "https://ror.org/034e7c066"
+        }
+      ],
+      "has_content": {
+        "pdf": true,
+        "grobid_xml": true
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W3035365037.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W3035365037.grobid-xml"
+      },
+      "referenced_works_count": 1,
+      "referenced_works": [
+        "https://openalex.org/W3027680906"
+      ],
+      "related_works": [
+        "https://openalex.org/W3042108443",
+        "https://openalex.org/W4238253540",
+        "https://openalex.org/W4205333908",
+        "https://openalex.org/W4393843864",
+        "https://openalex.org/W6893729504",
+        "https://openalex.org/W7127595622",
+        "https://openalex.org/W6968723477",
+        "https://openalex.org/W4379141467",
+        "https://openalex.org/W4362595267",
+        "https://openalex.org/W4205742911"
+      ],
+      "abstract_inverted_index": null,
+      "cited_by_api_url": "https://api.openalex.org/works?filter=cites:W3035365037",
+      "counts_by_year": [
+        {
+          "year": 2026,
+          "cited_by_count": 10
+        },
+        {
+          "year": 2025,
+          "cited_by_count": 25
+        },
+        {
+          "year": 2024,
+          "cited_by_count": 27
+        },
+        {
+          "year": 2023,
+          "cited_by_count": 26
+        },
+        {
+          "year": 2022,
+          "cited_by_count": 73
+        },
+        {
+          "year": 2021,
+          "cited_by_count": 177
+        },
+        {
+          "year": 2020,
+          "cited_by_count": 293
+        },
+        {
+          "year": 2019,
+          "cited_by_count": 1
+        }
+      ],
+      "updated_date": "2026-11-23T12:01:36.302904",
+      "created_date": "2020-05-29T00:00:00"
+    }
+  ],
+  "group_by": []
+}

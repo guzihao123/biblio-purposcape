@@ -1,0 +1,7 @@
+=== page 1 ===
+Offline methods sentence.
+Figure 1. Synthetic framework only.
+
+=== page 2 ===
+Offline comparison sentence.
+Data availability: local fixture only.

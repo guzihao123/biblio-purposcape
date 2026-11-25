@@ -1,0 +1,249 @@
+{
+  "description": "Fully synthetic OpenAlex, Crossref, and Semantic Scholar payloads for offline integrity tests. No record or identifier represents a real paper.",
+  "openalex": {
+    "meta": {"count": 11},
+    "results": [
+      {
+        "id": "https://openalex.org/W_SHARED",
+        "doi": "https://doi.org/10.1000/shared",
+        "title": "Offline integrity shared DOI OpenAlex record",
+        "publication_year": 2024,
+        "authorships": [
+          {
+            "author": {"display_name": "Alice OpenAlex"},
+            "institutions": [{"display_name": "Fixture University", "country_code": "US"}],
+            "countries": ["US"]
+          }
+        ],
+        "primary_location": {"source": {"display_name": "OpenAlex Fixture Journal"}},
+        "cited_by_count": 10,
+        "open_access": {"oa_url": null},
+        "abstract_inverted_index": {"OpenAlex": [0], "abstract": [1], "wins": [2]},
+        "type": "article",
+        "language": "en",
+        "is_retracted": false,
+        "referenced_works": ["https://openalex.org/W_TARGET"]
+      },
+      {
+        "id": "https://openalex.org/W_RETRACTED",
+        "doi": "https://doi.org/10.1000/flagged",
+        "title": "Offline integrity flagged record",
+        "publication_year": 2024,
+        "authorships": [],
+        "primary_location": {"source": {"display_name": "Fixture Journal"}},
+        "cited_by_count": 50000,
+        "open_access": {"oa_url": null},
+        "abstract_inverted_index": {"Offline": [0], "integrity": [1], "abstract": [2]},
+        "type": "article",
+        "language": "en",
+        "is_retracted": true,
+        "referenced_works": []
+      },
+      {
+        "id": "https://openalex.org/W_REVIEW",
+        "doi": "https://doi.org/10.1000/review",
+        "title": "Offline integrity review",
+        "publication_year": 2024,
+        "authorships": [],
+        "primary_location": {"source": {"display_name": "Fixture Reviews"}},
+        "cited_by_count": 20,
+        "open_access": {"oa_url": null},
+        "abstract_inverted_index": {"Offline": [0], "integrity": [1], "review": [2]},
+        "type": "review",
+        "language": "en",
+        "is_retracted": false,
+        "referenced_works": []
+      },
+      {
+        "id": "https://openalex.org/W_PREPRINT_ONLY",
+        "doi": "https://doi.org/10.1000/preprint-only",
+        "title": "Offline integrity standalone preprint",
+        "publication_year": 2025,
+        "authorships": [],
+        "primary_location": {"source": {"display_name": "Fixture Preprint Server"}},
+        "cited_by_count": 15,
+        "open_access": {"oa_url": "https://fixture.invalid/standalone-preprint"},
+        "abstract_inverted_index": {"Offline": [0], "integrity": [1], "preprint": [2]},
+        "type": "preprint",
+        "language": "en",
+        "is_retracted": false,
+        "referenced_works": []
+      },
+      {
+        "id": "https://openalex.org/W_EMPTY",
+        "doi": "https://doi.org/10.1000/empty-abstract",
+        "title": "Offline integrity inventory only",
+        "publication_year": 2024,
+        "authorships": [],
+        "primary_location": {"source": {"display_name": "Fixture Journal"}},
+        "cited_by_count": 5,
+        "open_access": {"oa_url": null},
+        "type": "article",
+        "language": "en",
+        "is_retracted": false,
+        "referenced_works": []
+      },
+      {
+        "id": "https://openalex.org/W_TARGET",
+        "doi": "https://doi.org/10.1000/target",
+        "title": "Offline integrity citation target",
+        "publication_year": 2023,
+        "authorships": [],
+        "primary_location": {"source": {"display_name": "Fixture Journal"}},
+        "cited_by_count": 5,
+        "open_access": {"oa_url": null},
+        "abstract_inverted_index": {"Offline": [0], "integrity": [1], "target": [2]},
+        "type": "article",
+        "language": "en",
+        "is_retracted": false,
+        "referenced_works": []
+      },
+      {
+        "id": "https://openalex.org/W_VERSION_PREPRINT",
+        "doi": "https://doi.org/10.1000/version-preprint",
+        "title": "Offline Integrity Multi Version Study",
+        "publication_year": 2023,
+        "authorships": [
+          {
+            "author": {"display_name": "Preprint Author"},
+            "institutions": [],
+            "countries": []
+          }
+        ],
+        "primary_location": {"source": {"display_name": "Fixture Preprint Server"}},
+        "cited_by_count": 1,
+        "open_access": {"oa_url": "https://fixture.invalid/version-preprint.pdf"},
+        "type": "preprint",
+        "language": "en",
+        "is_retracted": false,
+        "referenced_works": ["https://openalex.org/W_TARGET"]
+      },
+      {
+        "id": "https://openalex.org/W_VERSION_ARTICLE",
+        "doi": "https://doi.org/10.1000/version-article",
+        "title": "offline integrity: multi-version study",
+        "publication_year": 2024,
+        "authorships": [],
+        "primary_location": {"source": {"display_name": "Formal Fixture Journal"}},
+        "cited_by_count": 50,
+        "open_access": {"oa_url": null},
+        "abstract_inverted_index": {"Formal": [0], "version": [1], "abstract": [2]},
+        "type": "article",
+        "language": "en",
+        "is_retracted": false,
+        "referenced_works": []
+      }
+      ,
+      {
+        "id": "https://openalex.org/W_IRRELEVANT",
+        "doi": "https://doi.org/10.1000/irrelevant",
+        "title": "Unrelated materials science study",
+        "publication_year": 2026,
+        "authorships": [],
+        "primary_location": {"source": {"display_name": "Fixture Materials Journal"}},
+        "cited_by_count": 100000,
+        "open_access": {"oa_url": null},
+        "abstract_inverted_index": {"Completely": [0], "separate": [1], "evidence": [2]},
+        "type": "article",
+        "language": "en",
+        "is_retracted": false,
+        "referenced_works": []
+      },
+      {
+        "id": "https://openalex.org/W_RELEVANT_LOW",
+        "doi": "https://doi.org/10.1000/relevant-low",
+        "title": "Offline integrity relevant low citations",
+        "publication_year": 2024,
+        "authorships": [],
+        "primary_location": {"source": {"display_name": "Fixture Journal"}},
+        "cited_by_count": 10,
+        "open_access": {"oa_url": null},
+        "abstract_inverted_index": {"Offline": [0], "integrity": [1], "low": [2]},
+        "type": "article",
+        "language": "en",
+        "is_retracted": false,
+        "referenced_works": []
+      },
+      {
+        "id": "https://openalex.org/W_RELEVANT_MID",
+        "doi": "https://doi.org/10.1000/relevant-mid",
+        "title": "Offline integrity relevant medium citations",
+        "publication_year": 2024,
+        "authorships": [],
+        "primary_location": {"source": {"display_name": "Fixture Journal"}},
+        "cited_by_count": 50,
+        "open_access": {"oa_url": null},
+        "abstract_inverted_index": {"Offline": [0], "integrity": [1], "medium": [2]},
+        "type": "article",
+        "language": "en",
+        "is_retracted": false,
+        "referenced_works": []
+      }
+    ]
+  },
+  "crossref": {
+    "message": {
+      "total-results": 2,
+      "items": [
+        {
+          "DOI": "10.1000/shared",
+          "title": ["Crossref display title must not win"],
+          "author": [{"given": "Carol", "family": "Crossref"}],
+          "container-title": ["Crossref Fixture Journal"],
+          "volume": "12",
+          "issue": "3",
+          "page": "1-9",
+          "publisher": "Fixture Press",
+          "published": {"date-parts": [[2025, 1, 1]]},
+          "is-referenced-by-count": 9999,
+          "type": "journal-article",
+          "language": "en",
+          "abstract": "<jats:p>Crossref abstract must not win.</jats:p>",
+          "reference": [],
+          "update-to": []
+        },
+        {
+          "DOI": "10.1000/peer-review",
+          "title": ["Offline integrity editorial assessment"],
+          "author": [],
+          "container-title": ["Fixture Journal"],
+          "published": {"date-parts": [[2024, 1, 1]]},
+          "is-referenced-by-count": 70000,
+          "type": "peer-review",
+          "language": "en",
+          "abstract": "<jats:p>Offline integrity peer review abstract.</jats:p>",
+          "reference": [],
+          "update-to": []
+        }
+      ]
+    }
+  },
+  "semantic_scholar": {
+    "total": 2,
+    "data": [
+      {
+        "paperId": "S2_SHARED",
+        "externalIds": {"DOI": "10.1000/shared"},
+        "title": "S2 display title must not win",
+        "authors": [{"name": "Sam Semantic"}],
+        "year": 2026,
+        "citationCount": 88888,
+        "openAccessPdf": {"url": "https://fixture.invalid/s2-shared.pdf"},
+        "abstract": "S2 abstract must not win.",
+        "venue": "S2 Fixture Journal",
+        "publicationTypes": ["JournalArticle"]
+      },
+      {
+        "paperId": "S2_ISOLATED",
+        "externalIds": {"DOI": "10.1000/s2-isolated"},
+        "title": "Offline integrity Semantic Scholar isolated record",
+        "authors": [{"name": "Sam Semantic"}],
+        "year": 2025,
+        "citationCount": 60000,
+        "abstract": "Offline integrity Semantic Scholar abstract without references.",
+        "venue": "S2 Fixture Journal",
+        "publicationTypes": ["JournalArticle"]
+      }
+    ]
+  }
+}

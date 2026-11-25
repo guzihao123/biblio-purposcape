@@ -1,0 +1,64 @@
+{
+  "classification": [
+    "髓系代谢：巨噬细胞代谢重编程与 S1P 信号。",
+    "髓系迁移：IL-8/CXCR2、髓源抑制细胞与动态样本。",
+    "蛋白调控：乳酸化、MVP 与 PD-L1 稳定性。",
+    "领域综合：免疫微环境细胞通讯与耐药综述。"
+  ],
+  "comparison": [
+    {
+      "literature": "[1]",
+      "research_question": "巨噬细胞代谢与免疫耐药",
+      "data": "摘要未完整报告样本细节",
+      "method": "S1P 代谢机制与干预",
+      "findings": "NEK2/S1P 干预增强免疫检查点阻断疗效 [1]",
+      "limitation": "跨体系外推未由摘要确认",
+      "evidence": ["s1p_targeting"]
+    },
+    {
+      "literature": "[2]",
+      "research_question": "IL-8/CXCR2 与治疗应答",
+      "data": "治疗前后活检及循环指标",
+      "method": "单细胞测序与通路抑制",
+      "findings": "IL-8 关联较差应答，通路抑制增强抗 PD-L1 效果 [2]",
+      "limitation": "关联不等同于其他体系的预测效能",
+      "evidence": ["il8_association", "il8_targeting"]
+    },
+    {
+      "literature": "[3]",
+      "research_question": "乳酸化与 PD-L1 稳定性",
+      "data": "原位小鼠模型及分子实验",
+      "method": "测序、蛋白稳定性与药物干预",
+      "findings": "MVP 上调稳定 PD-L1，抑制乳酸化恢复敏感性 [3]",
+      "limitation": "与其他机制链的协同未由摘要确认",
+      "evidence": ["lactylation_mechanism", "lactylation_targeting"]
+    },
+    {
+      "literature": "[4]",
+      "research_question": "免疫微环境与耐药概览",
+      "data": "综述范围详见原摘要",
+      "method": "叙述性领域综合",
+      "findings": "细胞通讯网络参与免疫逃逸和耐药 [4]",
+      "limitation": "不能替代单一机制实验验证",
+      "evidence": ["microenvironment", "review_scope"]
+    }
+  ],
+  "gaps": [
+    {
+      "direction": "多机制对解",
+      "progress": "代谢、迁移与蛋白稳定性分别有机制证据",
+      "limitation": "不同研究设计之间缺少统一评价",
+      "evidence_text": "[1][2][3]",
+      "future_question": "如何分层连接三类机制并保留各自证据边界？",
+      "evidence": ["s1p_resistance", "il8_mdsc", "lactylation_mechanism"]
+    },
+    {
+      "direction": "动态分层",
+      "progress": "治疗前后样本与循环 IL-8 提供分层线索",
+      "limitation": "关联结果尚需在其他体系复核预测效能",
+      "evidence_text": "[2]",
+      "future_question": "如何同步评价循环指标与组织细胞状态？",
+      "evidence": ["il8_method", "il8_association"]
+    }
+  ]
+}

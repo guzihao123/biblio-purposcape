@@ -1,0 +1,346 @@
+{
+  "config": {
+    "argv": [
+      "/Users/crisprcas_9/.workbuddy/binaries/node/versions/22.22.2-6/bin/node",
+      "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/node_modules/.bin/playwright",
+      "test",
+      "--config=playwright.motion.config.ts",
+      "e2e/motion-components.spec.ts",
+      "e2e/motion.spec.ts"
+    ],
+    "configFile": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/playwright.motion.config.ts",
+    "rootDir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/test-results/motion-8027/playwright-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/e2e",
+        "testIgnore": [
+          "**/real-backend/**",
+          "**/task-browser-acceptance.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/test-results/motion-8027/playwright-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/e2e",
+        "snapshotDir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/e2e",
+        "testIgnore": [
+          "**/real-backend/**",
+          "**/task-browser-acceptance.spec.ts"
+        ],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5195",
+          "headless": true,
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "actionTimeout": 15000,
+          "navigationTimeout": 30000,
+          "screenshot": "only-on-failure",
+          "trace": "retain-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/motion-8027/acceptance-results.json"
+        }
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "test-results/motion-8027/acceptance-html",
+          "open": "never"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "motion-components.spec.ts",
+      "file": "motion-components.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "tabs, steps, panel, download and click ripple are real and selectable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 884,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:34:53.102Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d7e8b60715b8c318cf67-05720a2f58547ad1720e",
+          "file": "motion-components.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "narrow screens remove decorative transforms but keep functional indicator position",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 442,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:34:54.402Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d7e8b60715b8c318cf67-854b0322f38cc305f155",
+          "file": "motion-components.spec.ts",
+          "line": 41,
+          "column": 1
+        },
+        {
+          "title": "reduced-motion removes animation and sweep without blocking keyboard flow",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 493,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:34:54.851Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d7e8b60715b8c318cf67-1f9c907eab62237a6884",
+          "file": "motion-components.spec.ts",
+          "line": 60,
+          "column": 1
+        },
+        {
+          "title": "primary action remains reachable and keyboard operable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 798,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:34:55.349Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d7e8b60715b8c318cf67-d0389e08510051f8e2c6",
+          "file": "motion-components.spec.ts",
+          "line": 76,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "motion.spec.ts",
+      "file": "motion.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "page entry, buttons and selected cards expose full-power motion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1576,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:34:56.161Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "472f259022e25a651642-65d1886610fd09a9b484",
+          "file": "motion.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "reduced-motion removes decorative animation without blocking the primary flow",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 723,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:34:57.746Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "472f259022e25a651642-06c92bfa42ea22bb0496",
+          "file": "motion.spec.ts",
+          "line": 24,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-24T12:34:49.390Z",
+    "duration": 9141.471,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "generatedAt": "2026-11-24T15:38:16.842873+00:00",
+  "profile": "dev/acceptance/docker-test-profile",
+  "isolation": {
+    "composeProject": "purpose-landscape-web-test",
+    "httpPort": 8034,
+    "altHttpPort": 8035,
+    "productionPortNotUsed": 8000,
+    "dedicatedVolumes": [
+      "purpose-landscape-web-test_test-data",
+      "purpose-landscape-web-test_test-redis"
+    ],
+    "productionVolumesUntouched": [
+      "landscape-data",
+      "landscape-redis"
+    ],
+    "liveProviderEnvSet": false,
+    "env": {
+      "PURPOSE_LANDSCAPE_HCC_FIXTURES": "/app/fixtures/hcc-20261122",
+      "PYTHONPATH": "/app/backend"
+    }
+  },
+  "environment": {
+    "containerArch": "aarch64",
+    "hostArch": "arm64",
+    "python": "Python 3.11.18",
+    "node": "v22.23.5",
+    "denoInContainers": false,
+    "images": {
+      "backendTest": "sha256:fd8207644c0ee374c5575e3484932c1aa15129a33502f0d47cee60e4bad239b6",
+      "nodeTest": "sha256:c56d979f986488e2385f9ae3681ae0069b8ff6a2f8356d2af3262335944cfeb0"
+    }
+  },
+  "backend": {
+    "command": "python -m pytest -q -p no:cacheprovider",
+    "exitCode": 0,
+    "status": "passed",
+    "totals": {
+      "passed": 422,
+      "failed": 0,
+      "skipped": 4,
+      "errors": 0,
+      "warnings": 6
+    },
+    "summaryLine": "422 passed, 4 skipped, 6 warnings",
+    "knownFailures": [],
+    "unexpectedFailures": [],
+    "log": "logs/backend-pytest.log"
+  },
+  "node": {
+    "command": "node --experimental-strip-types --test sites/functions/task_store.test.mjs sites/functions/routes.test.mjs sites/functions/forward.test.mjs",
+    "exitCode": 0,
+    "totals": {
+      "tests": 41,
+      "pass": 41,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "log": "logs/node-tests.log"
+  },
+  "worker": {
+    "service": "worker (command: python worker.py)",
+    "registeredInTestRedis": true,
+    "rqWorkerKeys": [
+      "rq:worker:d408a29430fd4e8fa258e23fcd8ea35a"
+    ],
+    "productionRedisTouched": "no",
+    "log": "logs/worker.log"
+  },
+  "staticEntry": {
+    "baseUrl": "http://127.0.0.1:8034",
+    "checks": [
+      {
+        "path": "/",
+        "expected": 200,
+        "actual": 200,
+        "pass": true
+      },
+      {
+        "path": "/history",
+        "expected": 200,
+        "actual": 200,
+        "pass": true
+      },
+      {
+        "path": "/api/definitely-not-a-route",
+        "expected": 404,
+        "actual": 404,
+        "pass": true
+      }
+    ],
+    "allPassed": true
+  },
+  "logSanitization": {
+    "secretsFound": "none",
+    "logDir": "logs/"
+  },
+  "unverifiedBoundaries": [
+    "Live OpenAlex/Qwen acceptance paths are opt-in and were not executed; their tests self-skip without RUN_LIVE_OPENALEX_ACCEPTANCE / QWEN credentials.",
+    "PostgreSQL and RLS migrations were not executed; the fake-store/RLS contract test only reviews sites/schema.sql and the fixed-operation allowlist.",
+    "No cloud deployment, no Qoder Sites publish, no paid API calls were performed.",
+    "The worker was verified to register against the test Redis only; no end-to-end job was enqueued against the real stack in this profile (test_worker_e2e covers that offline via fakeredis inside the backend suite).",
+    "Container architecture is reported from platform.machine() inside the container; results are valid for that architecture only.",
+    "PyPI reachability is a build-time observation, not a conclusion: on 2026-11-24 pypi.org was unreachable from containers in this environment, so the build used a mirror index (PIP_INDEX_URL build ARG); the main line has since built successfully with the official index."
+  ]
+}

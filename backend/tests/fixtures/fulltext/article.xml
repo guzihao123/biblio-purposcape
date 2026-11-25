@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article xmlns:xlink="http://www.w3.org/1999/xlink">
+  <front>
+    <journal-meta><journal-title>Offline Fixture Journal</journal-title></journal-meta>
+    <article-meta>
+      <title-group><article-title>Offline synthetic article</article-title></title-group>
+      <article-version>accepted manuscript</article-version>
+    </article-meta>
+  </front>
+  <body>
+    <sec id="methods">
+      <title>Methods</title>
+      <p>Exact offline XML methods sentence.</p>
+      <sec id="cohort"><title>Cohort</title><p>Nested offline section sentence.</p></sec>
+    </sec>
+    <sec id="results"><title>Results</title><p>Offline result sentence without external evidence.</p></sec>
+  </body>
+  <back>
+    <sec id="data"><title>Data availability</title><p>All fixture data are local and synthetic.</p></sec>
+    <ref-list><ref><mixed-citation>Reference text must not enter the full text.</mixed-citation></ref></ref-list>
+  </back>
+</article>

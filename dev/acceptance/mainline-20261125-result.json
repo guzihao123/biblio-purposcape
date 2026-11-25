@@ -1,0 +1,82 @@
+{
+  "date": "2026-11-25",
+  "scope": "Mainline offline and isolated-test acceptance after parallel work-package integration",
+  "results": {
+    "backend_pytest": {
+      "command": ".venv/bin/python -m pytest -q -p no:cacheprovider backend/tests",
+      "passed": 435,
+      "failed": 0,
+      "skipped": 4
+    },
+    "function_deno": {
+      "type_check": "passed",
+      "passed": 50,
+      "failed": 0,
+      "import_map": "dev/import_map.json"
+    },
+    "artifact_remote_contract": {
+      "passed": 94,
+      "failed": 0,
+      "closed_gaps": ["G-1 remote authoritative bytes", "G-2 SHA-256 integrity channel", "G-3 JSON byte round trip"]
+    },
+    "model_failure_contract": {
+      "passed": 31,
+      "failed": 0,
+      "closed_gaps": ["D-01 Provider 429 bounded recovery", "D-02 bounded OpenAI timeout/connection retries"]
+    },
+    "render_config_contract": {
+      "overall": "STATIC_PASS",
+      "note": "Static declarations only; cloud verification remains unverified"
+    },
+    "docker_arm64": {
+      "image": "purpose-landscape-web-web:acceptance-20261125",
+      "build": "passed",
+      "frontend_api_base": "/api",
+      "sites_function_base_absent": true,
+      "production_fail_fast": "passed",
+      "http_smoke": {
+        "/api/health": 200,
+        "/": 200,
+        "/history": 200,
+        "unknown_api": 404,
+        "no_redis_startup": "passed"
+      }
+    },
+    "supabase_isolated_rls": {
+      "policy_upgrade": "13 policies active; no data deleted",
+      "report": "dev/acceptance/provider-live/rls-verification-20261124T172552Z-de3h2o.json",
+      "passed_cases": 9,
+      "blocked_cases": 1,
+      "blocked_reason": "Existing published Skill preserved; publish concurrency not claimed",
+      "verified": [
+        "same-owner artifacts and quota",
+        "cross-owner command matrix",
+        "18 audit-role write denials",
+        "revoked/expired read and write denial",
+        "session creation dual paths",
+        "transaction-scoped GUC reset",
+        "8-way revision CAS and answer rollback",
+        "8-way idempotent single quota charge",
+        "Skill role visibility and write denial"
+      ]
+    }
+  },
+  "unverified_or_pending": [
+    "linux/amd64 build and runtime",
+    "Render or Qoder Sites deployment and public URL",
+    "real Qoder Storage and real cross-container artifact download",
+    "deployment-generated _qoder/database.mjs adapter and worker-side GUC binding",
+    "full authoritative RQ jobs/progress/events migration and route/worker cutover",
+    "Skill publish concurrency in an empty published namespace",
+    "real Qwen/Kimi 401/429/timeout and billing behavior",
+    "PowerPoint desktop-specific animations and presenter view"
+  ],
+  "safety": {
+    "production_data_touched": false,
+    "test_data_deleted": false,
+    "non_run_data_modified": false,
+    "cloud_deployed": false,
+    "paid_model_called": false,
+    "secrets_written_to_reports": false
+  }
+}

@@ -1,0 +1,18 @@
+--- /Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/skill_runtime/scripts/search_papers.py	2026-11-22 23:55:28
++++ /Users/crisprcas_9/Documents/kimi/tasks/2026-11-24/18-57-04-e4d02b59/purpose-landscape-web/skill_runtime/scripts/search_papers.py	2026-11-24 19:15:38
+@@ -53,7 +53,14 @@
+             code = getattr(e, "code", None)
+             if code is not None and code not in (429, 500, 502, 503, 504):
+                 break
+-            time.sleep((10 if code == 429 else 1.5) * (i + 1))
++            wait = (10 if code == 429 else 1.5) * (i + 1)
++            # 429 时服务端 Retry-After 优先于固定退避（与 _fetch_s2 行为对齐），
++            # 但封顶 60s：Retry-After 是等待提示，不是无限等待许可
++            if code == 429 and isinstance(e, urllib.error.HTTPError) and e.headers:
++                retry_after = e.headers.get("Retry-After")
++                if retry_after and str(retry_after).isdigit():
++                    wait = min(int(retry_after), 60)
++            time.sleep(wait)
+     raise RuntimeError(str(last))
+ 
+ 

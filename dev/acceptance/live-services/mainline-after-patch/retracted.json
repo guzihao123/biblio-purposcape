@@ -1,0 +1,115 @@
+{
+  "query": [
+    "Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19 multinational registry analysis"
+  ],
+  "source": "openalex",
+  "total_hits": 3,
+  "retrieved_at": "2026-11-24T20:33:06",
+  "papers": [
+    {
+      "source": "openalex",
+      "id": "https://openalex.org/W3027680906",
+      "title": "RETRACTED: Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19: a multinational registry analysis",
+      "year": 2020,
+      "authors": [
+        "Mandeep R. Mehra",
+        "Sapan S. Desai",
+        "Frank Thomas Ruschitzka",
+        "Amit N. Patel"
+      ],
+      "venue": "The Lancet",
+      "cited_by_count": 1316,
+      "doi": "https://doi.org/10.1016/s0140-6736(20)31180-6",
+      "url": "https://doi.org/10.1016/s0140-6736(20)31180-6",
+      "oa_url": "http://www.thelancet.com/article/S0140673620311806/pdf",
+      "pdf_url": null,
+      "abstract": null,
+      "type": "article",
+      "language": "en",
+      "institutions": [
+        "Brigham and Women's Hospital",
+        "Harvard University",
+        "University Hospital Zurich",
+        "University of Utah",
+        "HCA Healthcare"
+      ],
+      "countries": [
+        "US",
+        "CH"
+      ],
+      "is_retracted": true,
+      "referenced_works": [
+        "https://openalex.org/W2007760422",
+        "https://openalex.org/W2017194393",
+        "https://openalex.org/W2119425860",
+        "https://openalex.org/W2615242605",
+        "https://openalex.org/W2741252257",
+        "https://openalex.org/W3008763357",
+        "https://openalex.org/W3010673910",
+        "https://openalex.org/W3010930696",
+        "https://openalex.org/W3010992334",
+        "https://openalex.org/W3011384508",
+        "https://openalex.org/W3011976215",
+        "https://openalex.org/W3012747666",
+        "https://openalex.org/W3013231340",
+        "https://openalex.org/W3013619034",
+        "https://openalex.org/W3015547183",
+        "https://openalex.org/W3015907249",
+        "https://openalex.org/W3016271633",
+        "https://openalex.org/W3016449286",
+        "https://openalex.org/W3017125154",
+        "https://openalex.org/W3020239101",
+        "https://openalex.org/W3022358203",
+        "https://openalex.org/W3023826646",
+        "https://openalex.org/W3025048372",
+        "https://openalex.org/W3025795175",
+        "https://openalex.org/W3025972894",
+        "https://openalex.org/W3033716792",
+        "https://openalex.org/W3033884900",
+        "https://openalex.org/W3036192231",
+        "https://openalex.org/W3045957828",
+        "https://openalex.org/W3087588044",
+        "https://openalex.org/W3094553382",
+        "https://openalex.org/W3183279869",
+        "https://openalex.org/W6776564347"
+      ],
+      "evidence_level": "A"
+    },
+    {
+      "source": "openalex",
+      "id": "https://openalex.org/W3035365037",
+      "title": "Retraction—Hydroxychloroquine or chloroquine with or without a macrolide for treatment of COVID-19: a multinational registry analysis",
+      "year": 2020,
+      "authors": [
+        "Mandeep R. Mehra",
+        "Frank Thomas Ruschitzka",
+        "Amit N. Patel"
+      ],
+      "venue": "The Lancet",
+      "cited_by_count": 632,
+      "doi": "https://doi.org/10.1016/s0140-6736(20)31324-6",
+      "url": "https://doi.org/10.1016/s0140-6736(20)31324-6",
+      "oa_url": "http://www.thelancet.com/article/S0140673620313246/pdf",
+      "pdf_url": null,
+      "abstract": null,
+      "type": "retraction",
+      "language": "en",
+      "institutions": [
+        "Brigham and Women's Hospital",
+        "Harvard University",
+        "University Hospital Zurich",
+        "University of Utah",
+        "HCA Healthcare"
+      ],
+      "countries": [
+        "US",
+        "CH"
+      ],
+      "is_retracted": true,
+      "referenced_works": [
+        "https://openalex.org/W3027680906"
+      ],
+      "evidence_level": "A"
+    }
+  ]
+}

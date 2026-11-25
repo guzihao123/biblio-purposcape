@@ -1,0 +1,194 @@
+--- a/test_live_services.py	2026-11-24 19:25:10
++++ b/test_live_services.py	2026-11-24 19:25:10
+@@ -25,6 +25,17 @@
+     'Hydroxychloroquine or chloroquine with or without a macrolide '
+     'for treatment of COVID-19 multinational registry analysis'
+ )
++# Deterministic retraction sampling. The original version of this test assumed
++# OpenAlex relevance ordering would rank the retracted original first; the
++# 2026-11-24 live run disproved that assumption — the top relevance hit was a
++# genuinely non-retracted 'Faculty Opinions recommendation' peer-review
++# commentary (W4213234079), and the test failed on its is_retracted assertion.
++# The rewrite keeps the exact same query and only appends the deterministic
++# is_retracted:true filter for the retracted scenario, so the sample is the
++# API's retraction signal, not ranking luck. The commentary itself is covered
++# by test_retraction_commentary_type_policy_offline below: its pool exclusion
++# is the peer-review type policy, never a retraction judgement.
++RETRACTED_FILTER_FRAGMENT = ',is_retracted:true'
+ 
+ LIVE_OPENALEX = pytest.mark.skipif(
+     os.environ.get('RUN_LIVE_OPENALEX_ACCEPTANCE') != '1',
+@@ -61,10 +72,32 @@
+     return ChatModel(client=client, model=os.environ.get('QWEN_MODEL') or 'qwen-plus')
+ 
+ 
++def _inject_retracted_filter(url):
++    """Append is_retracted:true to the OpenAlex filter parameter only.
++
++    Test-side URL transform: the query string stays identical to
++    RETRACTED_QUERY and no production retrieval code is touched.
++    """
++    parsed = urllib.parse.urlsplit(url)
++    pairs = urllib.parse.parse_qsl(parsed.query)
++    rebuilt = [
++        (key, value + RETRACTED_FILTER_FRAGMENT
++         if key == 'filter' and 'is_retracted:true' not in value else value)
++        for key, value in pairs
++    ]
++    return urllib.parse.urlunsplit(
++        parsed._replace(query=urllib.parse.urlencode(rebuilt))
++    )
++
++
+ @LIVE_OPENALEX
+ def test_live_openalex_five_records_metadata_retraction_and_log(tmp_path, monkeypatch):
+-    """Retrieve exactly four ordinary records and one genuinely retracted record."""
++    """Retrieve four ordinary records and two genuinely retracted records.
+ 
++    The retracted scenario fetches the original retracted research plus its
++    retraction notice (limit 2, deterministic is_retracted:true filter).
++    """
++
+     output_dir = Path(os.environ.get('LIVE_ACCEPTANCE_ARTIFACT_DIR', str(tmp_path)))
+     output_dir.mkdir(parents=True, exist_ok=True)
+     module = _search_module()
+@@ -81,6 +114,7 @@
+     }
+     real_urlopen = urllib.request.urlopen
+     real_fetch = module.fetch
++    inject_filter = {'active': False}
+ 
+     def counting_urlopen(request, *args, **kwargs):
+         url = request.full_url if hasattr(request, 'full_url') else str(request)
+@@ -101,6 +135,8 @@
+         return response
+ 
+     def capturing_fetch(url, *args, **kwargs):
++        if inject_filter['active']:
++            url = _inject_retracted_filter(url)
+         text = real_fetch(url, *args, **kwargs)
+         raw_payloads.append(json.loads(text))
+         return text
+@@ -109,6 +145,7 @@
+     monkeypatch.setattr(module, 'fetch', capturing_fetch)
+ 
+     def retrieve(query, limit, from_year, stem):
++        inject_filter['active'] = stem == 'retracted'
+         logical_requests.append({'query_kind': stem, 'requested_records': limit})
+         output = output_dir / '{}.json'.format(stem)
+         args = argparse.Namespace(
+@@ -135,15 +172,23 @@
+ 
+     try:
+         ordinary, ordinary_raw = retrieve(NORMAL_QUERY, 4, 2023, 'ordinary')
+-        retracted, retracted_raw = retrieve(RETRACTED_QUERY, 1, None, 'retracted')
++        retracted, retracted_raw = retrieve(RETRACTED_QUERY, 2, None, 'retracted')
+         assert len(ordinary['papers']) == 4
+-        assert len(retracted['papers']) == 1
+-        assert retracted_raw['results'][0].get('is_retracted') is True
++        assert len(retracted['papers']) == 2
++        assert all(
++            work.get('is_retracted') is True for work in retracted_raw['results']
++        )
++        retracted_titles = [
++            (work.get('title') or '').casefold()
++            for work in retracted_raw['results']
++        ]
++        assert any(not title.startswith('retraction') for title in retracted_titles)
++        assert any(title.startswith('retraction') for title in retracted_titles)
+ 
+         raw_works = ordinary_raw['results'] + retracted_raw['results']
+         papers = ordinary['papers'] + retracted['papers']
+-        assert len(papers) == len(raw_works) == 5
+-        assert len({paper['id'] for paper in papers}) == 5
++        assert len(papers) == len(raw_works) == 6
++        assert len({paper['id'] for paper in papers}) == 6
+         by_id = {work.get('id'): work for work in raw_works}
+         for paper in papers:
+             work = by_id[paper['id']]
+@@ -151,7 +196,8 @@
+             assert paper['title'] == (work.get('title') or work.get('display_name'))
+             assert paper['year'] == work.get('publication_year')
+             assert paper['doi'] == work.get('doi')
+-            assert paper['type'] in {'article', 'review', 'preprint'}
++            if not paper['is_retracted']:
++                assert paper['type'] in {'article', 'review', 'preprint'}
+             assert paper['abstract'] == module.abstract_from_inverted(
+                 work.get('abstract_inverted_index')
+             )
+@@ -159,7 +205,9 @@
+ 
+         merged = merge_records(papers, limit=5, from_year=None, mode='A')
+         retained_ids = {paper['id'] for paper in merged['papers']}
+-        assert retracted['papers'][0]['id'] not in retained_ids
++        assert all(
++            paper['id'] not in retained_ids for paper in retracted['papers']
++        )
+         assert all(not paper['is_retracted'] for paper in merged['papers'])
+         assert [paper['ref_no'] for paper in merged['papers']] == list(
+             range(1, merged['count'] + 1)
+@@ -173,7 +221,7 @@
+         assert log.count('- Hit count:') == 2
+         assert log.count('- Returned count:') == 2
+         assert '- Returned count: 4' in log
+-        assert '- Returned count: 1' in log
++        assert '- Returned count: 2' in log
+ 
+         accepted_path = output_dir / 'accepted_papers.json'
+         accepted_path.write_text(
+@@ -183,7 +231,7 @@
+             'result': 'passed',
+             'paper_count': len(papers),
+             'retained_count': merged['count'],
+-            'retracted_input_id': retracted['papers'][0]['id'],
++            'retracted_input_ids': [paper['id'] for paper in retracted['papers']],
+             'retracted_excluded': True,
+             'empty_abstract_ids': [paper['id'] for paper in papers if not paper['abstract']],
+             'accepted_papers_path': str(accepted_path),
+@@ -256,3 +304,46 @@
+         paper = by_ref.get(claim.get('ref'))
+         assert paper is not None
+         assert verbatim_quote(paper['abstract'], claim.get('quote'))
++
++
++def test_retraction_commentary_type_policy_offline():
++    """Faculty Opinions commentary: peer-review type policy, not retraction.
++
++    Recorded real metadata from the 2026-11-24 live run (the relevance top hit
++    that exposed the wrong ordering assumption in the original live test).
++    Offline test: no network, no fixtures acting as provider responses — the
++    literals are bibliographic facts observed from the real API. The assertion
++    locks in that title association with a retracted paper never marks this
++    commentary retracted, and that its exclusion from paper pools is the
++    peer-review type policy only.
++    """
++    from app.search import _normalize_record
++
++    commentary = {
++        'source': 'openalex',
++        'id': 'https://openalex.org/W4213234079',
++        'title': (
++            'Faculty Opinions recommendation of Hydroxychloroquine or '
++            'chloroquine with or without a macrolide for treatment of '
++            'COVID-19: a multinational registry analysis.'
++        ),
++        'year': 2020,
++        'authors': ['Faculty Opinions'],
++        'venue': 'Faculty Opinions',
++        'cited_by_count': 0,
++        'doi': 'https://doi.org/10.3410/f.737996380.793574823',
++        'url': 'https://doi.org/10.3410/f.737996380.793574823',
++        'oa_url': None,
++        'pdf_url': None,
++        'abstract': 'Commentary on the retracted registry analysis.',
++        'type': 'peer-review',
++        'is_retracted': False,
++        'referenced_works': [],
++    }
++
++    normalized = _normalize_record(commentary)
++    assert normalized['is_retracted'] is False
++
++    pool = merge_records([commentary], limit=5, from_year=None, mode='A')
++    assert pool['count'] == 0
++    assert commentary['id'] not in {paper['id'] for paper in pool['papers']}

@@ -1,0 +1,12 @@
+{
+  "migration": "passed",
+  "same_owner_create_and_read": true,
+  "cross_owner_task_read_returns_zero_rows": true,
+  "cross_owner_task_insert_rejected": true,
+  "cross_owner_answer_insert_rejected": true,
+  "app_user_skill_write_rejected": true,
+  "expired_session_insert_rejected": true,
+  "audit_reader_cross_session_read_only": true,
+  "owner_answer_reread": true,
+  "no_data_deleted": true
+}

@@ -1,0 +1,53 @@
+{
+  "summary_pages": [
+    23,
+    24
+  ],
+  "visuals": [
+    {
+      "page": 6,
+      "kind": "chart",
+      "name": "年度趋势（真实聚合）",
+      "expected_text": [
+        "年度趋势（真实聚合）"
+      ]
+    },
+    {
+      "page": 7,
+      "kind": "chart",
+      "name": "主题分布（真实聚合）",
+      "expected_text": [
+        "主题分布（真实聚合）"
+      ]
+    },
+    {
+      "page": 3,
+      "kind": "diagram",
+      "name": "研究背景与科学问题",
+      "expected_text": [
+        "研究对象",
+        "作用链条"
+      ],
+      "min_shapes": 4
+    },
+    {
+      "page": 12,
+      "kind": "diagram",
+      "name": "核心方法与技术路线",
+      "expected_text": [
+        "核心方法"
+      ],
+      "min_shapes": 4
+    },
+    {
+      "page": 22,
+      "kind": "diagram",
+      "name": "发展趋势｜不足→潜在突破",
+      "expected_text": [
+        "不足",
+        "突破"
+      ],
+      "min_shapes": 4
+    }
+  ]
+}

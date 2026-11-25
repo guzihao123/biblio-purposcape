@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "rule": "first_appearance",
+  "draft": "C1_引言.md",
+  "drafts": [
+    "C1_引言.md"
+  ],
+  "generated_at": "2026-11-24T12:34:38.525522+00:00",
+  "display_to_ref": {
+    "1": 2,
+    "2": 4,
+    "3": 1,
+    "4": 3
+  },
+  "cited_count": 4,
+  "uncited_reference_count": 0
+}

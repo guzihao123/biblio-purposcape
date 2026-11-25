@@ -1,0 +1,8 @@
+{
+  "theme": "full-power",
+  "background": "#070b16",
+  "accent": "#63b3ff",
+  "accent_2": "#7ef0c8",
+  "reduced_motion": true,
+  "narrow_screen_fallback": true
+}

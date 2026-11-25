@@ -1,0 +1,724 @@
+{
+  "scenario": "c-pair-ppt",
+  "task_id": "b2f14afb-74c3-496a-989d-e94ca7041eb4",
+  "states": [
+    "searching",
+    "dashboard_ready",
+    "adjusting",
+    "generating",
+    "done"
+  ],
+  "rq": {
+    "search": {
+      "worker_class": "ProtectedSimpleWorker",
+      "burst": true,
+      "job_ids": [
+        "50ba9ae1-d10d-4684-85f4-b82acf10c668"
+      ],
+      "job_statuses": [
+        "finished"
+      ],
+      "job_func_names": [
+        "app.queueing.run_stage"
+      ],
+      "queue_count_after": 0,
+      "log_file": "c-pair-ppt-search-worker.log",
+      "log_text": "2026-11-25 07:56:38,029 rq.worker INFO Worker offline-e2e-c-pair-ppt-search-66fff5a2: started with PID 13241, version 2.8.0\n2026-11-25 07:56:38,029 rq.worker INFO Worker offline-e2e-c-pair-ppt-search-66fff5a2: subscribing to channel rq:pubsub:offline-e2e-c-pair-ppt-search-66fff5a2\n2026-11-25 07:56:38,029 rq.worker INFO *** Listening on landscape...\n2026-11-25 07:56:38,030 rq.worker INFO Worker offline-e2e-c-pair-ppt-search-66fff5a2: cleaning registries for queue: landscape\n2026-11-25 07:56:38,031 rq.worker INFO landscape: app.queueing.run_stage('b2f14afb-74c3-496a-989d-e94ca7041eb4', 'search') (50ba9ae1-d10d-4684-85f4-b82acf10c668)\n2026-11-25 07:56:38,291 rq.worker INFO Successfully completed app.queueing.run_stage('b2f14afb-74c3-496a-989d-e94ca7041eb4', 'search') job in 0:00:00.259013s on worker offline-e2e-c-pair-ppt-search-66fff5a2\n2026-11-25 07:56:38,292 rq.worker INFO landscape: Job OK (50ba9ae1-d10d-4684-85f4-b82acf10c668)\n2026-11-25 07:56:38,292 rq.worker INFO Result is kept for 500 seconds\n2026-11-25 07:56:38,293 rq.worker INFO Worker offline-e2e-c-pair-ppt-search-66fff5a2: done, quitting\n2026-11-25 07:56:38,293 rq.worker INFO Worker offline-e2e-c-pair-ppt-search-66fff5a2: unsubscribing from channel rq:pubsub:offline-e2e-c-pair-ppt-search-66fff5a2\n"
+    },
+    "generate": {
+      "worker_class": "ProtectedSimpleWorker",
+      "burst": true,
+      "job_ids": [
+        "074a3ce2-3a68-4023-a667-d9eac1a21242"
+      ],
+      "job_statuses": [
+        "finished"
+      ],
+      "job_func_names": [
+        "app.queueing.run_stage"
+      ],
+      "queue_count_after": 0,
+      "log_file": "c-pair-ppt-generate-worker.log",
+      "log_text": "2026-11-25 07:56:38,310 rq.worker INFO Worker offline-e2e-c-pair-ppt-generate-42d08be6: started with PID 13241, version 2.8.0\n2026-11-25 07:56:38,310 rq.worker INFO Worker offline-e2e-c-pair-ppt-generate-42d08be6: subscribing to channel rq:pubsub:offline-e2e-c-pair-ppt-generate-42d08be6\n2026-11-25 07:56:38,311 rq.worker INFO *** Listening on landscape...\n2026-11-25 07:56:38,311 rq.worker INFO Worker offline-e2e-c-pair-ppt-generate-42d08be6: cleaning registries for queue: landscape\n2026-11-25 07:56:38,312 rq.worker INFO landscape: app.queueing.run_stage('b2f14afb-74c3-496a-989d-e94ca7041eb4', 'generate') (074a3ce2-3a68-4023-a667-d9eac1a21242)\n2026-11-25 07:56:38,648 rq.worker INFO Successfully completed app.queueing.run_stage('b2f14afb-74c3-496a-989d-e94ca7041eb4', 'generate') job in 0:00:00.334397s on worker offline-e2e-c-pair-ppt-generate-42d08be6\n2026-11-25 07:56:38,648 rq.worker INFO landscape: Job OK (074a3ce2-3a68-4023-a667-d9eac1a21242)\n2026-11-25 07:56:38,648 rq.worker INFO Result is kept for 500 seconds\n2026-11-25 07:56:38,649 rq.worker INFO Worker offline-e2e-c-pair-ppt-generate-42d08be6: done, quitting\n2026-11-25 07:56:38,649 rq.worker INFO Worker offline-e2e-c-pair-ppt-generate-42d08be6: unsubscribing from channel rq:pubsub:offline-e2e-c-pair-ppt-generate-42d08be6\n"
+    }
+  },
+  "checkpoints": {
+    "search": {
+      "stage": "search",
+      "limited_count": 2,
+      "unlimited_count": 3,
+      "graph_artifacts": 6,
+      "storage_synced": 0,
+      "input_hash": "5c5e50a13211e253026f83414f85ab26ea512cd6669ef9b56f653137883276cd",
+      "timestamp": "2026-11-24T23:56:38.287349+00:00"
+    },
+    "generate": {
+      "stage": "generate",
+      "clean": true,
+      "failures": [],
+      "warnings": [],
+      "storage_synced": 0,
+      "combined_delivered": true,
+      "linkage": {
+        "passed": true,
+        "gap_consistent": true,
+        "initial_duplicates": 0,
+        "remaining_duplicates": 0
+      },
+      "input_hash": "80c54fa73480dcdb3518270adb34eaf0a21437655a9857749db7e59f189ed838",
+      "timestamp": "2026-11-24T23:56:38.645223+00:00"
+    }
+  },
+  "database": {
+    "state": "done",
+    "next_card": null,
+    "jobs": [
+      {
+        "id": "17683ee1-c857-4aa6-a67b-3e2193d0b961",
+        "kind": "generate",
+        "status": "completed",
+        "answer_id": 6
+      },
+      {
+        "id": "aa7b5b63-eb9a-4ea5-aa96-a65a943394c8",
+        "kind": "search",
+        "status": "completed",
+        "answer_id": 4
+      }
+    ],
+    "answers": [
+      {
+        "card_id": "direction",
+        "result_state": "collecting_mode",
+        "next_card": "mode",
+        "job_id": null
+      },
+      {
+        "card_id": "mode",
+        "result_state": "collecting_terms",
+        "next_card": "terms",
+        "job_id": null
+      },
+      {
+        "card_id": "terms",
+        "result_state": "collecting_years",
+        "next_card": "years",
+        "job_id": null
+      },
+      {
+        "card_id": "years",
+        "result_state": "searching",
+        "next_card": null,
+        "job_id": "aa7b5b63-eb9a-4ea5-aa96-a65a943394c8"
+      },
+      {
+        "card_id": "adjustment",
+        "result_state": "adjusting",
+        "next_card": "delivery",
+        "job_id": null
+      },
+      {
+        "card_id": "delivery",
+        "result_state": "generating",
+        "next_card": null,
+        "job_id": "17683ee1-c857-4aa6-a67b-3e2193d0b961"
+      }
+    ],
+    "events": [
+      {
+        "kind": "terms_candidates",
+        "payload": {
+          "direction": "城市内涝与地下车库韧性",
+          "mode": "C",
+          "options": [],
+          "source": "model_openalex"
+        }
+      },
+      {
+        "kind": "queued",
+        "payload": {
+          "stage": "search",
+          "input_hash": "5c5e50a13211e253026f83414f85ab26ea512cd6669ef9b56f653137883276cd",
+          "timestamp": "2026-11-24T23:56:38.022148+00:00"
+        }
+      },
+      {
+        "kind": "started",
+        "payload": {
+          "stage": "search",
+          "input_hash": "5c5e50a13211e253026f83414f85ab26ea512cd6669ef9b56f653137883276cd",
+          "timestamp": "2026-11-24T23:56:38.032714+00:00"
+        }
+      },
+      {
+        "kind": "checkpoint",
+        "payload": {
+          "stage": "search",
+          "limited_count": 2,
+          "unlimited_count": 3,
+          "graph_artifacts": 6,
+          "storage_synced": 0,
+          "input_hash": "5c5e50a13211e253026f83414f85ab26ea512cd6669ef9b56f653137883276cd",
+          "timestamp": "2026-11-24T23:56:38.287349+00:00"
+        }
+      },
+      {
+        "kind": "completed",
+        "payload": {
+          "stage": "search",
+          "input_hash": "5c5e50a13211e253026f83414f85ab26ea512cd6669ef9b56f653137883276cd",
+          "timestamp": "2026-11-24T23:56:38.289815+00:00",
+          "message": "双范围检索、分析与七类图谱已生成"
+        }
+      },
+      {
+        "kind": "adjustment_requested",
+        "payload": {
+          "previous_value": null,
+          "selected": [],
+          "continue": true
+        }
+      },
+      {
+        "kind": "queued",
+        "payload": {
+          "stage": "generate",
+          "input_hash": "80c54fa73480dcdb3518270adb34eaf0a21437655a9857749db7e59f189ed838",
+          "timestamp": "2026-11-24T23:56:38.305440+00:00"
+        }
+      },
+      {
+        "kind": "started",
+        "payload": {
+          "stage": "generate",
+          "input_hash": "80c54fa73480dcdb3518270adb34eaf0a21437655a9857749db7e59f189ed838",
+          "timestamp": "2026-11-24T23:56:38.314139+00:00"
+        }
+      },
+      {
+        "kind": "checkpoint",
+        "payload": {
+          "stage": "generate",
+          "clean": true,
+          "failures": [],
+          "warnings": [],
+          "storage_synced": 0,
+          "combined_delivered": true,
+          "linkage": {
+            "passed": true,
+            "gap_consistent": true,
+            "initial_duplicates": 0,
+            "remaining_duplicates": 0
+          },
+          "input_hash": "80c54fa73480dcdb3518270adb34eaf0a21437655a9857749db7e59f189ed838",
+          "timestamp": "2026-11-24T23:56:38.645223+00:00"
+        }
+      },
+      {
+        "kind": "completed",
+        "payload": {
+          "stage": "generate",
+          "input_hash": "80c54fa73480dcdb3518270adb34eaf0a21437655a9857749db7e59f189ed838",
+          "timestamp": "2026-11-24T23:56:38.646610+00:00",
+          "message": "C1 与 C2 已分别生成并复核，真实衔接门禁通过，合并交付已完成"
+        }
+      }
+    ],
+    "progress": {
+      "stage": "generate",
+      "message": "C1 与 C2 已分别生成并复核，真实衔接门禁通过，合并交付已完成",
+      "input_hash": "80c54fa73480dcdb3518270adb34eaf0a21437655a9857749db7e59f189ed838",
+      "checkpoint": {
+        "stage": "generate",
+        "clean": true,
+        "failures": [],
+        "warnings": [],
+        "storage_synced": 0,
+        "combined_delivered": true,
+        "linkage": {
+          "passed": true,
+          "gap_consistent": true,
+          "initial_duplicates": 0,
+          "remaining_duplicates": 0
+        },
+        "input_hash": "80c54fa73480dcdb3518270adb34eaf0a21437655a9857749db7e59f189ed838",
+        "timestamp": "2026-11-24T23:56:38.645223+00:00"
+      },
+      "traceback": null
+    }
+  },
+  "search_requests": [
+    {
+      "terms": [
+        "urban flooding",
+        "underground garage"
+      ],
+      "from_year": 2020,
+      "mode": "C1"
+    }
+  ],
+  "offline_model_calls": [
+    {
+      "stage": "classify",
+      "mode": null,
+      "paper_refs": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "stage": "factor_votes",
+      "mode": null,
+      "paper_refs": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "stage": "relations",
+      "mode": null,
+      "paper_refs": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "stage": "classify",
+      "mode": null,
+      "paper_refs": [
+        1,
+        2
+      ]
+    },
+    {
+      "stage": "factor_votes",
+      "mode": null,
+      "paper_refs": [
+        1,
+        2
+      ]
+    },
+    {
+      "stage": "relations",
+      "mode": null,
+      "paper_refs": [
+        1,
+        2
+      ]
+    },
+    {
+      "stage": "components",
+      "mode": "C1",
+      "paper_refs": [
+        null,
+        null
+      ]
+    },
+    {
+      "stage": "body",
+      "mode": "C1",
+      "paper_refs": [
+        null,
+        null
+      ]
+    },
+    {
+      "stage": "components",
+      "mode": "C2",
+      "paper_refs": [
+        null,
+        null
+      ]
+    },
+    {
+      "stage": "body",
+      "mode": "C2",
+      "paper_refs": [
+        null,
+        null
+      ]
+    }
+  ],
+  "verification": {
+    "C1": "交付前脚本复核报告 verify_report.txt（预置脚本 scripts/verify_delivery.py）\n交付正文: C1_引言.md ｜ 论文池: papers.json (2篇) ｜ 台账: 2条 ｜ 字数区间: 800-1200\n============================================================\n[PASS] ①证据等级：台账 2 条逐篇核对 evidence_level；全部一致\n[PASS] ③摘要通道：2/2 条摘要原句逐字命中（默认必过）\n[PASS] ③全文通道：0/0 条全文原句在指定页/节逐字命中\n[PASS] ②B级据摘要标注：含B级引用论断句 7 个，均带据摘要/部分据摘要\n[PASS] ④数字绑定台账：绑定台账原句 0 个；待人工确认 0 个（须交付说明披露并逐条人工判定）\n[PASS] ⑤字数：正文 CJK 汉字+英文词=972（区间800-1200，不含参考文献）\n[PASS] ⑥参考文献完整性：正文引用2编号均有同号条目；条目2条均挂ref_no；无撤稿；交付序号按首次出现连续且已映射ref_no；通过\n[PASS] ⑦无摘要不得被正文引用：正文引用2编号均有摘要；池内无摘要[]仅可进参考文献；通过\n[PASS] ⑧模式形态(--mode C1)：有 正文引用与证据台账均不得为空；有 正文引用均有台账覆盖（缺 []）；有 参考文献列表不得为空；有 段落卡 4–6 张（实得 5）；有 引言逻辑框架；有 段落卡职能「背景重要性」；有 段落卡职能「研究进展」；有 段落卡职能「现有研究不足」；有 段落卡职能「研究思路与方法」；有 段落卡职能「研究贡献」；有 Research Gap 分析表（精确表头、完整数据行及池内 [n] 证据）；有 完整英文或中文引言；有 完整引言正文非空且含引用；有 完整引言五段结构（实得 5 段）；有 完整引言第三段写现有研究不足并含池内 [n] 证据；有 完整引言第四段以本文思路与方法回应空白；有 完整引言第五段以研究贡献回应空白；有 写作逻辑和学术质量检查\n============================================================\n④ 数字→台账原句 绑定明细:\n③ 全文通道明细（双轨证据链，2026-11-22 增）:\n============================================================\n总结论: 全部 9 项无失败\n",
+    "C2": "交付前脚本复核报告 verify_report.txt（预置脚本 scripts/verify_delivery.py）\n交付正文: C2_文献综述.md ｜ 论文池: papers.json (2篇) ｜ 台账: 2条 ｜ 字数区间: 800-1200\n============================================================\n[PASS] ①证据等级：台账 2 条逐篇核对 evidence_level；全部一致\n[PASS] ③摘要通道：2/2 条摘要原句逐字命中（默认必过）\n[PASS] ③全文通道：0/0 条全文原句在指定页/节逐字命中\n[PASS] ②B级据摘要标注：含B级引用论断句 11 个，均带据摘要/部分据摘要\n[PASS] ④数字绑定台账：绑定台账原句 0 个；待人工确认 0 个（须交付说明披露并逐条人工判定）\n[PASS] ⑤字数：正文 CJK 汉字+英文词=1187（区间800-1200，不含参考文献）\n[PASS] ⑥参考文献完整性：正文引用2编号均有同号条目；条目2条均挂ref_no；无撤稿；交付序号按首次出现连续且已映射ref_no；通过\n[PASS] ⑦无摘要不得被正文引用：正文引用2编号均有摘要；池内无摘要[]仅可进参考文献；通过\n[PASS] ⑧模式形态(--mode C2)：有 正文引用与证据台账均不得为空；有 正文引用均有台账覆盖（缺 []）；有 参考文献列表不得为空；有 独立综述构件「研究主题与检索范围」；有 独立综述构件「关键词和检索策略」；有 独立综述构件「代表性文献清单」；有 独立综述构件「文献分类框架」；有 独立综述构件「完整综述文本」；有 独立综述构件「未来研究方向」；有 七维分类「理论基础」位于分类框架内；有 七维分类「研究对象」位于分类框架内；有 七维分类「研究问题」位于分类框架内；有 七维分类「技术方法」位于分类框架内；有 七维分类「数据与实验」位于分类框架内；有 七维分类「研究结论」位于分类框架内；有 七维分类「研究局限」位于分类框架内；有 不同研究方向的综合分析；有 完整综述正文非空且含引用；有 完整综述纳入研究空白及池内 [n] 证据；有 主要技术路线横向比较；有 现有研究不足/局限；有 六列文献比较表（精确表头且至少一行完整数据）；有 五列研究空白分析表（精确表头、完整数据行及池内 [n] 证据）；有 C2 独立文献综述而非讨论\n============================================================\n④ 数字→台账原句 绑定明细:\n③ 全文通道明细（双轨证据链，2026-11-22 增）:\n============================================================\n总结论: 全部 9 项无失败\n",
+    "combined": "交付前脚本复核报告 verify_report.txt（预置脚本 scripts/verify_delivery.py）\n交付正文: 综述初稿.md ｜ 论文池: papers.json (2篇) ｜ 台账: 4条 ｜ 字数区间: 1500-2500\n============================================================\n[PASS] ①证据等级：台账 4 条逐篇核对 evidence_level；全部一致\n[PASS] ③摘要通道：4/4 条摘要原句逐字命中（默认必过）\n[PASS] ③全文通道：0/0 条全文原句在指定页/节逐字命中\n[PASS] ②B级据摘要标注：含B级引用论断句 18 个，均带据摘要/部分据摘要\n[PASS] ④数字绑定台账：绑定台账原句 0 个；待人工确认 0 个（须交付说明披露并逐条人工判定）\n[PASS] ⑤字数：正文 CJK 字数=2158（区间1500-2500，不含参考文献）\n[PASS] ⑥参考文献完整性：正文引用2编号均有同号条目；条目2条均挂ref_no；无撤稿；交付序号按首次出现连续且已映射ref_no；通过\n[PASS] ⑦无摘要不得被正文引用：正文引用2编号均有摘要；池内无摘要[]仅可进参考文献；通过\n============================================================\n④ 数字→台账原句 绑定明细:\n③ 全文通道明细（双轨证据链，2026-11-22 增）:\n============================================================\n总结论: 全部 8 项无失败\n"
+  },
+  "office_validation": {
+    "format": "pptx",
+    "zip_container": true,
+    "slides": 12
+  },
+  "linkage": {
+    "acceptance_linkage_returncode": 0,
+    "acceptance_linkage_report": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/worker_linkage_verify_report.txt",
+    "acceptance_linkage_report_text": "交付前脚本复核报告 verify_report.txt（预置脚本 scripts/verify_delivery.py）\n交付正文: C2_文献综述.md ｜ 论文池: papers.json (2篇) ｜ 台账: 2条 ｜ 字数区间: 800-1200\n============================================================\n[PASS] ①证据等级：台账 2 条逐篇核对 evidence_level；全部一致\n[PASS] ③摘要通道：2/2 条摘要原句逐字命中（默认必过）\n[PASS] ③全文通道：0/0 条全文原句在指定页/节逐字命中\n[PASS] ②B级据摘要标注：含B级引用论断句 11 个，均带据摘要/部分据摘要\n[PASS] ④数字绑定台账：绑定台账原句 0 个；待人工确认 0 个（须交付说明披露并逐条人工判定）\n[PASS] ⑤字数：正文 CJK 汉字+英文词=1187（区间800-1200，不含参考文献）\n[PASS] ⑥参考文献完整性：正文引用2编号均有同号条目；条目2条均挂ref_no；无撤稿；交付序号按首次出现连续且已映射ref_no；通过\n[PASS] ⑦无摘要不得被正文引用：正文引用2编号均有摘要；池内无摘要[]仅可进参考文献；通过\n[PASS] ⑧模式形态(--mode C2)：有 正文引用与证据台账均不得为空；有 正文引用均有台账覆盖（缺 []）；有 参考文献列表不得为空；有 独立综述构件「研究主题与检索范围」；有 独立综述构件「关键词和检索策略」；有 独立综述构件「代表性文献清单」；有 独立综述构件「文献分类框架」；有 独立综述构件「完整综述文本」；有 独立综述构件「未来研究方向」；有 七维分类「理论基础」位于分类框架内；有 七维分类「研究对象」位于分类框架内；有 七维分类「研究问题」位于分类框架内；有 七维分类「技术方法」位于分类框架内；有 七维分类「数据与实验」位于分类框架内；有 七维分类「研究结论」位于分类框架内；有 七维分类「研究局限」位于分类框架内；有 不同研究方向的综合分析；有 完整综述正文非空且含引用；有 完整综述纳入研究空白及池内 [n] 证据；有 主要技术路线横向比较；有 现有研究不足/局限；有 六列文献比较表（精确表头且至少一行完整数据）；有 五列研究空白分析表（精确表头、完整数据行及池内 [n] 证据）；有 C2 独立文献综述而非讨论；有 C1+C2 衔接与重复检查；有 C1+C2 空白点一致性检查；有 C1+C2 重复检查与处理；有 C1+C2 空白点交叉指向；有 C1+C2 无重复段落（实得 0 段）\n============================================================\n④ 数字→台账原句 绑定明细:\n③ 全文通道明细（双轨证据链，2026-11-22 增）:\n============================================================\n总结论: 全部 9 项无失败\n",
+    "production_c2_report_executed_linkage_gate": true
+  },
+  "artifacts": [
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/C1_引言.md",
+      "size": 3676,
+      "sha256": "b8e60a34de9db66e2d593f8a4792e44a55e4d69948b88d598bc3da6c40e8445c"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/C2_文献综述.md",
+      "size": 4525,
+      "sha256": "780340d791c13499ec9e9a9f2f28de6a62728a111dc588b23e813482b2af1ee1"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/analysis.json",
+      "size": 5153,
+      "sha256": "5082973773a318ba4384269bfa2fae71c2d77bb77e75e4eb7f9baaa64dfcabcb"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/citation_map.json",
+      "size": 276,
+      "sha256": "6fd4b9400b7b934b62c7141cba3bfa53492f676b61a7189c61910dc80f95d90a"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/components.md",
+      "size": 6791,
+      "sha256": "173ae96e87547d83f22ca3afd88a7139816e58505c9866951a55839b54b590f5"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/conformance.md",
+      "size": 375,
+      "sha256": "b410e4109508c47fad00ea46a0d0f02fa5bd1ccd86ecd3df7ed816483dd394fb"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/dashboard_data.json",
+      "size": 26194,
+      "sha256": "5a979323f0e504f8dc5d211599545fb76e8209d1eee1b3ccb8757ce553e2ae55"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/desktop.html",
+      "size": 1110900,
+      "sha256": "106881669a792d3c62c2261cd1f0d92035e58bc86a234c8aea53891abd3b2bf7"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/evidence_ledger.md",
+      "size": 683,
+      "sha256": "49e2fc2845a85a0285f8568e8b5a5ff7ec838a56959bdf9edf34496cadfaf665"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/graph_evidence.md",
+      "size": 692,
+      "sha256": "ff17683fed11f71e3edec017c7dcd708cc9b8b36be262d3df324dd33ddadf47c"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/index.html",
+      "size": 4959,
+      "sha256": "e95572ab1004b33340a1a671df007ebcb8c37cdf20dc3046f72d0887375cf82d"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/linkage_check.md",
+      "size": 1246,
+      "sha256": "5e9c9bce9da637200a1159cd7819043829fc6a4288e64b0f8a2d46835b5a256b"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/mobile.html",
+      "size": 1085600,
+      "sha256": "d6c149d3fba5a0039c83f099b9c71af57043d00ef3c6290efc7726afafbb02d8"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/openalex_limited_selected.json",
+      "size": 1475,
+      "sha256": "a1fd9c4202396a75cb908530f4a6ee141145286c4b83c3684fa505005741e320"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/openalex_unlimited_selected.json",
+      "size": 2136,
+      "sha256": "a277fdfe70eebdb37a87a4b4b1e97a4dee96ec15bb204a7c1ebc0b40bad6df8d"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/outline.md",
+      "size": 2250,
+      "sha256": "bfd859fcb3341d793708d6ed74235030400b8db2447e992a7b16d6a116d6c273"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/outline_C1.md",
+      "size": 1217,
+      "sha256": "1304939d49c4e0d3d24ca047e34df2c0bf21a9e2c25adef3cc362684fc36ab23"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/outline_C2.md",
+      "size": 1026,
+      "sha256": "7fbe32c744a11b2eda89f35b5718047ef9fa4161ba6b73b5f42f53858dbc8b73"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/papers.json",
+      "size": 1478,
+      "sha256": "9c3d7f2dea413ebf327f113aa3fe98cb845eb99e5b559701f3829807bf14ea42"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/papers_all.json",
+      "size": 2256,
+      "sha256": "4c751a77827a263003a7de2ad6e18a9ec78f90d91175ee2a6b73a7118a3e9506"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/references.md",
+      "size": 504,
+      "sha256": "252d03f3ff8337d13f65c865a3227a3611c2d49e0c288df820c5777fb624e98f"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/references_check.md",
+      "size": 155,
+      "sha256": "6ed849d181639bddc71df913f24ce26baa671848a4a14c5cf1abb169e646c130"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/relations.json",
+      "size": 2859,
+      "sha256": "663db68fe8fcefe6d2b312609fd5e53fa5ab3fb9260f35fb4f80b0650d8c7db3"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/relations_evidence.md",
+      "size": 619,
+      "sha256": "82736255b0385b957662aa785a2503431d88e3e72ff013f7a2468b0291a71d82"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/sample.md",
+      "size": 691,
+      "sha256": "cdfa4468df15813bf1bd7061e3d3737570cfab6d35e6ea87e3744625e2e76a95"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/sample_C1.md",
+      "size": 176,
+      "sha256": "36f30887d3893eb7245a89a2ea1e03d9d795b99243b7ae0ef60001bc6b03d1ed"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/sample_C2.md",
+      "size": 508,
+      "sha256": "c144b3efd95a08293b7ad0f2ec1fced93cd9b3a0b79f08106ae4497e673437a4"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/search_log.md",
+      "size": 235,
+      "sha256": "d49a6b5d8c50dd65226fc034157d28e3d90acffeab9ef53b78ea94583568631e"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/slides.pptx",
+      "size": 48556,
+      "sha256": "49b73afd1298b2e1666656f73770c9325fae8c80db2b019869fc38124f29b6fa"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/stats.json",
+      "size": 1512,
+      "sha256": "c279a266059b0fddf99447d0a269d866c05776168b49fbf9c2e2712d4efbea8a"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/stats_series_1.json",
+      "size": 143,
+      "sha256": "734ff565c1f893bf3babcc310c8f10ce4d168be5d47d40d10a0268b5cff2faff"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/stats_series_2.json",
+      "size": 91,
+      "sha256": "da7e2e08da7cb4b40328214ba3651c3adea849b5e114e7377cb8b578f38a4e85"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/stats_topics_all.json",
+      "size": 298,
+      "sha256": "9092469a041311ae58512be3e867a952d9dfd634858b7d68faeb2b3d41c5a16c"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/stats_topics_limited.json",
+      "size": 319,
+      "sha256": "c4569963aaf8fa9ef70523bf5905756388bbf4af7b2a3fc0aa4dbac211dc4517"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/stats_year.json",
+      "size": 195,
+      "sha256": "c87e16b99011ea5c7e3514bd42ea8f776cb7ed3baadde07d0a77ba7765af98af"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/verify_delivery.py",
+      "size": 34329,
+      "sha256": "6dd22bb7c8bbcd7030fc6ddebf1cd37147b20133f6841a6dd84ba21a84e40f98"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/verify_report.txt",
+      "size": 1351,
+      "sha256": "9fd24a86664f3507a248a80d5eb090f310ada62dcdb8ae1f3b43ede8ac7e2855"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/verify_report_C1.txt",
+      "size": 2248,
+      "sha256": "4a2ecf189825711c2834cd129ce64ea0c0a100cffa464cad3c97dad99f340430"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/verify_report_C2.txt",
+      "size": 2849,
+      "sha256": "ac46c03e76303453ecfdd36bf9ce43c6ad883f86fdf2bdbdac0bc8717cd3eec8"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/文献图谱仪表盘.html",
+      "size": 1107616,
+      "sha256": "cb1e7d4c12a88773d759d27bbd5c5a5c02b2c2e7ab348e9e98ebd6c8246a8255"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/文献图谱仪表盘.png",
+      "size": 455900,
+      "sha256": "50db38d8b34f0ac246aae69f6271d71c4a061ec39d2f666eb056192b36fac0f2"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/文献图谱仪表盘.svg",
+      "size": 21361,
+      "sha256": "884bcebc777668c031cd35801e705466bfb7e41a5d8f834480b7674648e5e7df"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4/综述初稿.md",
+      "size": 7938,
+      "sha256": "518d7acf13f278964c9fcffc5ad7bb3008f8e2caffff6d0e2a6aa8e8647397ee"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/C1_引言.md",
+      "size": 3676,
+      "sha256": "b8e60a34de9db66e2d593f8a4792e44a55e4d69948b88d598bc3da6c40e8445c"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/citation_map.json",
+      "size": 270,
+      "sha256": "2639d1e70212dbc7f44e98a74bf6f935427133ae5303fafec073ea65b95a6818"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/components.md",
+      "size": 4204,
+      "sha256": "3dc394873a13afd534eb89a860db4d0c4af3a9c698bdb9e497b48b3bbdef6087"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/conformance.md",
+      "size": 270,
+      "sha256": "5364784353fa8e007b38f93d1a062f2e92848571b8b48fe52a5b735ea2e709cd"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/dialogue.json",
+      "size": 1885,
+      "sha256": "e8dad1326ef7e0f4d859d5708e00e652685f261aedbc5063ed54e709238c0834"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/evidence_ledger.md",
+      "size": 341,
+      "sha256": "374133474acff394308fc4b88aca680ebdd6c3beb5e9f2e8babe4b0138dc0f5b"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/outline.md",
+      "size": 1217,
+      "sha256": "1304939d49c4e0d3d24ca047e34df2c0bf21a9e2c25adef3cc362684fc36ab23"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/papers.json",
+      "size": 1478,
+      "sha256": "9c3d7f2dea413ebf327f113aa3fe98cb845eb99e5b559701f3829807bf14ea42"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/references.md",
+      "size": 504,
+      "sha256": "252d03f3ff8337d13f65c865a3227a3611c2d49e0c288df820c5777fb624e98f"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/references_check.md",
+      "size": 155,
+      "sha256": "6ed849d181639bddc71df913f24ce26baa671848a4a14c5cf1abb169e646c130"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/sample.md",
+      "size": 176,
+      "sha256": "36f30887d3893eb7245a89a2ea1e03d9d795b99243b7ae0ef60001bc6b03d1ed"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/search_log.md",
+      "size": 235,
+      "sha256": "d49a6b5d8c50dd65226fc034157d28e3d90acffeab9ef53b78ea94583568631e"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/verify_delivery.py",
+      "size": 34329,
+      "sha256": "6dd22bb7c8bbcd7030fc6ddebf1cd37147b20133f6841a6dd84ba21a84e40f98"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C1/verify_report.txt",
+      "size": 2248,
+      "sha256": "4a2ecf189825711c2834cd129ce64ea0c0a100cffa464cad3c97dad99f340430"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/C2_文献综述.md",
+      "size": 4525,
+      "sha256": "780340d791c13499ec9e9a9f2f28de6a62728a111dc588b23e813482b2af1ee1"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/citation_map.json",
+      "size": 282,
+      "sha256": "83d0a4a438b5cdf7cb880d0154d3e9ccc90b645be460d7f5bcf4279bfef8af62"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/components.md",
+      "size": 2011,
+      "sha256": "b19cb56c657a93dbe0a53b3015419b63bf778d579c4fa8715f8769c58e118613"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/conformance.md",
+      "size": 270,
+      "sha256": "92756f94d699d7e1c80e1ec55b277cd22827d4da92d95c2faa9139ae11ec3a33"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/dialogue.json",
+      "size": 1759,
+      "sha256": "2cc29a37acd10048afb4d72a2a74fd5bf4205103e86699675c29e8317f57d27d"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/evidence_ledger.md",
+      "size": 341,
+      "sha256": "374133474acff394308fc4b88aca680ebdd6c3beb5e9f2e8babe4b0138dc0f5b"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/outline.md",
+      "size": 1026,
+      "sha256": "7fbe32c744a11b2eda89f35b5718047ef9fa4161ba6b73b5f42f53858dbc8b73"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/papers.json",
+      "size": 1478,
+      "sha256": "9c3d7f2dea413ebf327f113aa3fe98cb845eb99e5b559701f3829807bf14ea42"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/references.md",
+      "size": 504,
+      "sha256": "252d03f3ff8337d13f65c865a3227a3611c2d49e0c288df820c5777fb624e98f"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/references_check.md",
+      "size": 155,
+      "sha256": "6ed849d181639bddc71df913f24ce26baa671848a4a14c5cf1abb169e646c130"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/sample.md",
+      "size": 508,
+      "sha256": "c144b3efd95a08293b7ad0f2ec1fced93cd9b3a0b79f08106ae4497e673437a4"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/search_log.md",
+      "size": 235,
+      "sha256": "d49a6b5d8c50dd65226fc034157d28e3d90acffeab9ef53b78ea94583568631e"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/verify_delivery.py",
+      "size": 34329,
+      "sha256": "6dd22bb7c8bbcd7030fc6ddebf1cd37147b20133f6841a6dd84ba21a84e40f98"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/verify_report.txt",
+      "size": 2664,
+      "sha256": "e80574d6d676b477d7ca3ab1bd11dd57d45a93da8489544ee2564b570bee6115"
+    },
+    {
+      "path": "b2f14afb-74c3-496a-989d-e94ca7041eb4-C2/worker_linkage_verify_report.txt",
+      "size": 2849,
+      "sha256": "ac46c03e76303453ecfdd36bf9ce43c6ad883f86fdf2bdbdac0bc8717cd3eec8"
+    }
+  ],
+  "recorded_at": "2026-11-24T23:56:38.740556+00:00"
+}

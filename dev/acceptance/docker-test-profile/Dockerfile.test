@@ -1,0 +1,63 @@
+# Offline test profile for the backend acceptance suite.
+# Extends the production web image (purpose-landscape-web-web) without
+# modifying the production Dockerfile or production image layers.
+#
+# Build context must be the project root, plus named contexts:
+#   devsrc -> project dev/       (excluded from the main context by the
+#                                  production .dockerignore, which must
+#                                  stay unmodified)
+#   hcc    -> offline HCC corpus (full sample set the search/analysis
+#                                  acceptance tests read)
+#
+#   docker compose -f compose.test.yaml build
+# or manually from the project root:
+#   docker build -f dev/acceptance/docker-test-profile/Dockerfile.test \
+#     --build-context devsrc=dev \
+#     --build-context hcc=../landscape-hcc-immunotherapy-resistance-20261122 \
+#     -t purpose-landscape-web-test .
+
+ARG BASE_IMAGE=purpose-landscape-web-web:latest
+FROM ${BASE_IMAGE}
+
+# Refresh the test tree explicitly so this image works even if the base
+# image ever stops shipping backend/tests.
+COPY backend/app /app/backend/app
+COPY backend/tests /app/backend/tests
+COPY skill_runtime /app/skill_runtime
+
+# Repo-root files the deployment/frontend/sites contract tests read; the
+# production image intentionally omits them, so the test image restores
+# them read-only. .env.example cannot be baked in because the production
+# .dockerignore excludes it — it is mounted at runtime in compose instead.
+COPY render.yaml Dockerfile .dockerignore docker-compose.yml /app/
+COPY frontend/src/api.ts /app/frontend/src/api.ts
+COPY frontend/vite.config.ts /app/frontend/vite.config.ts
+COPY sites /app/sites
+COPY --from=devsrc real_backend /app/dev/real_backend
+COPY --from=devsrc import_map.json storage-stub.mjs database-stub.mjs /app/dev/
+
+# Full offline corpus so PURPOSE_LANDSCAPE_HCC_FIXTURES=/app/fixtures/hcc-20261122
+# resolves every sample the suite loads (the trimmed in-image fixtures only
+# carry the delivery subset).
+COPY --from=hcc . /app/fixtures/hcc-20261122
+
+# Reuse the validated MIME definitions instead of downloading media-types.
+COPY --from=devsrc acceptance/docker-test-profile/mime.types /etc/mime.types
+
+# Project test extras (pytest, fakeredis, httpx) per pyproject.toml.
+# No live-provider keys are baked in; live acceptance stays opt-in via
+# RUN_LIVE_OPENALEX_ACCEPTANCE / RUN_LIVE_QWEN_ACCEPTANCE and is NOT set here.
+# PIP_INDEX_URL is a build ARG: at 2026-11-24 build time in this
+# environment, pypi.org was unreachable from containers and a mirror index
+# was used (a time-of-build observation, not a requirement — the main line
+# has since built successfully with the official index). Pass
+# --build-arg PIP_INDEX_URL=https://pypi.org/simple to use the canonical
+# index anywhere else.
+ARG PIP_INDEX_URL=https://pypi.org/simple
+RUN pip install --no-cache-dir -i "$PIP_INDEX_URL" '.[test]'
+
+ENV PYTHONPATH=/app/backend \
+    PURPOSE_LANDSCAPE_HCC_FIXTURES=/app/fixtures/hcc-20261122
+
+WORKDIR /app
+CMD ["python", "-m", "pytest", "-q", "-p", "no:cacheprovider"]

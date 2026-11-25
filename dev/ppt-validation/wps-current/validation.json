@@ -1,0 +1,555 @@
+{
+  "created_at": "2026-11-24T18:34:49.534252+08:00",
+  "render_method": "User-supplied WPS Office full-document PDF export; pypdfium2 rasterization and local macOS OCR",
+  "source_pptx": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/dev/ppt-validation/wps-current/肝细胞癌免疫治疗耐药机制组会汇报.pptx",
+  "source_pptx_sha256_before": "2f3946a64f008c6bb2c10045df48ce51848556201798f22786f36582a07fb9c0",
+  "source_pptx_sha256_after": "2f3946a64f008c6bb2c10045df48ce51848556201798f22786f36582a07fb9c0",
+  "source_pdf": "/Users/crisprcas_9/Desktop/肝细胞癌免疫治疗耐药机制组会汇报.pdf",
+  "source_pdf_sha256": "8ec101a4f0b43bf6f76c945fee2d741f7cdbb6d86e46c29afa6aca2eddaaa4e5",
+  "pdf_metadata": {
+    "Title": "",
+    "Author": "",
+    "Subject": "",
+    "Keywords": "",
+    "Creator": "WPS 演示",
+    "Producer": "macOS 版本27.2.1（版号26B131） Quartz PDFContext",
+    "CreationDate": "D:20261124183333+08'00'",
+    "ModDate": "D:20261124183333+08'00'"
+  },
+  "expected_pages": 25,
+  "rendered_pages": 25,
+  "contact_sheets": [
+    {
+      "path": "contact-sheet-01-12.png",
+      "sha256": "d6dfa03b61b8422e6902d252374818d613367bca2605b43144f5accb95bcd794"
+    },
+    {
+      "path": "contact-sheet-13-24.png",
+      "sha256": "8409cef9f4a8f25e60dfa0085ed9a2eb706980f5e5946aea484e72b1c8afb946"
+    },
+    {
+      "path": "contact-sheet-25-25.png",
+      "sha256": "479f57aa248f73f4c474455417435ba085311049016f03d1f12caea3d2388311"
+    }
+  ],
+  "automated_result": "failed",
+  "failures": [
+    "page 7: PDF text missing ['文献数']",
+    "page 7: raster OCR missing ['文献数']",
+    "page 22: raster OCR missing ['发展趋势']"
+  ],
+  "visual_review_boundary": "Automated raster/OCR checks do not replace manual visual inspection or LibreOffice/PowerPoint rendering.",
+  "pages": [
+    {
+      "page": 1,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "73d57d87934a2e4f653fc9e23f6db99e5299924618402077bd1e698b1f47c5a7",
+      "grayscale_stddev": 25.876,
+      "pdf_cjk_characters": 27,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 27,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 2,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "56a4518556ba0675650e37075721e84530b4ccc58ce59730f685883c28a7b19b",
+      "grayscale_stddev": 19.009,
+      "pdf_cjk_characters": 41,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 41,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 3,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "7defe02c9a620527531e92ff3db93b8b9ad31bfe1bcbac8e0f5c8d556f31a1e1",
+      "grayscale_stddev": 53.347,
+      "pdf_cjk_characters": 49,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 49,
+      "critical_labels": [
+        "研究背景与科学问题",
+        "研究对象",
+        "方法",
+        "证据",
+        "决策",
+        "作用链条"
+      ],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 4,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "9eea8a0d06fe017a1f26ec1e3cdbdcc4c3ffda014047c1fc7d60aa25cc8c03db",
+      "grayscale_stddev": 22.641,
+      "pdf_cjk_characters": 16,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 16,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 5,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "f659b8cfadf5ba00b0c6824743897014bc4862abe52f3ad2ff7430c27fe1c4b8",
+      "grayscale_stddev": 20.04,
+      "pdf_cjk_characters": 19,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 19,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 6,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "504c50b14058f3fcfc34b0cb82ecb44df70b0e0c5988710a5a05ebbf352423d9",
+      "grayscale_stddev": 23.387,
+      "pdf_cjk_characters": 11,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 11,
+      "critical_labels": [
+        "年度趋势",
+        "文献数",
+        "2024",
+        "2025"
+      ],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 7,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "b1a2155e011a69f471537a4694a017eef4d1be958458113f8b3e139291e48a6a",
+      "grayscale_stddev": 43.51,
+      "pdf_cjk_characters": 48,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 48,
+      "critical_labels": [
+        "主题分布",
+        "文献数",
+        "髓系代谢",
+        "动态分层",
+        "乳酸化",
+        "免疫微环境"
+      ],
+      "missing_pdf_labels": [
+        "文献数"
+      ],
+      "missing_ocr_labels": [
+        "文献数"
+      ]
+    },
+    {
+      "page": 8,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "5226b5477058ffc7fa1ca0a668e6214941244088333754ec89f434c0f2efb1a0",
+      "grayscale_stddev": 34.171,
+      "pdf_cjk_characters": 97,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 97,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 9,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "6321966b09809f09dddcb47a3bf1fecb7c2539a0c44bc35e56190337541ce549",
+      "grayscale_stddev": 32.457,
+      "pdf_cjk_characters": 78,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 77,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 10,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "674af9cd519ac4175bf57787237c1075967eb734b3e99ab11e1a89495bc16e96",
+      "grayscale_stddev": 32.046,
+      "pdf_cjk_characters": 75,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 75,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 11,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "688b9b7d5bbe1fac60831ff4fab5a56387117ef8bf1ad3755d9902f26b886923",
+      "grayscale_stddev": 31.961,
+      "pdf_cjk_characters": 75,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 74,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 12,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "2c343fddceda56eca876d4653c6a8fc821987bc3c4139635254255ddf0645b61",
+      "grayscale_stddev": 93.945,
+      "pdf_cjk_characters": 267,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 266,
+      "critical_labels": [
+        "核心方法与技术路线",
+        "输入",
+        "方法",
+        "验证",
+        "输出"
+      ],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 13,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "bb3479ce07cac634da6690cd05362d1ea47f6e17027480c6200d8a8122507cbf",
+      "grayscale_stddev": 42.115,
+      "pdf_cjk_characters": 229,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 226,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 14,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "c32f1574cf4792f6ca9879afe908f01b3f639b170db739b0b3a2f15b5a0d5a1e",
+      "grayscale_stddev": 41.757,
+      "pdf_cjk_characters": 164,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 164,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 15,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "ecad49ba043e2f68b027a09694200762badd4af439be1c619e1d1bba5cbe3b46",
+      "grayscale_stddev": 39.764,
+      "pdf_cjk_characters": 188,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 188,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 16,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "5fe22cf4ef42593da46b76518719b02c3bec3cfce69d085190224ed6cac18f1d",
+      "grayscale_stddev": 42.358,
+      "pdf_cjk_characters": 170,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 170,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 17,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "022e903ace068a9b0991eb7cfd6ada6d830eeffb5e4b5ca644e59198fcf76e9f",
+      "grayscale_stddev": 39.969,
+      "pdf_cjk_characters": 184,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 184,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 18,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "eb25cdbd83258b6f1aec483fa772a90ccdc86c4c854a7a9fc6cba779ad9eaa9b",
+      "grayscale_stddev": 42.421,
+      "pdf_cjk_characters": 173,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 173,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 19,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "2b932ed35d486f118bfb4efa2249b4bac3fdc0afef1e4ceff875a3c58f485f2a",
+      "grayscale_stddev": 39.111,
+      "pdf_cjk_characters": 177,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 177,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 20,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "6ba1bebdfce8432292dae54a00c6ebefcd53fad05783fbb4b30c7166f4c9d38b",
+      "grayscale_stddev": 33.881,
+      "pdf_cjk_characters": 136,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 136,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 21,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "5cb9d39e6c82102615c6f530428591dc093a9a42701df71888d5c54ace9a8f6e",
+      "grayscale_stddev": 28.435,
+      "pdf_cjk_characters": 67,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 67,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 22,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "f6a5a44b39ebd84debac1615fdbeefc2c19fbfcff1c9a65985a6e221837658b9",
+      "grayscale_stddev": 54.327,
+      "pdf_cjk_characters": 146,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 144,
+      "critical_labels": [
+        "发展趋势",
+        "潜在突破"
+      ],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": [
+        "发展趋势"
+      ]
+    },
+    {
+      "page": 23,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "ac7a63fac41537c5113967e3740ed949fd512baa43a974f6c099cc52b52fea14",
+      "grayscale_stddev": 45.522,
+      "pdf_cjk_characters": 289,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 287,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 24,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "f499c062c26558bb3a6c5f4429cb89bbb8557477b0cbd9801336c7feb86f50e6",
+      "grayscale_stddev": 35.331,
+      "pdf_cjk_characters": 154,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 155,
+      "critical_labels": [],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    },
+    {
+      "page": 25,
+      "pdf_points": [
+        959.9500122070312,
+        540.0
+      ],
+      "pixels": [
+        1920,
+        1080
+      ],
+      "png_sha256": "00c4f20c10519c66b8a10a9ac24236b0fb77481da7b95cd76e08a62427a19ca0",
+      "grayscale_stddev": 43.57,
+      "pdf_cjk_characters": 4,
+      "pdf_replacement_characters": 0,
+      "ocr_cjk_characters": 4,
+      "critical_labels": [
+        "参考文献"
+      ],
+      "missing_pdf_labels": [],
+      "missing_ocr_labels": []
+    }
+  ]
+}

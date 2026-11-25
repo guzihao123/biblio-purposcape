@@ -1,0 +1,29 @@
+{
+  "total_hits": 4,
+  "groups": [
+    {
+      "key": "T-HCC-1",
+      "name": "髓系代谢与 S1P",
+      "name_zh": "髓系代谢与 S1P",
+      "count": 1
+    },
+    {
+      "key": "T-HCC-2",
+      "name": "IL-8/CXCR2 动态分层",
+      "name_zh": "IL-8/CXCR2 动态分层",
+      "count": 1
+    },
+    {
+      "key": "T-HCC-3",
+      "name": "乳酸化与 PD-L1",
+      "name_zh": "乳酸化与 PD-L1",
+      "count": 1
+    },
+    {
+      "key": "T-HCC-4",
+      "name": "免疫微环境综述",
+      "name_zh": "免疫微环境综述",
+      "count": 1
+    }
+  ]
+}

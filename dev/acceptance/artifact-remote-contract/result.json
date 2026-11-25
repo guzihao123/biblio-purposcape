@@ -1,0 +1,50 @@
+{
+  "task": "Render B-02 artifact remote contract reinforcement",
+  "generated_at": "2026-11-25T00:32:00+08:00",
+  "command": ".venv/bin/python -m pytest dev/acceptance/artifact-remote-contract -q",
+  "totals": {"collected": 39, "passed": 36, "failed": 3},
+  "interpretation": "36 contract tests pass. The 3 failures are intentional failing regressions documenting mainline implementation gaps (G-1..G-3); they must not be xfail-marked and should turn green only after mainline fixes.",
+  "offline_guarantees": [
+    "no web/worker/Redis processes started",
+    "no ports listened, no network accessed (SitesStorageClient transport is replaced by an in-memory fake of the Qoder Sites functions surface)",
+    "no Supabase connection, no cloud Storage upload, no real secrets read"
+  ],
+  "passed_contracts": [
+    "byte-exact worker->remote->web round trip for binary payloads (all 256 byte values, 8 MiB deterministic, real zip/docx, utf-8 markdown) with matching SHA-256 and size",
+    "browser-style list-then-download via signed query",
+    "filenames with spaces, '%', parentheses and unicode round trip",
+    "exact 50 MB round trip; one byte over rejected on both upload and download",
+    "downloaded Content-Type pinned as filename-derived",
+    "worker _sync_artifacts uploads every regular file with mapped content-type and correct bytes; skips oversized files; no-op without env",
+    "cross-container E2E: worker fs and web fs separate, joined only by the fake remote; binary artifacts verified byte-for-byte",
+    "remote listing never leaks other tasks; requests stay inside the task prefix",
+    "non-owner signature reuse uniformly 403 without remote probe",
+    "signature strictness: empty/garbage/extra-payload-key/rotated-secret all 403 before remote access; expired signature 403",
+    "wrong worker token maps to uniform 404 and sanitized listing, token never leaked",
+    "nonexistent task indistinguishable from missing artifact (same 404 detail)",
+    "malformed remote list entries (traversal-like names, bad size types/ranges, non-mappings) dropped",
+    "traversal filenames rejected even when the remote holds such keys; local symlink blocks remote fallback with uniform 404"
+  ],
+  "mainline_gaps": [
+    {
+      "id": "G-1",
+      "test": "test_regression_g1_stale_local_copy_shadows_authoritative_remote_bytes",
+      "finding": "ArtifactStore.resolve()/_safe_file() serves a stale local same-name file and list() reports the stale local size even when newer authoritative remote bytes exist. Any shared-disk or re-run web/worker layout can hand out stale artifacts."
+    },
+    {
+      "id": "G-2",
+      "test": "test_regression_g2_corrupted_remote_bytes_are_served_silently",
+      "finding": "The artifact flow carries no integrity digest: remote bytes differing from upload-time SHA-256 (same plausible size) are served silently. The task-store metadata path supports checksum_sha256, but the artifact remote flow does not."
+    },
+    {
+      "id": "G-3",
+      "test": "test_regression_g3_json_artifact_cannot_round_trip_across_containers",
+      "finding": "JSON artifacts cannot download remotely: worker stores them as application/json; SitesStorageClient._request then parses the payload instead of returning bytes, get_bytes() rejects it, and the web returns a uniform 404. Any .json artifact is cross-container-unreadable."
+    }
+  ],
+  "notes": [
+    "Downloaded Content-Type is filename-derived; the worker-stored content-type is ignored on download (pinned by test_downloaded_content_type_is_derived_from_filename_not_stored_type).",
+    "Existing coverage in backend/tests/test_remote_artifacts.py and test_deployment_config.py was inventoried first; the new suite only adds missing scenarios and uses the real client classes end to end.",
+    "Real Qoder Storage / real cross-container deployment remains unverified by design."
+  ]
+}

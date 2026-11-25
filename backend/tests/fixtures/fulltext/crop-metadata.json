@@ -1,0 +1,16 @@
+{
+  "source": "synthetic-digital.pdf",
+  "page_zero_based": 0,
+  "scale": 2,
+  "pixel_rect_top_left_origin": {
+    "x": 40,
+    "y": 200,
+    "width": 60,
+    "height": 40
+  },
+  "output": "crop-x40-y200-w60-h40-scale2.png",
+  "output_size_pixels": {
+    "width": 60,
+    "height": 40
+  }
+}

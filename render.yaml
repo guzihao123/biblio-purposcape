@@ -1,0 +1,69 @@
+services:
+  - type: web
+    name: landscape-web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: landscape-redis
+          property: connectionString
+      - key: QWEN_API_KEY
+        sync: false
+      - key: QWEN_BASE_URL
+        value: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+      - key: QWEN_MODEL
+        value: qwen3.7-plus
+      - key: SESSION_SECRET
+        sync: false
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: QODER_SITES_ORIGIN
+        sync: false
+      - key: WORKER_SHARED_SECRET
+        sync: false
+      - key: ARTIFACT_ROOT
+        value: /var/data/artifacts
+
+  - type: worker
+    name: landscape-worker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerCommand: python worker.py
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: landscape-redis
+          property: connectionString
+      - key: QWEN_API_KEY
+        sync: false
+      - key: QWEN_BASE_URL
+        value: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+      - key: QWEN_MODEL
+        value: qwen3.7-plus
+      - key: SESSION_SECRET
+        sync: false
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: QODER_SITES_ORIGIN
+        sync: false
+      - key: WORKER_SHARED_SECRET
+        sync: false
+      - key: ARTIFACT_ROOT
+        value: /var/data/artifacts
+
+  - type: redis
+    name: landscape-redis
+    plan: starter
+    ipAllowList: []

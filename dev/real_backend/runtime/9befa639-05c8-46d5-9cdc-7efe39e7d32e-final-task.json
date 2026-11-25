@@ -1,0 +1,31 @@
+{
+  "id": "9befa639-05c8-46d5-9cdc-7efe39e7d32e",
+  "session_id": "6e9b3c03-3b37-410e-8ce3-a28e4cdfd70c",
+  "skill_version_id": "23b60c2a-37e2-481a-a336-c68e529aafe8",
+  "direction": "肝细胞癌免疫治疗耐药机制",
+  "state": "done",
+  "next_card": null,
+  "card": null,
+  "created_at": "2026-11-24T11:50:21.554088",
+  "updated_at": "2026-11-24T11:50:26.301436",
+  "progress": {
+    "stage": "generate",
+    "message": "C1 与 C2 已分别生成并复核，真实衔接门禁通过，合并交付已完成",
+    "checkpoint": {
+      "stage": "generate",
+      "clean": true,
+      "failures": [],
+      "warnings": [],
+      "storage_synced": 0,
+      "combined_delivered": true,
+      "linkage": {
+        "passed": true,
+        "gap_consistent": true,
+        "initial_duplicates": 0,
+        "remaining_duplicates": 0
+      },
+      "input_hash": "e1d5ccdb34a8230aad8163554d36372f2524ac72fa51774e478c585a3afd360d",
+      "timestamp": "2026-11-24T11:50:26.297585+00:00"
+    }
+  }
+}

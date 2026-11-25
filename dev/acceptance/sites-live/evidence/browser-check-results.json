@@ -1,0 +1,60 @@
+{
+  "generated_at": "2026-11-24T11:28:26.429Z",
+  "scope": "local-browser (two fresh contexts against http://127.0.0.1:5192)",
+  "taskIdA": "010f7b84-020f-4010-a1b1-d2e7bcf5fbce",
+  "passed": 6,
+  "failed": 0,
+  "results": [
+    {
+      "id": "LOCAL-BRW-01",
+      "name": "访客 A 桌面黄金流程：公开入口→建会话→自动进入任务流程",
+      "scope": "local-browser",
+      "expected": "InvitePage→/tasks/<uuid>",
+      "actual": "http://127.0.0.1:5192/tasks/010f7b84-020f-4010-a1b1-d2e7bcf5fbce",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-BRW-02",
+      "name": "访客 A 研究历史只包含自己的任务",
+      "scope": "local-browser",
+      "expected": "包含 taskIdA",
+      "actual": "contains=true",
+      "passed": true,
+      "url": "/history"
+    },
+    {
+      "id": "LOCAL-BRW-03",
+      "name": "浏览器内携带 HttpOnly Cookie 下载制品字节一致",
+      "scope": "local-browser",
+      "expected": "200 + sha256 一致",
+      "actual": "status=200 bytes=48004",
+      "passed": true,
+      "contentDisposition": "attachment; filename=\"report.docx\"",
+      "cacheControl": "private, no-store"
+    },
+    {
+      "id": "LOCAL-BRW-04",
+      "name": "访客 B 窄屏独立上下文黄金流程",
+      "scope": "local-browser",
+      "expected": "InvitePage→/tasks/<uuid>",
+      "actual": "http://127.0.0.1:5192/tasks/04a5ac7e-8325-4ee1-8dc5-251aab912600",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-BRW-05",
+      "name": "B 研究历史不含 A 的任务",
+      "scope": "local-browser",
+      "expected": "false",
+      "actual": "aInB=false bInB=true",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-BRW-06",
+      "name": "B 深链访问 A 的任务被隔离（无内容泄露）",
+      "scope": "local-browser",
+      "expected": "无法打开提示/无任务内容",
+      "actual": " 研究图谱文献研究 · 公开访问让研究问题显露出它的全貌。从这一次的研究目标出发，确认方向，让零散文献成为可以理",
+      "passed": true
+    }
+  ]
+}

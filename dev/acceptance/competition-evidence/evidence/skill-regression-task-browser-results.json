@@ -1,0 +1,549 @@
+{
+  "config": {
+    "argv": [
+      "/Users/crisprcas_9/.workbuddy/binaries/node/versions/22.22.2-6/bin/node",
+      "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/node_modules/.bin/playwright",
+      "test",
+      "e2e/task-browser-acceptance.spec.ts"
+    ],
+    "configFile": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/playwright.config.ts",
+    "rootDir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/test-results/main-8027/playwright-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/e2e",
+        "testIgnore": [
+          "**/real-backend/**",
+          "**/motion.spec.ts",
+          "**/motion-components.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/test-results/main-8027/playwright-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/e2e",
+        "snapshotDir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/frontend/e2e",
+        "testIgnore": [
+          "**/real-backend/**",
+          "**/motion.spec.ts",
+          "**/motion-components.spec.ts"
+        ],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5195",
+          "headless": true,
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "actionTimeout": 15000,
+          "navigationTimeout": 30000,
+          "screenshot": "only-on-failure",
+          "trace": "retain-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/main-8027/acceptance-results.json"
+        }
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "test-results/main-8027/acceptance-html",
+          "open": "never"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "task-browser-acceptance.spec.ts",
+      "file": "task-browser-acceptance.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "01 Skill 管理页完成加载、草稿、回归、发布与回退",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1215,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:35:03.149Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-console-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd0acd3698cc920e2ce3-3e2d32382fccb71ab7fa",
+          "file": "task-browser-acceptance.spec.ts",
+          "line": 38,
+          "column": 1
+        },
+        {
+          "title": "02 匿名 A 主流程、检索状态、继续否决、报告下载与历史",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10003,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:35:04.498Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-console-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd0acd3698cc920e2ce3-92d58f88c2552ad9b29e",
+          "file": "task-browser-acceptance.spec.ts",
+          "line": 67,
+          "column": 1
+        },
+        {
+          "title": "03 满血/轻量切换及结点、因素、方法、语义关系真实点击回溯",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14024,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:35:14.508Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "graph-iframe-responses",
+                      "contentType": "application/json",
+                      "body": "WwogIHsKICAgICJ0aXRsZSI6ICLmu6HooYDniYjmlofnjK7lm77osLEiLAogICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjUxOTUvYXBpL3Rhc2tzL2JiMWI4MzQ0LWUzZDEtNGZjYy05Zjg2LTM5ZGQxY2QzOGZhOC9hcnRpZmFjdHMvZGVza3RvcC5odG1sP3NpZ25hdHVyZT0uZUp3bHpFMEtBeUVNUU9HN1pOMFVURUxWWHFab0Vxbk1YMEYzWmU3ZWdhNGYzX3ZDTEdONWRZTW4xQnBxWWhGMHRvRFNWREczOUVET1prR05VeXNKYnRENjZudlpfQkxtWTVuSDVfNmUyM3FWNFdQMFlfX2Z1SEdMU29iVnFLS29PRlpXUXNwSzRocUVZb1R6Qjk3MkpwMC5hd1dFaFEucDhic2JYSmxBMmdoU0hSNzlRQ2Zld0RpaEU0IiwKICAgICJzdGF0dXMiOiAyMDAsCiAgICAiaGVhZGVycyI6IHsKICAgICAgInZhcnkiOiAiT3JpZ2luIiwKICAgICAgImRhdGUiOiAiVHVlLCAyNCBOb3YgMjAyNiAxMjozNToxNyBHTVQiLAogICAgICAic2VydmVyIjogInV2aWNvcm4iLAogICAgICAiY2FjaGUtY29udHJvbCI6ICJwcml2YXRlLCBuby1zdG9yZSIsCiAgICAgICJjb250ZW50LXR5cGUiOiAidGV4dC9odG1sOyBjaGFyc2V0PXV0Zi04IiwKICAgICAgImFjY2VwdC1yYW5nZXMiOiAiYnl0ZXMiLAogICAgICAiY29udGVudC1kaXNwb3NpdGlvbiI6ICJpbmxpbmU7IGZpbGVuYW1lPVwiZGVza3RvcC5odG1sXCIiLAogICAgICAiY29udGVudC1sZW5ndGgiOiAiMTYxMjM1MiIsCiAgICAgICJsYXN0LW1vZGlmaWVkIjogIlR1ZSwgMjQgTm92IDIwMjYgMTI6MzU6MDEgR01UIiwKICAgICAgImV0YWciOiAiXCJhZGRiNzdlMjRmOGVkYzljMDE2YzVhOTBmZGRmNjg2ZlwiIiwKICAgICAgImNvbm5lY3Rpb24iOiAiY2xvc2UiCiAgICB9CiAgfSwKICB7CiAgICAidGl0bGUiOiAi6L276YeP54mI5paH54yu5Zu+6LCxIiwKICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTo1MTk1L2FwaS90YXNrcy9iYjFiODM0NC1lM2QxLTRmY2MtOWY4Ni0zOWRkMWNkMzhmYTgvYXJ0aWZhY3RzL21vYmlsZS5odG1sP3NpZ25hdHVyZT0uZUp3bGpFRUtBeUVNQVBfaXVTbVloS3I5VERHSm9kSjE5LURlU3YtLVFvX0RNUE1OWjUyZlY3ZndEQ0pSTWpGREk0dkFyZ3JGOHdPb21FVTF5bDV6dUFYdlc5dnJhS3NZaHl5NHY4LXhMVEhiblAzWV96Tnk4cVJvSUlZQ3JOeEFTQkd3S0hMVHlKaFMtRjJyMGlZYi5hd1dFaFEuZjdkTnA3a3JxZTQ4VTBrck1hLW5PUFJUN2JVIiwKICAgICJzdGF0dXMiOiAyMDAsCiAgICAiaGVhZGVycyI6IHsKICAgICAgInZhcnkiOiAiT3JpZ2luIiwKICAgICAgImRhdGUiOiAiVHVlLCAyNCBOb3YgMjAyNiAxMjozNToxNyBHTVQiLAogICAgICAic2VydmVyIjogInV2aWNvcm4iLAogICAgICAiY29udGVudC1kaXNwb3NpdGlvbiI6ICJpbmxpbmU7IGZpbGVuYW1lPVwibW9iaWxlLmh0bWxcIiIsCiAgICAgICJjYWNoZS1jb250cm9sIjogInByaXZhdGUsIG5vLXN0b3JlIiwKICAgICAgImNvbnRlbnQtbGVuZ3RoIjogIjE1MzY1ODQiLAogICAgICAiY29udGVudC10eXBlIjogInRleHQvaHRtbDsgY2hhcnNldD11dGYtOCIsCiAgICAgICJjb25uZWN0aW9uIjogImNsb3NlIgogICAgfQogIH0KXQ=="
+                    },
+                    {
+                      "name": "graph-overflow-after-clicks",
+                      "contentType": "application/json",
+                      "body": "ewogICJ2aWV3cG9ydCI6IDEwODIsCiAgImRvY3VtZW50V2lkdGgiOiAxMDgyLAogICJwYW5lbHMiOiBbCiAgICB7CiAgICAgICJpZCI6ICJuZXRQYW5lbCIsCiAgICAgICJjbGllbnRXaWR0aCI6IDMzOSwKICAgICAgInNjcm9sbFdpZHRoIjogMzM5LAogICAgICAib3ZlcmZsb3dpbmdSb3dzIjogW10KICAgIH0sCiAgICB7CiAgICAgICJpZCI6ICJrZ1BhbmVsIiwKICAgICAgImNsaWVudFdpZHRoIjogMzM5LAogICAgICAic2Nyb2xsV2lkdGgiOiAzMzksCiAgICAgICJvdmVyZmxvd2luZ1Jvd3MiOiBbXQogICAgfSwKICAgIHsKICAgICAgImlkIjogIm1tUGFuZWwiLAogICAgICAiY2xpZW50V2lkdGgiOiAzMzksCiAgICAgICJzY3JvbGxXaWR0aCI6IDMzOSwKICAgICAgIm92ZXJmbG93aW5nUm93cyI6IFtdCiAgICB9LAogICAgewogICAgICAiaWQiOiAicmVsUGFuZWwiLAogICAgICAiY2xpZW50V2lkdGgiOiAzMzksCiAgICAgICJzY3JvbGxXaWR0aCI6IDMzOSwKICAgICAgIm92ZXJmbG93aW5nUm93cyI6IFtdCiAgICB9CiAgXQp9"
+                    },
+                    {
+                      "name": "browser-console-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd0acd3698cc920e2ce3-48ddc891461e2de07e9b",
+          "file": "task-browser-acceptance.spec.ts",
+          "line": 136,
+          "column": 1
+        },
+        {
+          "title": "04 B 项目字段必填、分组提交与窄长内容布局",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1171,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:35:28.541Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-console-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd0acd3698cc920e2ce3-b8a2fa8c637e55d26f36",
+          "file": "task-browser-acceptance.spec.ts",
+          "line": 211,
+          "column": 1
+        },
+        {
+          "title": "05 C 的用途、C模式任务、本文信息三步卡与 C1+C2 提交",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1124,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:35:29.721Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-console-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd0acd3698cc920e2ce3-3901d57073621112f2d7",
+          "file": "task-browser-acceptance.spec.ts",
+          "line": 240,
+          "column": 1
+        },
+        {
+          "title": "06 D 团队背景提交与不限年限推荐",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1237,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:35:30.854Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-console-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd0acd3698cc920e2ce3-5d29fca29dc67e7122a7",
+          "file": "task-browser-acceptance.spec.ts",
+          "line": 266,
+          "column": 1
+        },
+        {
+          "title": "07 窄屏完整流程、轻量图谱、报告及主要页面横向溢出",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6187,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:35:32.101Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-console-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd0acd3698cc920e2ce3-834c6b0fd2889458ae7c",
+          "file": "task-browser-acceptance.spec.ts",
+          "line": 285,
+          "column": 1
+        },
+        {
+          "title": "08 reduced-motion 与键盘完成入口、方向和用途操作",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 861,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:35:38.298Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-console-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd0acd3698cc920e2ce3-21636002ff401529f1b6",
+          "file": "task-browser-acceptance.spec.ts",
+          "line": 313,
+          "column": 1
+        },
+        {
+          "title": "09 图谱 tabs 支持标准方向键切换",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5030,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:35:39.164Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-console-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd0acd3698cc920e2ce3-201210643407d1a94af6",
+          "file": "task-browser-acceptance.spec.ts",
+          "line": 343,
+          "column": 1
+        },
+        {
+          "title": "10 桌面与窄屏确认回执容纳长中英文及 DOI",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2120,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-24T12:35:44.204Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "receipt-metrics",
+                      "contentType": "application/json",
+                      "body": "WwogIHsKICAgICJ2aWV3cG9ydCI6IDE0NDAsCiAgICAibGVmdCI6IDE5MCwKICAgICJyaWdodCI6IDEyNTAsCiAgICAiY2xpZW50V2lkdGgiOiAxMDYwLAogICAgInNjcm9sbFdpZHRoIjogMTA2MCwKICAgICJkb2N1bWVudFdpZHRoIjogMTQ0MAogIH0sCiAgewogICAgInZpZXdwb3J0IjogMzkwLAogICAgImxlZnQiOiAyMCwKICAgICJyaWdodCI6IDM3MCwKICAgICJjbGllbnRXaWR0aCI6IDM1MCwKICAgICJzY3JvbGxXaWR0aCI6IDM1MCwKICAgICJkb2N1bWVudFdpZHRoIjogMzkwCiAgfQpd"
+                    },
+                    {
+                      "name": "browser-console-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd0acd3698cc920e2ce3-5861769e96b3ec490cb5",
+          "file": "task-browser-acceptance.spec.ts",
+          "line": 373,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-24T12:34:59.336Z",
+    "duration": 47134.854999999996,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "order": ["direction", "mode", "terms", "years", "adjustment", "delivery"],
+  "direction": {"required": true},
+  "mode": {"title": "这次洞察的用途", "options": ["A", "B", "C", "D", "E"]},
+  "terms": {"title": "候选术语多选", "multiple": true, "max_options": 4},
+  "years": {"title": "重点关注的时间范围", "default": "B"},
+  "adjustment": {"title": "看完分布，要不要调整？", "continue_veto": true},
+  "delivery": {"title": "希望得到的交付形式", "last_confirmation": true, "default": "A"}
+}

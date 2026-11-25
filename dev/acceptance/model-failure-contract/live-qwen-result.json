@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-11-25T00:13:32Z",
+  "results": [
+    {
+      "test": "正常调用",
+      "status": "ok",
+      "elapsed": 9.48,
+      "result": {
+        "reply": "test"
+      }
+    },
+    {
+      "test": "错误 Key",
+      "status": "exception",
+      "type": "AuthenticationError",
+      "message": "Error code: 401 - {'error': {'message': 'Invalid API-key provided. For details, see: https://www.alibabacloud.com/help/en/model-studio/error-code#apikey-error', 'id': 'f5967030-b827-9e09-9ce2-e1a23119"
+    },
+    {
+      "test": "错误的 URL",
+      "status": "exception",
+      "type": "APIConnectionError",
+      "message": "Connection error."
+    },
+    {
+      "test": "正常调用（第二次）",
+      "status": "ok",
+      "elapsed": 7.91,
+      "result": {
+        "reply": "test"
+      }
+    }
+  ]
+}

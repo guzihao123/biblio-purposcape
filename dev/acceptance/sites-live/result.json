@@ -1,0 +1,269 @@
+{
+  "run": {
+    "id": "sites-live-2026-11-24",
+    "date": "2026-11-24",
+    "timezone": "Asia/Shanghai",
+    "scope": "Qoder Sites 部署、云 Storage、CDN/代理、公网多人隔离——独立验收（离线准备 + 本地 rehearse）",
+    "evidence_dir": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/dev/acceptance/sites-live",
+    "isolated_resources": {
+      "api_port": 8024,
+      "frontend_port": 5192,
+      "redis_port": 6392,
+      "database": "dev/acceptance/sites-live/data/acceptance.db (隔离 SQLite，未使用主线 test.db)",
+      "artifact_root": "dev/acceptance/sites-live/data/artifacts",
+      "note": "全部进程已停止，Redis 已关闭，临时密钥文件已删除；未触碰主线 dev/real_backend/runtime 与其他工地 test-results"
+    },
+    "cloud_authorization": {
+      "granted": false,
+      "status": "未授权，未执行 prepare_site / 云项目创建 / 部署 / 发布；未产生任何云资源、费用或公开 URL"
+    }
+  },
+  "offline_preparation": {
+    "frontend_build": {
+      "command": "VITE_API_BASE_URL=/functions/v1/app npm run build (frontend/)",
+      "passed": true,
+      "details": "tsc --noEmit 通过；vite 生产构建 44 modules transformed；产物含 /functions/v1/app 入口标记"
+    },
+    "frontend_unit_tests": {
+      "command": "npm test",
+      "passed": true,
+      "files": 9,
+      "tests": 27,
+      "failures": 0
+    },
+    "function_node_tests": {
+      "command": "node --test sites/functions/*.test.mjs",
+      "passed": true,
+      "tests": 33,
+      "failures": 0
+    },
+    "function_deno_check": {
+      "command": "deno check sites/functions/index.ts sites/functions/task_store.ts",
+      "passed": true,
+      "deno_version": "2.9.8"
+    },
+    "function_deno_tests": {
+      "task_store": {
+        "command": "deno test --allow-all sites/functions/task_store.test.mjs",
+        "passed": true,
+        "tests": 13,
+        "failures": 0
+      },
+      "routes_forward_with_import_map": {
+        "command": "deno test --allow-all --import-map=dev/import_map.json sites/functions/routes.test.mjs sites/functions/forward.test.mjs",
+        "passed": true,
+        "tests": 20,
+        "failures": 0,
+        "note": "不带 import map 时 1 项依赖本地 stub 的用例因平台模块缺失而失败，属环境预期，不计业务失败"
+      }
+    },
+    "site_descriptor": {
+      "path": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web/.文献选题摸底智能体.qoder.site",
+      "status": "沿用现有站点描述文件与项目身份；未创建第二个本地站点，未手写发布字段"
+    }
+  },
+  "local_stub_acceptance": {
+    "scope_note": "以下全部为本地 stub/本地进程结果（127.0.0.1:5192 静态源站 -> Deno Function（import map 指向自有 stub） -> Python API :8024，Redis :6392），不代表公网或真实 Qoder 平台行为",
+    "driver_results": {
+      "source": "evidence/local-acceptance-results.json",
+      "passed": 17,
+      "failed": 0,
+      "items": [
+        {
+          "id": "LOCAL-SESS-01",
+          "passed": true,
+          "summary": "两名匿名访客经同源代理各建会话（201 + HttpOnly Cookie，会话互不相同）"
+        },
+        {
+          "id": "LOCAL-SESS-02",
+          "passed": true,
+          "summary": "无 Cookie 匿名访问任务接口返回 401"
+        },
+        {
+          "id": "LOCAL-IDEM-01",
+          "passed": true,
+          "summary": "同会话同 Idempotency-Key 重放只建一单（同 task id，列表计数 1）"
+        },
+        {
+          "id": "LOCAL-IDEM-02",
+          "passed": true,
+          "summary": "不同会话使用相同 Key 各建各单，互不串单"
+        },
+        {
+          "id": "LOCAL-ISO-01",
+          "passed": true,
+          "summary": "非所有者读任务/列制品/写答案一律 404"
+        },
+        {
+          "id": "LOCAL-ISO-02",
+          "passed": true,
+          "summary": "B 的任务/历史列表不含 A 的任务"
+        },
+        {
+          "id": "LOCAL-ISO-03",
+          "passed": true,
+          "summary": "所有者可正常提交答案并推进流程"
+        },
+        {
+          "id": "LOCAL-ART-01",
+          "passed": true,
+          "summary": "制品列表含 DOCX/PPTX/PNG/HTML/SVG/Unicode 名六类制品并带签名 URL"
+        },
+        {
+          "id": "LOCAL-ART-02",
+          "passed": true,
+          "summary": "六类制品经代理下载字节数与 SHA-256 全部一致（mobile.html 去除服务端内嵌签名后与原件一致）"
+        },
+        {
+          "id": "LOCAL-CDN-01",
+          "passed": true,
+          "summary": "HTML/SVG 为 inline，DOCX/PPTX 为 attachment，Cache-Control 全部 private, no-store"
+        },
+        {
+          "id": "LOCAL-CDN-02",
+          "passed": true,
+          "summary": "mobile.html 内嵌长图使用 PNG 自己的签名 URL（载荷经 itsdangerous 解码核对：filename=文献图谱仪表盘.png 且绑定所有者会话与任务）"
+        },
+        {
+          "id": "LOCAL-SIG-01",
+          "passed": true,
+          "summary": "所有者签名篡改/缺失/换文件名返回 403；跨会话访问在非所有者拦截层返回 404（与“非所有者统一 404”规格一致）"
+        },
+        {
+          "id": "LOCAL-STO-01",
+          "passed": true,
+          "summary": "Function 内部制品接口：匿名 403；worker 令牌可 PUT/GET/列举，Unicode 对象名字节往返一致；响应 Cache-Control private, no-store"
+        },
+        {
+          "id": "LOCAL-CDN-03",
+          "passed": true,
+          "summary": "代理头白名单：仅 cookie/user-agent/x-forwarded-for/x-admin-token/idempotency-key/content-type 转发；authorization、x-worker-token、x-real-ip 及自定义头被丢弃"
+        },
+        {
+          "id": "LOCAL-ADM-01",
+          "passed": true,
+          "summary": "管理接口匿名 403，持管理员令牌 200"
+        },
+        {
+          "id": "LOCAL-ADM-02",
+          "passed": true,
+          "summary": "管理员撤销会话后该会话立即 401，其他会话不受影响"
+        },
+        {
+          "id": "LOCAL-LOG-01",
+          "passed": true,
+          "summary": "全部签名/Cookie/管理员与 worker 令牌均未出现在本地 API/Function/静态访问日志中（应用日志脱敏过滤器生效：路径显示为 [REDACTED_PATH]，签名显示为 [REDACTED]）"
+        }
+      ]
+    },
+    "expired_signature": {
+      "source": "scripts/test-expired-signature.py（itsdangerous 时钟 +700s 确定性过期）",
+      "passed": true,
+      "summary": "600s 过期的签名被 resolve() 拒绝返回 403；对照组未过期签名正常取件"
+    },
+    "embedded_signature_binding": {
+      "source": "scripts/verify-embedded-signature.py",
+      "passed": true,
+      "summary": "mobile.html 内嵌签名解码后 filename=文献图谱仪表盘.png，task_id/session_id 与本地库所有者记录一致，载荷字段恰好三项"
+    },
+    "browser_results": {
+      "source": "evidence/browser-check-results.json（Playwright 双全新上下文）",
+      "passed": 6,
+      "failed": 0,
+      "screenshots": [
+        "screenshots/a1-invite-desktop.png",
+        "screenshots/a2-task-desktop.png",
+        "screenshots/a3-history-desktop.png",
+        "screenshots/b1-invite-narrow.png",
+        "screenshots/b2-task-narrow.png",
+        "screenshots/b3-cross-task-narrow.png"
+      ],
+      "items": [
+        {
+          "id": "LOCAL-BRW-01",
+          "passed": true,
+          "summary": "访客 A 桌面黄金流程：公开入口→建会话→自动进入任务流程"
+        },
+        {
+          "id": "LOCAL-BRW-02",
+          "passed": true,
+          "summary": "A 研究历史仅含自己的任务"
+        },
+        {
+          "id": "LOCAL-BRW-03",
+          "passed": true,
+          "summary": "浏览器内携带 HttpOnly Cookie 下载制品 200 且 SHA-256 一致，attachment + private, no-store"
+        },
+        {
+          "id": "LOCAL-BRW-04",
+          "passed": true,
+          "summary": "访客 B 窄屏（390x844）独立上下文黄金流程，任务互不相同"
+        },
+        {
+          "id": "LOCAL-BRW-05",
+          "passed": true,
+          "summary": "B 研究历史含 B 不含 A"
+        },
+        {
+          "id": "LOCAL-BRW-06",
+          "passed": true,
+          "summary": "B 深链访问 A 的任务：页面重载为公开入口（与 b1 截图一致），无 A 的任何内容泄露；API 层该请求为 404"
+        }
+      ]
+    }
+  },
+  "cloud_acceptance": {
+    "status": "未授权未执行",
+    "not_executed": [
+      "prepare_site / 官方发布包生成与检查",
+      "云项目创建 / Function 部署 / 公开发布",
+      "真实项目 ID、发布状态、公开 URL 与回滚验证",
+      "云 Storage 真实字节上传/下载（本轮仅验证本地 stub 与本地文件系统路径）",
+      "真实平台签名 URL 过期/篡改/跨会话行为（本轮为 itsdangerous 本地语义）",
+      "公网双人隔离（本轮为本地双上下文 rehearse）",
+      "平台 CDN 响应头、白名单转发与平台访问日志脱敏（本轮为本地 Function/静态源站观测）",
+      "真实浏览器对公开站点的黄金流程/窄屏/下载/异常路径"
+    ],
+    "required_authorization": "需用户在主线明确授权：①使用现有描述文件（.文献选题摸底智能体.qoder.site）对应的新建或复用云项目 ID；②公开访问范围（不得将已有私有站点擅自改公开）；③是否允许产生云服务费用及费用上限。付费资源/套餐升级/生产数据迁移需单独批准。获得明确授权前保持停止",
+    "cloud_build_gate": [
+      "云端构建显式注入 VITE_API_BASE_URL=/functions/v1/app",
+      "发布产物核实 API 基址未退回 /api",
+      "以主线最新代码复核访问日志专用脱敏 filter 行为"
+    ],
+    "holding_status": "保持停止：不执行 prepare_site、云项目创建、部署、发布或任何收费操作，直至获得上述明确授权"
+  },
+  "rollback": {
+    "status": "不适用——本轮未部署、未发布、未创建云资源",
+    "future_note": "获授权部署后须记录：项目 ID、发布版本/ revision、公开 URL、回滚方式（平台回滚入口或重新发布上一版本）；不得执行 --delete 或删除既有站点/对象"
+  },
+  "findings_and_notes": [
+    "Uvicorn 访问日志 handleError 堆栈：主线已复现并修复（通用脱敏 filter 清空 AccessFormatter 五元组，现改用专用访问日志 filter，保留参数结构并脱敏，含 /api/health 等安全路由）；本验收不再制作补丁，云端阶段以主线最新代码复核",
+    "前端构建基址：云端构建必须显式注入 VITE_API_BASE_URL=/functions/v1/app，并在发布产物中核实未退回 /api；该项列为云端发布前硬性检查",
+    "Deno.serve 监听：保留平台实际 socket／中继要求及本地证据；未为本地便利硬编码 PORT，未改变线上启动协议",
+    "前端深链 /history、/tasks/<id> 直接刷新由 SPA fallback 承载；未持会话态时会呈现公开入口页，无数据泄露",
+    "首次前端构建未设 VITE_API_BASE_URL 导致包内基址为 /api（本轮已按项目约定重建为 /functions/v1/app）；与上一条一并纳入云端构建检查",
+    "会话/建单限流为 Redis 固定窗口（session 10/h，task 3/日/会话），本地验收期间通过隔离实例 flushall 复位计数，未影响任何其他环境"
+  ],
+  "evidence_index": [
+    "result.json（本文件）",
+    "evidence/local-acceptance-results.json",
+    "evidence/browser-check-results.json",
+    "evidence/fixture-sha256.json",
+    "screenshots/*.png（6 张，本地来源）",
+    "logs/api.log（脱敏后）、logs/function.log、logs/static.log",
+    "scripts/（驱动、stub、服务器、签名验证脚本，可复跑）",
+    "data/acceptance.db、data/artifacts（隔离测试数据，保留备查）"
+  ],
+  "conclusion": {
+    "passed": "离线准备全部通过；本地 stub 范围 17+2+6 项验收全部通过",
+    "failed": "无",
+    "unauthorized": "全部云端项目（部署/发布/云 Storage/公网隔离/平台 CDN 与日志）",
+    "unverified": "真实 Qoder 平台 Provider 权限、事务原子性、RLS、平台日志行为",
+    "overall": "离线准备与本地验收完成并保持停止；真实 Provider、RLS、平台日志与公网多人隔离继续列为未验证；本地通过结果不作为公网放行依据；云端验收等待用户在主线明确授权后按同一清单执行并单独记录"
+  },
+  "mainline_alignment": {
+    "uvicorn_access_log": "主线已复现并修复（专用访问日志脱敏 filter）；本验收不再制作补丁，云端阶段以主线最新代码复核",
+    "vite_api_base_url": "云端构建显式注入 /functions/v1/app 并核实产物未退回 /api（硬性检查）",
+    "deno_serve_listen": "保留平台 socket/中继要求及证据；未硬编码 PORT，未改变线上启动协议"
+  }
+}

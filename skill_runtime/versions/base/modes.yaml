@@ -1,0 +1,8 @@
+{
+  "A": {"word_range": [1500, 2500], "pool_size": 50},
+  "B": {"word_range": [2000, 3000], "pool_size": [30, 50]},
+  "C1": {"word_range": [800, 1200], "pool_size": [20, 30]},
+  "C2": {"word_range": [800, 1200], "pool_size": [20, 30]},
+  "D": {"word_range": [3000, 6000], "pool_size": 50, "reading_cards": [3, 5]},
+  "E": {"word_range": [1500, 2500], "pool_size": 50}
+}

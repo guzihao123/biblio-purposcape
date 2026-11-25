@@ -1,0 +1,56 @@
+{
+  "id": "243c5966-71c9-406e-b386-d684ac706095",
+  "session_id": "f277752c-5299-4626-b26c-61ca8ddcb1ee",
+  "skill_version_id": "23b60c2a-37e2-481a-a336-c68e529aafe8",
+  "direction": "肝细胞癌免疫治疗耐药机制",
+  "state": "dashboard_ready",
+  "next_card": "adjustment",
+  "card": {
+    "id": "adjustment",
+    "eyebrow": "检索后调整",
+    "title": "看完分布，要不要调整？",
+    "description": "看完这些图谱，要调整哪些设定？可多选；按原计划继续具有一票否决权。",
+    "multiple": true,
+    "options": [
+      {
+        "value": "terms",
+        "label": "调整学术术语",
+        "description": "重出术语卡并重建双范围",
+        "preview": "重新检索"
+      },
+      {
+        "value": "years",
+        "label": "调整年限范围",
+        "description": "只重建限定范围，不限范围复用",
+        "preview": "限定范围更新"
+      },
+      {
+        "value": "mode",
+        "label": "调整洞察用途",
+        "description": "重载模式卡并重选写作池",
+        "preview": "模式更新"
+      },
+      {
+        "value": "continue",
+        "label": "按原计划继续（进入交付形式选择）",
+        "description": "冻结设定并选择交付形式",
+        "preview": "进入最后一问"
+      }
+    ]
+  },
+  "created_at": "2026-11-24T11:50:28.787755",
+  "updated_at": "2026-11-24T11:50:31.186347",
+  "progress": {
+    "stage": "search",
+    "message": "双范围检索、分析与七类图谱已生成",
+    "checkpoint": {
+      "stage": "search",
+      "limited_count": 4,
+      "unlimited_count": 4,
+      "graph_artifacts": 6,
+      "storage_synced": 0,
+      "input_hash": "b8da54578af3f18ed51183c117d30849b75c377762a05c31c6f3976961959564",
+      "timestamp": "2026-11-24T11:50:31.183471+00:00"
+    }
+  }
+}

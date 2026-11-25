@@ -1,0 +1,105 @@
+# Independent offline test environment for purpose-landscape-web.
+#
+# Deliberately isolated from the production Compose project:
+#   - fixed project name `purpose-landscape-web-test` (never touches the
+#     production `landscape-data` / `landscape-redis` volumes or the
+#     production Redis / database);
+#   - web published on 8034 (alternate 8035), never the production 8000;
+#   - no live-provider keys; live acceptance remains opt-in and unset.
+#
+# Usage (from anywhere):
+#   docker compose -f dev/acceptance/docker-test-profile/compose.test.yaml up --build
+
+name: purpose-landscape-web-test
+
+services:
+  redis:
+    image: redis:7-alpine
+    # Dedicated test volume, project-scoped: purpose-landscape-web-test_test-redis.
+    volumes:
+      - test-redis:/data
+
+  web:
+    build:
+      context: ../../..
+      dockerfile: dev/acceptance/docker-test-profile/Dockerfile.test
+      additional_contexts:
+        devsrc: ../../../dev
+        hcc: ../../../../landscape-hcc-immunotherapy-resistance-20261122
+    image: purpose-landscape-web-test:latest
+    # The image CMD runs pytest; the web service overrides it with the
+    # production server entrypoint (same command as the production image).
+    command: sh -c "python -m uvicorn app.main:app --host 0.0.0.0 --port $${PORT:-8000}"
+    environment:
+      DATABASE_URL: sqlite:////data/tasks.db
+      ARTIFACT_ROOT: /data/artifacts
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      # Dedicated test volume, never the production landscape-data volume.
+      - test-data:/data
+    ports:
+      # Test-only port. Override with PLW_TEST_HTTP_PORT=8035 if 8034 is taken.
+      - "${PLW_TEST_HTTP_PORT:-8034}:8000"
+    depends_on:
+      - redis
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)"
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  worker:
+    image: purpose-landscape-web-test:latest
+    command: python worker.py
+    environment:
+      DATABASE_URL: sqlite:////data/tasks.db
+      ARTIFACT_ROOT: /data/artifacts
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - test-data:/data
+    depends_on:
+      - redis
+
+  backend-test:
+    image: purpose-landscape-web-test:latest
+    # Default offline suite: no RUN_LIVE_OPENALEX_ACCEPTANCE, no QWEN_API_KEY,
+    # no other paid/provider variables. Live tests self-skip by design.
+    environment:
+      PURPOSE_LANDSCAPE_HCC_FIXTURES: /app/fixtures/hcc-20261122
+      PYTHONPATH: /app/backend
+    command: python -m pytest -q -p no:cacheprovider
+    # No published ports: tests run fully in-container.
+    #
+    # Everything the suite needs is baked into the test image; only
+    # .env.example remains a runtime mount because the production
+    # .dockerignore excludes it from every build context and that file
+    # must stay unmodified.
+    volumes:
+      - ../../../.env.example:/app/.env.example:ro
+
+  node-test:
+    build:
+      context: ../../..
+      dockerfile: dev/acceptance/docker-test-profile/Dockerfile.node-test
+      # Named context exposing the project dev/ stubs, which the main context
+      # excludes via the production .dockerignore (must stay unmodified).
+      additional_contexts:
+        devstubs: ../../../dev
+    image: purpose-landscape-web-node-test:latest
+    # Node 22 strips TS types natively; no Deno in the container.
+    command:
+      - node
+      - --experimental-strip-types
+      - --test
+      - sites/functions/task_store.test.mjs
+      - sites/functions/routes.test.mjs
+      - sites/functions/forward.test.mjs
+
+volumes:
+  test-data:
+  test-redis:

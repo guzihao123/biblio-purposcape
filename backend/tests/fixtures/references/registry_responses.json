@@ -1,0 +1,71 @@
+{
+  "crossref": {
+    "10.1000/complete": {
+      "message": {
+        "title": ["A complete record"],
+        "author": [{"family": "Smith", "given": "John"}],
+        "container-title": ["Journal of Fixtures"],
+        "published": {"date-parts": [[2024, 5, 1]]},
+        "volume": "12",
+        "issue": "3",
+        "page": "101-110",
+        "type": "journal-article",
+        "publisher": "Fixture Press",
+        "is-referenced-by-count": 7,
+        "update-to": [],
+        "updated-by": []
+      }
+    },
+    "10.1000/mismatch": {
+      "message": {
+        "title": ["Registry title"],
+        "author": [{"family": "Doe", "given": "Jane"}],
+        "container-title": ["Journal of Fixtures"],
+        "issued": {"date-parts": [[2024]]},
+        "volume": "",
+        "issue": "",
+        "page": "",
+        "type": "journal-article",
+        "publisher": "Fixture Press",
+        "update-to": [],
+        "updated-by": []
+      }
+    },
+    "10.1000/retracted": {
+      "message": {
+        "title": ["Retracted record"],
+        "author": [{"family": "Smith", "given": "John"}],
+        "container-title": ["Journal of Fixtures"],
+        "issued": {"date-parts": [[2023]]},
+        "type": "journal-article",
+        "publisher": "Fixture Press",
+        "update-to": [],
+        "updated-by": [
+          {
+            "type": "retraction",
+            "label": "Retraction",
+            "DOI": "10.1000/retraction-notice",
+            "updated": {"date-parts": [[2025, 1, 2]]}
+          }
+        ]
+      }
+    }
+  },
+  "datacite": {
+    "10.2000/dataset": {
+      "data": {
+        "attributes": {
+          "titles": [{"title": "数据集"}],
+          "creators": [{"name": "张伟"}],
+          "publisher": "Example repository",
+          "publicationYear": 2024,
+          "types": {
+            "resourceTypeGeneral": "Dataset",
+            "resourceType": "Dataset"
+          },
+          "relatedIdentifiers": []
+        }
+      }
+    }
+  }
+}

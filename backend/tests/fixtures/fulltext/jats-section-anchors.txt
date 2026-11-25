@@ -1,0 +1,11 @@
+=== sec Methods ===
+Exact offline XML methods sentence.
+
+=== sec Cohort ===
+Nested offline section sentence.
+
+=== sec Results ===
+Offline result sentence without external evidence.
+
+=== sec Data availability ===
+All fixture data are local and synthetic.

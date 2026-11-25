@@ -1,0 +1,18 @@
+{
+  "skill-regression-motion": {
+    "startTime": "2026-11-24T12:34:49.390Z",
+    "duration": 9141.471,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "skill-regression-task-browser": {
+    "startTime": "2026-11-24T12:34:59.336Z",
+    "duration": 47134.854999999996,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

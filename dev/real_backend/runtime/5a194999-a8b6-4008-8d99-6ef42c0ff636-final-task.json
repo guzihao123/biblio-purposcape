@@ -1,0 +1,24 @@
+{
+  "id": "5a194999-a8b6-4008-8d99-6ef42c0ff636",
+  "session_id": "296107e2-d719-4c94-8594-c0081e74e60b",
+  "skill_version_id": "23b60c2a-37e2-481a-a336-c68e529aafe8",
+  "direction": "肝细胞癌免疫治疗耐药机制",
+  "state": "done",
+  "next_card": null,
+  "card": null,
+  "created_at": "2026-11-24T11:50:05.975310",
+  "updated_at": "2026-11-24T11:50:17.397168",
+  "progress": {
+    "stage": "generate",
+    "message": "交付文件已生成；请查看复核与覆盖边界",
+    "checkpoint": {
+      "stage": "generate",
+      "clean": true,
+      "failures": [],
+      "warnings": [],
+      "storage_synced": 0,
+      "input_hash": "7e45c8f7e91b414d6425716a6786037756c08d6495350d046642598dfb1a6609",
+      "timestamp": "2026-11-24T11:50:17.394165+00:00"
+    }
+  }
+}

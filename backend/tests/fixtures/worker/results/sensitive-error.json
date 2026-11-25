@@ -1,0 +1,129 @@
+{
+  "scenario": "sensitive-error",
+  "task_id": "2ffb047f-79ae-4de4-8016-5bd72d9500f7",
+  "states": [
+    "searching",
+    "error"
+  ],
+  "rq": {
+    "search": {
+      "worker_class": "ProtectedSimpleWorker",
+      "burst": true,
+      "job_ids": [
+        "8e7842ac-061b-4883-aeb3-00cfe12b248d"
+      ],
+      "job_statuses": [
+        "failed"
+      ],
+      "job_func_names": [
+        "app.queueing.run_stage"
+      ],
+      "queue_count_after": 0,
+      "log_file": "sensitive-error-search-worker.log",
+      "log_text": "2026-11-25 07:56:39,305 rq.worker INFO Worker offline-e2e-sensitive-error-search-494ee909: started with PID 13241, version 2.8.0\n2026-11-25 07:56:39,305 rq.worker INFO Worker offline-e2e-sensitive-error-search-494ee909: subscribing to channel rq:pubsub:offline-e2e-sensitive-error-search-494ee909\n2026-11-25 07:56:39,306 rq.worker INFO *** Listening on landscape...\n2026-11-25 07:56:39,306 rq.worker INFO Worker offline-e2e-sensitive-error-search-494ee909: cleaning registries for queue: landscape\n2026-11-25 07:56:39,307 rq.worker INFO landscape: app.queueing.run_stage('2ffb047f-79ae-4de4-8016-5bd72d9500f7', 'search') (8e7842ac-061b-4883-aeb3-00cfe12b248d)\n2026-11-25 07:56:39,312 rq.worker ERROR Worker offline-e2e-sensitive-error-search-494ee909: job 8e7842ac-061b-4883-aeb3-00cfe12b248d: exception raised while executing (app.queueing.run_stage)\nTraceback (most recent call last):\n  File \"[REDACTED_PATH]\", line 1522, in perform_job\n    return_value = job.perform()\n  File \"[REDACTED_PATH]\", line 1342, in perform\n    self._result = self._execute()\n  File \"[REDACTED_PATH]\", line 1402, in _execute\n    result = self.func(*self.args, **self.kwargs)\n  File \"[REDACTED_PATH]\", line 386, in run_stage\n    raise public_error from None\napp.queueing.StageExecutionError: 任务执行失败，请稍后重试。\n\n2026-11-25 07:56:39,314 rq.worker INFO Worker offline-e2e-sensitive-error-search-494ee909: done, quitting\n2026-11-25 07:56:39,314 rq.worker INFO Worker offline-e2e-sensitive-error-search-494ee909: unsubscribing from channel rq:pubsub:offline-e2e-sensitive-error-search-494ee909\n"
+    }
+  },
+  "database": {
+    "state": "error",
+    "next_card": null,
+    "jobs": [
+      {
+        "id": "1332c9ad-6f1b-4ad0-b3ef-e95975da162a",
+        "kind": "search",
+        "status": "failed",
+        "answer_id": 4
+      }
+    ],
+    "answers": [
+      {
+        "card_id": "direction",
+        "result_state": "collecting_mode",
+        "next_card": "mode",
+        "job_id": null
+      },
+      {
+        "card_id": "mode",
+        "result_state": "collecting_terms",
+        "next_card": "terms",
+        "job_id": null
+      },
+      {
+        "card_id": "terms",
+        "result_state": "collecting_years",
+        "next_card": "years",
+        "job_id": null
+      },
+      {
+        "card_id": "years",
+        "result_state": "searching",
+        "next_card": null,
+        "job_id": "1332c9ad-6f1b-4ad0-b3ef-e95975da162a"
+      }
+    ],
+    "events": [
+      {
+        "kind": "terms_candidates",
+        "payload": {
+          "direction": "城市内涝与地下车库韧性",
+          "mode": "A",
+          "options": [],
+          "source": "model_openalex"
+        }
+      },
+      {
+        "kind": "queued",
+        "payload": {
+          "stage": "search",
+          "input_hash": "ba74f8df7653fbab5ee5c8a20b0f174f8695248197922f0fafc0ca8b8a25cbf6",
+          "timestamp": "2026-11-24T23:56:39.297958+00:00"
+        }
+      },
+      {
+        "kind": "started",
+        "payload": {
+          "stage": "search",
+          "input_hash": "ba74f8df7653fbab5ee5c8a20b0f174f8695248197922f0fafc0ca8b8a25cbf6",
+          "timestamp": "2026-11-24T23:56:39.309367+00:00"
+        }
+      },
+      {
+        "kind": "failed",
+        "payload": {
+          "stage": "search",
+          "input_hash": "ba74f8df7653fbab5ee5c8a20b0f174f8695248197922f0fafc0ca8b8a25cbf6",
+          "timestamp": "2026-11-24T23:56:39.311209+00:00",
+          "message": "任务执行失败，请稍后重试。",
+          "retryable": true,
+          "retry_action": {
+            "action": "retry_stage",
+            "stage": "search"
+          }
+        }
+      }
+    ],
+    "progress": {
+      "stage": "search",
+      "message": "任务执行失败，请稍后重试。",
+      "input_hash": "ba74f8df7653fbab5ee5c8a20b0f174f8695248197922f0fafc0ca8b8a25cbf6",
+      "checkpoint": null,
+      "traceback": "Traceback (most recent call last):\n  File \"[REDACTED_PATH]\", line 316, in run_stage\n    result = service(task, stage_input) or {}\n  File \"[REDACTED_PATH]\", line 694, in fail_stage\n    raise RuntimeError(message)\nRuntimeError: OFFLINE_FORCED_DASHBOARD_RENDERER_FAILURE; token=[REDACTED]; password=[REDACTED]; secret: [REDACTED]; [REDACTED_SQL]\n"
+    }
+  },
+  "public_response": {
+    "id": "2ffb047f-79ae-4de4-8016-5bd72d9500f7",
+    "session_id": "3035f274-186b-457d-9544-965d6df69d7c",
+    "skill_version_id": "728d800f-a8ad-48da-8411-f56dd4a86847",
+    "direction": "城市内涝与地下车库韧性",
+    "state": "error",
+    "next_card": null,
+    "card": null,
+    "created_at": "2026-11-24T23:56:39.276286",
+    "updated_at": "2026-11-24T23:56:39.311959",
+    "progress": {
+      "stage": "search",
+      "message": "任务执行失败，请稍后重试。",
+      "checkpoint": null
+    }
+  },
+  "recorded_at": "2026-11-24T23:56:39.319032+00:00"
+}

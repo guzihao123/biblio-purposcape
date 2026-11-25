@@ -1,0 +1,37 @@
+# Independent Node 22 environment for the Qoder Sites Function tests
+# (sites/functions/*.test.mjs) and the fake-store / RLS prerequisite
+# contract. No Deno is required: the tests fall back to node:test, and
+# Node 22 strips TypeScript types natively.
+#
+# python3 is installed only because two Node tests spawn `python3 -c` to
+# exercise backend/app/sites_task_store.py (a stdlib-only module); no
+# pip packages are needed.
+#
+# Build context must be the project root, plus a named context exposing dev/
+# (the project .dockerignore excludes dev/ from the main context, and the
+# production .dockerignore must not be modified):
+#   docker build -f dev/acceptance/docker-test-profile/Dockerfile.node-test \
+#     --build-context devstubs=dev \
+#     -t purpose-landscape-web-node-test .
+
+FROM node:22-bookworm-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY sites ./sites
+# Local stubs used by the route tests when running under Node instead of Deno.
+# They come from the named `devstubs` context (project dev/) because the main
+# build context excludes dev/ via the production .dockerignore.
+COPY --from=devstubs storage-stub.mjs /app/dev/storage-stub.mjs
+COPY --from=devstubs database-stub.mjs /app/dev/database-stub.mjs
+COPY --from=devstubs import_map.json /app/dev/import_map.json
+# Stdlib-only worker client probed by two Node tests via python3.
+COPY backend ./backend
+
+CMD ["node", "--experimental-strip-types", "--test", \
+     "sites/functions/task_store.test.mjs", \
+     "sites/functions/routes.test.mjs", \
+     "sites/functions/forward.test.mjs"]

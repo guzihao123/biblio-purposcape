@@ -1,0 +1,10 @@
+代表作精读［3］｜方法与数据
+Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in
+nepatocelular carcinoma
+研究问题：组蛋自乳酸化如何通过 MVP 相关机制影响 PD-L1降解，并参与肝细胞癌免疫检查点抑制剂耐药。
+数据：摘要列出细胞毒性、流式细胞、原位小鼠模型、测序、蛋自降解和相互作用实验；各实验样本量及重复设
+置未完整提供。
+方法：采用染色质免疫共沉淀测序和 RNA 测序识别乳酸化调控基因谱，结合蛋自降解、泛素化、相互作用和突
+变实验解析 MIVP 相关机制，并评价药物抑制。
+阅读深度：仅摘要（离线真实摘要，未读全文）
+18

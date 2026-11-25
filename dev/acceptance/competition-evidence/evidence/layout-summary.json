@@ -1,0 +1,134 @@
+{
+  "01-390-anonymous-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "01-390-dashboard-desktop-layout.json": {
+    "frames": 2,
+    "no_horizontal_overflow": true
+  },
+  "01-390-dashboard-light-layout.json": {
+    "frames": 2,
+    "no_horizontal_overflow": true
+  },
+  "01-390-delivery-layout.json": {
+    "frames": 2,
+    "no_horizontal_overflow": true
+  },
+  "01-390-direction-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "01-390-history-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "01-390-mode-receipt-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "01-390-report-initial-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "01-390-report-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "01-390-search-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "01-390-terms-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "01-390-years-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "01-desktop-anonymous-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "02-390-b-project-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "02-390-report-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "02-desktop-dashboard-layout.json": {
+    "frames": 2,
+    "no_horizontal_overflow": true
+  },
+  "02-desktop-report-final-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "02-desktop-report-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "03-390-c-dashboard-layout.json": {
+    "frames": 2,
+    "no_horizontal_overflow": true
+  },
+  "03-390-c-info-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "03-390-c-mode-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "03-390-c-route-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "03-390-c-terms-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "03-390-c-years-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "03-390-report-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "04-390-d-dashboard-layout.json": {
+    "frames": 2,
+    "no_horizontal_overflow": true
+  },
+  "04-390-d-team-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "04-390-d-terms-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "04-390-d-years-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "04-390-report-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "05-390-admin-draft-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "05-390-admin-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  },
+  "05-desktop-admin-layout.json": {
+    "frames": 1,
+    "no_horizontal_overflow": true
+  }
+}

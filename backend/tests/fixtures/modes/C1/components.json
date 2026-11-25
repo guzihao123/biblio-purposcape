@@ -1,0 +1,41 @@
+{
+  "paragraph_cards": [
+    {
+      "function": "背景重要性",
+      "claim": "免疫治疗已改变肝细胞癌治疗策略，但耐药和分层标志物不足仍限制研究转化。",
+      "evidence": ["general_progress", "il8_need"]
+    },
+    {
+      "function": "研究进展",
+      "claim": "S1P 代谢、IL-8/CXCR2 和乳酸化调控分别提供机制与干预证据。",
+      "evidence": ["s1p_targeting", "il8_targeting", "lactylation_targeting"]
+    },
+    {
+      "function": "现有研究不足",
+      "claim": "三条证据链尚需在本文问题下分层对解，不能把不同模型的结果直接合并为协同结论。",
+      "evidence": ["s1p_resistance", "il8_association", "lactylation_mechanism"]
+    },
+    {
+      "function": "研究思路与方法",
+      "claim": "本文拟以动态样本、髓系细胞状态和 PD-L1 稳定性评价逐项回应上述不足。",
+      "evidence": ["il8_method", "lactylation_method"]
+    },
+    {
+      "function": "研究贡献",
+      "claim": "本文贡献定位为可复核的多机制对解框架，而非预设联合治疗已经有效。",
+      "evidence": ["general_resistance", "il8_need"]
+    }
+  ],
+  "gaps": [
+    {
+      "gap": "多机制对解缺少统一分层评价",
+      "response": "本文将代谢、细胞迁移与蛋白稳定性分层验证，并保留各自证据边界。",
+      "evidence": ["s1p_resistance", "il8_mdsc", "lactylation_mechanism"]
+    },
+    {
+      "gap": "动态分层的组织状态对应仍需复核",
+      "response": "本文将结合治疗前后样本、循环指标与组织细胞状态评价。",
+      "evidence": ["il8_method", "il8_association"]
+    }
+  ]
+}

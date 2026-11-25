@@ -1,0 +1,61 @@
+{
+  "queries": [
+    "hepatocellular carcinoma immunotherapy resistance"
+  ],
+  "from_year": null,
+  "group_by": "publication_year",
+  "topic_series": "https://openalex.org/T11313",
+  "total_hits": 192,
+  "groups": [
+    {
+      "key": "2004",
+      "name": "2004",
+      "count": 1
+    },
+    {
+      "key": "2017",
+      "name": "2017",
+      "count": 3
+    },
+    {
+      "key": "2019",
+      "name": "2019",
+      "count": 3
+    },
+    {
+      "key": "2020",
+      "name": "2020",
+      "count": 7
+    },
+    {
+      "key": "2021",
+      "name": "2021",
+      "count": 5
+    },
+    {
+      "key": "2022",
+      "name": "2022",
+      "count": 8
+    },
+    {
+      "key": "2023",
+      "name": "2023",
+      "count": 24
+    },
+    {
+      "key": "2024",
+      "name": "2024",
+      "count": 41
+    },
+    {
+      "key": "2025",
+      "name": "2025",
+      "count": 40
+    },
+    {
+      "key": "2026",
+      "name": "2026",
+      "count": 59
+    }
+  ]
+}

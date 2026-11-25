@@ -1,0 +1,143 @@
+{
+  "task": "主线纠偏后的只读复核（Render 部署前检查补充）",
+  "date": "2026-11-25",
+  "scope_note": "仅静态复核；未修改主线源码与配置、未执行 SQL、未连接或清空数据库、未创建云资源、未部署、未做付费调用。原始 result.json 与 preflight-checklist.md 作为历史快照完整保留，未覆盖。",
+  "overall_verdict": "NOT_DEPLOYABLE（维持）",
+  "overall_reason": "B-01～B-06 维持原判定；B-02 的修复方向按主线口径纠正（远端制品存储收口，而非双挂 Disk）；B-07 证据更新为'真实 RLS 局部验证通过'但阻断不解除。全部 7 项阻断仍需逐项闭合后方可进入首次部署。",
+
+  "corrections": [
+    {
+      "id": "B-02",
+      "correction": "撤回此前'diff 建议：web/worker 双挂同名 Render Disk'的建议。Render 持久 Disk 不能作为两个独立服务之间的共享文件系统，双挂同名盘不是有效方案。",
+      "mainline_direction": "优先收口远端制品存储与回源链：QODER_SITES_ORIGIN + WORKER_SHARED_SECRET 作为跨容器制品的唯一权威通路，本地 ARTIFACT_ROOT 仅作过程暂存。",
+      "acceptance_requirements": [
+        "真实字节上传（worker → 远端制品存储）",
+        "web 端真实下载并校验字节完整性（非仅元数据 list 同步）",
+        "所有者隔离：跨会话签名 URL / 直接路径访问均不可读",
+        "签名 URL 生成、过期与篡改行为实测",
+        "worker/web 跨容器读取闭环：worker 产出后 web resolve 命中远端回源"
+      ],
+      "note": "此前 result.json 中 B-02 的 diff_suggestion（disk 挂载段）作废，以本条为准；result.json 保留原样作为历史快照。"
+    },
+    {
+      "id": "B-07",
+      "correction": "撤回'answers 整表无 RLS、从未在真实库执行'的旧结论（该结论对应 2026-11-24 20:56 的草案快照）。主线已在独立 Supabase 测试项目完成六表 RLS 迁移与局部真实角色验证。",
+      "new_evidence": {
+        "files": [
+          "dev/acceptance/provider-live/migrate_rls.py",
+          "dev/acceptance/provider-live/rls-verification.json",
+          "dev/acceptance/provider-live/verify_rls.py"
+        ],
+        "verified_facts": [
+          "六张表全部 ENABLE + FORCE ROW LEVEL SECURITY：sites_anonymous_sessions、sites_skill_versions、sites_tasks、sites_task_answers、sites_task_artifacts、sites_task_quota_windows（含此前整体遗漏的 sites_task_answers，对应旧 ISSUE-01 的缺口已在新草案中补上）",
+          "角色分离：app_user / app_admin / audit_reader 三个真实角色参与验证",
+          "同所有者创建并可回读、跨所有者任务读返回 0 行、跨所有者任务/答案插入被拒",
+          "app_user 写 skill 被拒、过期会话插入被拒",
+          "audit_reader 跨会话只读成立",
+          "验证后 no_data_deleted=true，未删除任何数据"
+        ],
+        "environment": "独立 Supabase 测试项目，PostgreSQL 17.12，readiness.json 显示连接走 pooler（pooler_suspected=true），角色为超级用户且 BYPASSRLS=true（验证通过 audit_reader 等受限角色完成）"
+      },
+      "remaining_gap": "阻断不解除：完整 RLS 行为矩阵（全部命令类型 × 全部表的负向用例）、CAS / 幂等 / 配额回滚在 RLS 下的并发语义、连接池（pooler）下 app.session_id GUC 注入的串号风险、主存储全量接线均未闭合。pooler 场景尤其需要在真实连接池上复验 set_config/SET LOCAL 语义。",
+      "status": "真实 RLS 已局部验证，但完整 Provider 行为矩阵和权威存储接线未闭合"
+    }
+  ],
+
+  "blocker_exit_conditions": [
+    {
+      "id": "B-01",
+      "item": "前端 API 基址烘焙错误",
+      "exit_conditions": {
+        "static_config_pass": "Dockerfile ARG VITE_API_BASE_URL 默认值改为 /api；render.yaml 与 .env.example 口径一致",
+        "local_runtime_pass": "构建产物中 API_BASE 为 /api；vite preview 或容器内 curl 验证未知 /api 路径返回 404 JSON、已知路径返回 JSON（非 index.html）",
+        "real_cloud_pass": "staging 服务真实 HTTP 回归：登录（/api/session）、建单、进度轮询、工件下载全程无 SPA 回退吞请求"
+      }
+    },
+    {
+      "id": "B-02",
+      "item": "工件跨容器不可达",
+      "exit_conditions": {
+        "static_config_pass": "web/worker 均配置 QODER_SITES_ORIGIN + WORKER_SHARED_SECRET；制品权威通路为远端存储，本地目录仅暂存",
+        "local_runtime_pass": "本地 stub / 假存储下完成字节上传→回源下载闭环单测或集成测试",
+        "real_cloud_pass": "真实云端验收五项：字节上传、web 下载与完整性、所有者隔离、签名 URL 行为、worker/web 跨容器读取（缺一不可，元数据同步不构成通过）"
+      }
+    },
+    {
+      "id": "B-03",
+      "item": "数据库选型与来源",
+      "exit_conditions": {
+        "static_config_pass": "部署前置文档明确外部 Postgres 为必填；render.yaml 或部署清单不再允许静默回落 SQLite（生产模式漏配拒绝启动）",
+        "local_runtime_pass": "initialize_database() 的增量 ALTER 与唯一索引在外部 Postgres 上实测通过",
+        "real_cloud_pass": "首次部署连接真实 Postgres 完成建表/迁移；web 与 worker 连接同一实例并核对任务状态一致"
+      }
+    },
+    {
+      "id": "B-04",
+      "item": "密钥稳定性",
+      "exit_conditions": {
+        "static_config_pass": "SESSION_SECRET、ADMIN_TOKEN 列入创建服务前置必填清单；operator 生成并离线存档；任何文件、日志、报告不出现真实值",
+        "local_runtime_pass": "未设置密钥时生产模式启动即报错退出（本地可验证该守卫逻辑）",
+        "real_cloud_pass": "首次部署后验证会话在重启/重新部署后保持有效；ADMIN_TOKEN 可调通受保护端点"
+      }
+    },
+    {
+      "id": "B-05",
+      "item": "amd64 镜像构建",
+      "exit_conditions": {
+        "static_config_pass": "Dockerfile 无需改动（失败在 registry 网络层）",
+        "local_runtime_pass": "在 Docker Hub 可达的网络或 CI runner 上完成一次 linux/amd64 完整构建并留存日志；容器启动、/api/health、fc-match :lang=zh-cn、PPTX/PDF/OCR 冒烟全部通过",
+        "real_cloud_pass": "Render 首部署构建成功且健康检查通过（Render 构建即真实云端证据）"
+      },
+      "note": "现有 arm64 结果不可替代；当前网络不再重试。"
+    },
+    {
+      "id": "B-06",
+      "item": "主存储未全量接线",
+      "exit_conditions": {
+        "static_config_pass": "主路由、RQ worker、恢复调度、Skill 管理、进度事件、制品流程的存储调用点全部指向统一权威存储接口（代码走查确认无残留直写容器内 SQLite 的事实源路径）",
+        "local_runtime_pass": "假 Provider / 内存客户端下全链路集成测试通过（建会话→建单→状态推进→事件→制品→Skill 发布/回滚）",
+        "real_cloud_pass": "在授权的真实 Provider 上重复同一链路，含并发与故障注入场景"
+      }
+    },
+    {
+      "id": "B-07",
+      "item": "真实 Provider / RLS（证据已更新，阻断保留）",
+      "exit_conditions": {
+        "static_config_pass": "RLS 策略文本与固定 SQL 允许清单的一致性比对覆盖全部六表全部命令类型",
+        "local_runtime_pass": "CAS / 幂等 / 配额回滚 / revision 冲突语义的假环境测试完备",
+        "real_cloud_pass": "完整行为矩阵在真实库实测：六表 × SELECT/INSERT/UPDATE/DELETE 的跨所有者负向用例、并发条件写、幂等重放、配额原子扣减与回滚、连接池（pooler）下 GUC 注入无串号、audit_reader 只读边界；另需主存储全量接线（B-06）完成后在同一环境复验"
+      }
+    }
+  ],
+
+  "required_config_first_deploy": [
+    { "name": "DATABASE_URL", "purpose": "外部 Postgres 连接串；生产唯一事实源，禁止回落 SQLite" },
+    { "name": "REDIS_URL", "purpose": "Redis 连接串；当前由 render.yaml fromService 自动注入，无需手填" },
+    { "name": "SESSION_SECRET", "purpose": "会话 Cookie 与工件签名 URL 的签名密钥；部署间必须固定" },
+    { "name": "ADMIN_TOKEN", "purpose": "管理端点（Skill 发布/回滚等）的 X-Admin-Token 校验" },
+    { "name": "QWEN_API_KEY", "purpose": "Qwen 模型调用的凭证（付费模型，仅在授权环境注入）" },
+    { "name": "QWEN_BASE_URL", "purpose": "模型服务地址；默认 https://dashscope.aliyuncs.com/compatible-mode/v1" },
+    { "name": "QWEN_MODEL", "purpose": "模型名；默认 qwen-plus" },
+    { "name": "QODER_SITES_ORIGIN", "purpose": "远端制品/站点存储源站；工件跨容器回源的权威通路" },
+    { "name": "WORKER_SHARED_SECRET", "purpose": "worker 与远端存储之间的共享鉴权密钥" },
+    { "name": "ARTIFACT_ROOT", "purpose": "容器内制品暂存目录；默认 /var/data/artifacts，仅作过程存储" },
+    { "name": "VITE_API_BASE_URL（构建期）", "purpose": "前端 API 基址，仅 Docker 构建 ARG 生效；必须为 /api，无法通过运行时环境变量覆盖" }
+  ],
+
+  "rollback_additions": [
+    "数据库回滚不得以清空或重建数据库代替：回滚手段必须是可核对的还原（快照恢复 / 迁移逆向 / 备份回放），并在回滚前后用只读审计核对任务、配额、revision 与制品元数据快照一致。",
+    "制品回滚不得依赖 worker 临时磁盘：worker 的 ARTIFACT_ROOT 位于容器临时文件系统，重建即丢失；可回滚的制品来源只能是远端权威存储（QODER_SITES_ORIGIN 链路）或挂载的持久卷，回滚验证须以远端字节为准。",
+    "密钥轮换（SESSION_SECRET / ADMIN_TOKEN / WORKER_SHARED_SECRET）即全员掉线/工件签名失效，回滚预案须保留旧值生效窗口与回切步骤。",
+    "首部署顺序保持：镜像构建验证 → staging + 全量必填配置 → 健康与登录冒烟 → 制品闭环验收 → 生产切换；任何一步失败即停。",
+    "主存储接线完成后，须重新核对回滚路径：权威存储切换前后的双写/回切方案需在接线验收时一并定义，不得事后补。",
+    "Supabase 测试项目的迁移脚本（migrate_rls.py）面向测试库；生产库的任何策略变更需独立授权、独立记录，不得直接套用测试项目结论。"
+  ],
+
+  "snapshot_preservation": {
+    "kept_unchanged": [
+      "dev/acceptance/render-preflight/result.json",
+      "dev/acceptance/render-preflight/preflight-checklist.md"
+    ],
+    "note": "两者作为 2026-11-24 历史快照保留；本文件（mainline-recheck.json）为最新口径，冲突处以本文件为准，但 B-02 diff_suggestion 的作废记录仍留存在 result.json 中以保持审计链。"
+  }
+}

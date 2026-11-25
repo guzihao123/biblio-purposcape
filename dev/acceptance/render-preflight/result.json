@@ -1,0 +1,256 @@
+{
+  "task": "Render 部署前检查（不执行任何云端部署）",
+  "date": "2026-11-24",
+  "project_root": "/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web",
+  "scope_note": "仅静态审查 render.yaml、Dockerfile、docker-compose.yml、.dockerignore、worker.py、.env.example 及相关后端/前端源码与既有验收证据；未创建 Render 服务、未执行云端迁移、未部署、未调用付费模型、未修改生产源码或 Render 配置。",
+  "overall_verdict": "NOT_DEPLOYABLE",
+  "overall_reason": "存在 7 项发布阻断：生产前端 API 基址烘焙错误、工件目录无持久化且 web/worker 文件系统不共享、DATABASE_URL/SESSION_SECRET 等关键变量无默认值、amd64 镜像从未构建成功、主存储未全量接线、真实 Provider/RLS 未验收。任何一项都会在生产造成数据丢失或核心流程不可用，不得以上线掩盖。",
+
+  "deployable_items": [
+    {
+      "id": "OK-01",
+      "item": "Web / worker / Redis 三服务分离",
+      "evidence": "render.yaml 分别为 type: web、type: worker、type: redis；docker-compose.yml 同为 web/worker/redis 三服务；worker 启动命令统一为 python worker.py（render.yaml dockerCommand 与 compose command 一致）。",
+      "status": "pass_static"
+    },
+    {
+      "id": "OK-02",
+      "item": "健康检查",
+      "evidence": "render.yaml healthCheckPath: /api/health 与 main.py 实现一致：health() 执行 select 1 检查数据库并返回 worker_status()；worker_status() 以真实 Redis PING 判定 ready/unavailable。",
+      "status": "pass_static"
+    },
+    {
+      "id": "OK-03",
+      "item": "容器启动命令适配 Render",
+      "evidence": "Dockerfile CMD 使用 ${PORT:-8000}，EXPOSE 8000；符合 Render 注入 PORT 的约定。",
+      "status": "pass_static"
+    },
+    {
+      "id": "OK-04",
+      "item": "Noto CJK 与图形/OCR 系统依赖声明",
+      "evidence": "Dockerfile apt 安装 fontconfig、fonts-noto-cjk、libgl1、libglib2.0-0、libcairo2、libgomp1，覆盖 cairosvg / onnxruntime / rapidocr 运行库需求。",
+      "status": "declared_not_runtime_verified"
+    },
+    {
+      "id": "OK-05",
+      "item": "PPT/PDF/OCR Python 依赖覆盖",
+      "evidence": "pyproject.toml 含 python-pptx、pypdfium2、python-docx、cairosvg、rapidocr、onnxruntime、Pillow；与 Dockerfile 系统依赖配套。",
+      "status": "declared_not_runtime_verified"
+    },
+    {
+      "id": "OK-06",
+      "item": "RQ worker 入口完整性",
+      "evidence": "worker.py 校验 REDIS_URL 必填，依次执行 register_stage_services()、start_recovery_scheduler()、ProtectedWorker([QUEUE_NAME]).work()；ProtectedWorkerMixin 对失败 traceback 做敏感信息脱敏。",
+      "status": "pass_static"
+    },
+    {
+      "id": "OK-07",
+      "item": "限流存储后端",
+      "evidence": "RateLimiter 基于 Redis 固定窗口原子计数（非进程内存），web 多实例/重启后限流状态一致。",
+      "status": "pass_static"
+    },
+    {
+      "id": "OK-08",
+      "item": "API 404 与 SPA 回退安全性",
+      "evidence": "main.py 对 /api/* 未命中返回 404 JSON；前端静态服务做 resolve() 后 relative_to(dist) 防目录逃逸；/api 前缀请求不会被 index.html 吞掉。",
+      "status": "pass_static"
+    },
+    {
+      "id": "OK-09",
+      "item": ".dockerignore 排除敏感与无关文件",
+      "evidence": "排除 .git、.env、.env.*（保留 .env.example）、.venv、test.db、dev/、deliverables/、node_modules 等，镜像上下文干净。",
+      "status": "pass_static"
+    },
+    {
+      "id": "OK-10",
+      "item": "Redis 连接串自动注入",
+      "evidence": "web/worker 的 REDIS_URL 均通过 fromService 引用 landscape-redis connectionString，无需手填。",
+      "status": "pass_static"
+    },
+    {
+      "id": "OK-11",
+      "item": "会话 Cookie 安全属性",
+      "evidence": "SESSION_COOKIE_NAME 设置 httponly、secure、samesite=lax；同源部署（FastAPI 直托管 dist）下无需 CORS，无 CORS 中间件不构成问题。",
+      "status": "pass_static"
+    }
+  ],
+
+  "blockers": [
+    {
+      "id": "B-01",
+      "severity": "critical",
+      "item": "生产前端 API 基址烘焙错误：VITE_API_BASE_URL=/functions/v1/app 与容器实际 API 路径 /api 不一致",
+      "detail": "Dockerfile ARG VITE_API_BASE_URL 默认值为 /functions/v1/app，npm run build 时固化进前端产物；该路径形态是 Qoder Sites Function 路由，仅在 vite dev proxy 下存在重写。Render 上 FastAPI 同源提供 /api/*，render.yaml 无法为 Docker 构建注入 build ARG（blueprint 不支持）。后果：生产环境所有 API 调用（含 /api/session 登录）指向 /functions/v1/app/*，命中 main.py 的 SPA catch-all 返回 index.html 且状态码 200，response.json() 抛语法错误，核心流程静默全灭，健康检查却显示 ok。",
+      "evidence": "Dockerfile line 8；frontend/src/api.ts line 66-70；frontend/vite.config.ts proxy 仅在 dev server 生效；backend/app/main.py line 496-511",
+      "diff_suggestion": [
+        "--- a/Dockerfile",
+        "+++ b/Dockerfile",
+        "@@",
+        "-ARG VITE_API_BASE_URL=/functions/v1/app",
+        "+ARG VITE_API_BASE_URL=/api"
+      ],
+      "note": "若该独立部署确需走 Sites Function 代理，则必须在部署文档中显式说明并保证 Function 到容器的转发链已验收；当前证据链不支持该假设。"
+    },
+    {
+      "id": "B-02",
+      "severity": "critical",
+      "item": "工件目录无持久化，且 web/worker 容器文件系统互不共享",
+      "detail": "render.yaml 给 web/worker 均设 ARTIFACT_ROOT=/var/data/artifacts，但未声明任何 Render Disk 挂载。该目录落在各自容器临时文件系统：worker 产出的工件 web 端 ArtifactStore.list/resolve 从 web 本地磁盘查找，必然 404；容器重建即丢失。唯一补救路径是 QODER_SITES_ORIGIN + WORKER_SHARED_SECRET 远端工件回源（orchestration._sync_artifacts 与 artifacts.py 的 RemoteArtifact 逻辑），但两项均为 sync:false 且当前为空。",
+      "evidence": "render.yaml line 29-30/59-60（无 disk 段）；backend/app/artifacts.py line 29-34、123-144；backend/app/orchestration.py line 356-375",
+      "diff_suggestion": [
+        "--- a/render.yaml",
+        "+++ b/render.yaml",
+        "@@ web service",
+        "     envVars:",
+        "       - key: ARTIFACT_ROOT",
+        "         value: /var/data/artifacts",
+        "+    disk:",
+        "+      name: landscape-artifacts",
+        "+      mountPath: /var/data",
+        "+      sizeGB: 10",
+        "@@ worker service（同挂同名 disk，或改用 QODER_SITES_ORIGIN 远端回源并写入部署文档）"
+      ]
+    },
+    {
+      "id": "B-03",
+      "severity": "critical",
+      "item": "DATABASE_URL sync:false 且后端默认回落 sqlite:///./test.db",
+      "detail": "若创建服务时未在 dashboard 手填 DATABASE_URL，config.py 默认使用 sqlite:///./test.db：web 与 worker 是两个容器、两份各自演化的 SQLite 文件，任务状态与幂等记录立即分叉；容器重启/重新部署数据全丢。render.yaml 也未 provision Postgres 服务。",
+      "evidence": "render.yaml line 8-9/38-39；backend/app/config.py line 9；backend/app/db.py line 10-12",
+      "diff_suggestion": [
+        "方案 A：render.yaml 增加 postgres 服务并以 fromService 注入 DATABASE_URL；",
+        "方案 B：至少在部署清单文档中将 DATABASE_URL 标注为启动前置必填，并提供 Postgres 外部连接串要求。"
+      ]
+    },
+    {
+      "id": "B-04",
+      "severity": "high",
+      "item": "SESSION_SECRET / ADMIN_TOKEN sync:false，代码默认每次启动随机生成",
+      "detail": "config.py 中两者 default_factory 均为 secrets.token_urlsafe(32)。漏配后果：每次部署/重启 SESSION_SECRET 轮换导致全部登录态失效；ADMIN_TOKEN 无法知晓，管理面（Skill 发布/回滚）不可用。",
+      "evidence": "backend/app/config.py line 14、16；render.yaml line 21-24、51-54",
+      "diff_suggestion": [
+        "在部署清单中将 SESSION_SECRET、ADMIN_TOKEN 列为启动前置必填（operator 生成 32+ 字节随机值）；",
+        "可考虑在 config.py 增加生产模式启动校验（未显式设置则拒绝启动），属源码改动建议，本轮未实施。"
+      ]
+    },
+    {
+      "id": "B-05",
+      "severity": "high",
+      "item": "amd64 生产镜像构建被环境阻塞，至今无任何成功构建证据",
+      "detail": "dev/acceptance/docker-amd64/ 记录了 3 次 docker build --platform linux/amd64 尝试，全部失败于 registry-1.docker.io 元数据解析（context deadline exceeded），判定 ENVIRONMENT-BLOCKED。后果链未验证：npm ci、前端 tsc/vite 构建、pip install（onnxruntime/pypdfium2/rapidocr 等大依赖）、apt 字体安装、镜像启动、/api/health、中文 fc-match、PPTX/PDF/OCR 冒烟全部无证据。Render 首部署将是一次未经本地验证的构建。",
+      "evidence": "dev/acceptance/docker-amd64/result.json status=environment-blocked；build-attempt-1..3.log",
+      "diff_suggestion": [
+        "Dockerfile 无需修改（失败在 registry 网络层，非 Dockerfile 缺陷）；",
+        "需在 Docker Hub 可达的网络或 CI runner 上完成 amd64 构建并保留日志后，方可解除本项。"
+      ]
+    },
+    {
+      "id": "B-06",
+      "severity": "high",
+      "item": "主存储（Sites 远端）未全量接线",
+      "detail": "task_store_sync.py 仅通过内存假 Provider 契约测试（本地 12 项 + 组合 33 项通过）；主路由、worker、Skill 发布流程、制品流程均未切换到主存储。容器内 SQLite 依然是唯一事实源，与'主存储同步层已就绪'的宣传口径不符。",
+      "evidence": "task-primary-store-sync-report.md 第 1、2 节；task-primary-store-live-acceptance-plan.md 第 1 节",
+      "diff_suggestion": null
+    },
+    {
+      "id": "B-07",
+      "severity": "high",
+      "item": "真实 Provider / RLS 未验收，且 RLS 草案存在 HIGH 级缺口",
+      "detail": "RLS 独立复核（provider-rls-review/result.json）确认：schema 6 张表中 sites_task_answers 完全缺少 RLS 策略（ISSUE-01，HIGH），另有多项策略缺口与 8 个未决平台问题；所有策略均未在任何真实数据库执行。应用层 session_id 固定 SQL 条件只能防固定查询面，不构成 T6 威胁模型要求的第二层防御。",
+      "evidence": "dev/acceptance/provider-rls-review/result.json（ISSUE-01 等）；task-primary-store-live-acceptance-plan.md 第 2 节",
+      "diff_suggestion": null
+    }
+  ],
+
+  "missing_config": [
+    {
+      "key": "DATABASE_URL",
+      "where": "render.yaml web+worker, sync:false",
+      "risk": "漏配回落 sqlite test.db：web/worker 数据分叉 + 重启全丢（见 B-03）",
+      "required": true
+    },
+    {
+      "key": "SESSION_SECRET",
+      "where": "render.yaml web+worker, sync:false",
+      "risk": "漏配每次部署轮换，全体会话失效（见 B-04）",
+      "required": true
+    },
+    {
+      "key": "ADMIN_TOKEN",
+      "where": "render.yaml web+worker, sync:false",
+      "risk": "漏配 admin 面不可用（见 B-04）",
+      "required": true
+    },
+    {
+      "key": "QWEN_API_KEY",
+      "where": "render.yaml web+worker, sync:false",
+      "risk": "任务执行链（检索/写作 stage）无模型可用；qwen.py 仅从环境读取",
+      "required": true
+    },
+    {
+      "key": "QODER_SITES_ORIGIN",
+      "where": "render.yaml web+worker, sync:false",
+      "risk": "为空时工件仅存 worker 本地磁盘，web 端 404（见 B-02）",
+      "required": true
+    },
+    {
+      "key": "WORKER_SHARED_SECRET",
+      "where": "render.yaml web+worker, sync:false",
+      "risk": "同上，远端工件回源鉴权缺失",
+      "required": true
+    },
+    {
+      "key": "VITE_API_BASE_URL",
+      "where": "仅构建期生效（Docker ARG），render.yaml envVar 无法覆盖",
+      "risk": "当前烘焙值 /functions/v1/app 生产不可用（见 B-01）；修复只能改 Dockerfile 默认值",
+      "required": true
+    },
+    {
+      "key": "INVITE_CODE_HASH",
+      "where": "config.py 支持但 render.yaml 与 .env.example 均无",
+      "risk": "无实际影响：当前主路由未挂载邀请码端点（仅 /api/session 公开入口），且 test_deployment_config.py 明确断言其不应出现在 .env.example；列为兼容性备忘即可",
+      "required": false
+    },
+    {
+      "key": "ALLOWED_ORIGINS / PYTHON_API_ORIGIN",
+      "where": ".env.example 有，后端代码未读取（config.py extra=ignore）",
+      "risk": "死配置；同源部署下无 CORS 需求，不影响本次部署",
+      "required": false
+    }
+  ],
+
+  "rollback_preparation": {
+    "render_blueprint": "当前蓝图尚未创建任何服务；首次 apply 即应视为不可自动回滚的起点。建议先以独立服务名（如 landscape-web-staging）单独创建 worker 之外的 web 服务验证，不与既有 Qoder Sites 线上入口发生 DNS/域名切换。",
+    "database": "强制使用 Postgres 而非容器内 SQLite；首次写入前建立快照/备份策略，确认 initialize_database() 的增量 ALTER 在 Postgres 上的行为已实测（此前仅在 SQLite 验证）。",
+    "sessions_and_tokens": "SESSION_SECRET/ADMIN_TOKEN 在首次创建服务时固定并离线存档；轮换即全员掉线，回滚预案需包含旧值保留窗口。",
+    "artifacts": "QODER_SITES_ORIGIN 远端工件是跨容器唯一可靠回源；上线前确认远端工件与本地 ARTIFACT_ROOT 的优先级行为（artifacts.py resolve 先本地后远端）已实测。",
+    "skill_versions": "管理面已内置 /api/admin/skill/versions/{id}/rollback 端点，Skill 内容层面具备回滚能力；但其依赖 ADMIN_TOKEN 生效（见 B-04）。",
+    "frontend": "静态产物随镜像版本固化，回滚 = 部署上一镜像 tag；前提是镜像构建流程已留存可寻址的历史镜像（当前无）。",
+    "ordering": "建议顺序：镜像构建验证 → staging 服务 + 手填全部 env → /api/health 与登录冒烟 → 工件写入/下载冒烟 → 才考虑生产服务与流量切换；任何一步失败即停，不回填'已上线'口径。"
+  },
+
+  "unverified_boundaries": [
+    "linux/amd64 镜像真实构建（npm ci / tsc+vite / pip install / apt）与容器启动：无任何日志证据",
+    "容器内 fc-match :lang=zh-cn 中文字体实测与含中文交付物生成",
+    "pypdfium2 / rapidocr / onnxruntime / cairosvg 在 Linux 镜像内的导入与 PPTX/PDF 渲染、OCR 冒烟",
+    "真实 Redis PING、RQ 入队/消费/失败重试（fakeredis 单测不构成证据）",
+    "Render 侧密钥注入与公网 URL 行为（QWEN_API_KEY、远端站点连通）",
+    "付费模型（Qwen）真实调用与配额行为——本轮未调用",
+    "Deno Function 运行时（deno check / Deno 测试）；Node 24 结果不可替代",
+    "真实 Provider 权限、事务原子性、RLS 行为矩阵、并发冲突（B-07 未决项 a–h）",
+    "云 Storage 字节上传/下载/签名 URL 验收（sync_artifacts 仅元数据）",
+    "docker-compose 的 env_file.required 语法所需 Compose 版本兼容性",
+    "多实例/多副本 web 部署行为（SQLite 模式下不可行；限流已 Redis 化）",
+    "Compose 与 Render 双轨配置长期漂移风险（本次已一致，无锁定机制）"
+  ],
+
+  "evidence_index": [
+    "render.yaml、Dockerfile、docker-compose.yml、.dockerignore、worker.py、.env.example（项目根，静态审查）",
+    "backend/app/main.py、config.py、db.py、security.py、queueing.py、artifacts.py、orchestration.py、rate_limit.py、public_access.py",
+    "frontend/src/api.ts、frontend/vite.config.ts、frontend/package.json",
+    "dev/acceptance/docker-amd64/result.json + build-attempt-1..3.log",
+    "dev/acceptance/provider-rls-review/result.json",
+    "dev/acceptance/sites-live/result.json（云端项目均未授权，结论为未验证）",
+    "task-container-validation-report.md、task-primary-store-sync-report.md、task-primary-store-live-acceptance-plan.md"
+  ]
+}

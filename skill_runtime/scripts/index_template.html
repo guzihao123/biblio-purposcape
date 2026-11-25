@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文献图谱仪表盘 · __TOPIC__</title>
+<style>
+  :root{
+    --bg:#070b16; --panel:rgba(18,26,45,.86); --line:rgba(120,170,255,.22);
+    --text:#eaf1ff; --muted:#9fb0cc; --accent:#63b3ff; --accent2:#7ef0c8;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:
+      radial-gradient(900px 520px at 12% 0%, rgba(64,120,255,.18), transparent 60%),
+      radial-gradient(800px 500px at 88% 8%, rgba(60,240,190,.10), transparent 60%),
+      var(--bg);
+    display:flex; align-items:center; justify-content:center; padding:28px 18px;
+  }
+  .wrap{width:min(1060px,100%)}
+  .eyebrow{font-size:12px; letter-spacing:.18em; color:var(--accent2); text-transform:uppercase; margin-bottom:12px}
+  h1{font-size:clamp(22px,3.4vw,36px); line-height:1.25; margin:0 0 10px; font-weight:700}
+  .sub{color:var(--muted); font-size:14px; line-height:1.7; margin:0 0 26px}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{
+    display:block; text-decoration:none; color:inherit;
+    background:linear-gradient(180deg,rgba(22,32,56,.92),rgba(12,18,34,.92));
+    border:1px solid var(--line); border-radius:18px; padding:22px 22px 18px;
+    box-shadow:0 18px 50px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.04);
+    transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    position:relative; overflow:hidden;
+  }
+  .card:hover{transform:translateY(-3px); border-color:rgba(120,190,255,.55); box-shadow:0 24px 60px rgba(0,0,0,.36)}
+  .card::after{
+    content:""; position:absolute; inset:-40% 30% auto auto; width:220px; height:220px;
+    background:radial-gradient(circle,rgba(99,179,255,.18),transparent 65%); pointer-events:none;
+  }
+  .tag{
+    display:inline-block; font-size:11px; letter-spacing:.08em; padding:4px 9px;
+    border-radius:999px; border:1px solid rgba(126,240,200,.35); color:var(--accent2);
+    background:rgba(126,240,200,.08); margin-bottom:12px;
+  }
+  .card h2{font-size:20px; margin:0 0 8px}
+  .card p{color:var(--muted); font-size:13px; line-height:1.75; margin:0 0 14px}
+  .card ul{margin:0; padding-left:18px; color:#c7d6ee; font-size:13px; line-height:1.9}
+  .card li::marker{color:var(--accent)}
+  .go{margin-top:16px; display:inline-flex; align-items:center; gap:8px; color:var(--accent); font-size:13px; font-weight:600}
+  .go span{transition:transform .18s ease}
+  .card:hover .go span{transform:translateX(4px)}
+  .foot{margin-top:20px; color:#6f819f; font-size:12px; line-height:1.7}
+  .foot b{color:#9fb0cc; font-weight:600}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="eyebrow">Literature Landscape Dashboard</div>
+    <h1>文献图谱仪表盘 · __TOPIC__</h1>
+    <p class="sub">同一份数据，两种查看方式。满血版追求完整交互；轻量版静态优先、兼容受限环境。两种版本内容一致，任选其一；若满血版打不开，再用轻量版。</p>
+
+    <section class="grid">
+      <a class="card" href="desktop.html">
+        <div class="tag">功能最全</div>
+        <h2>满血版</h2>
+        <p>深色科技视觉、完整动效与图谱交互；桌面浏览器与手机 Chrome 均可运行。</p>
+        <ul>
+          <li>六类图全量 + 点击结点/箭头回溯论文</li>
+          <li>主题分布饼/柱切换、显示数量 10–40</li>
+          <li>点按缩放（− / ＋）与手势缩放开关、聚焦特写、重置视图</li>
+          <li>语义关系图谱：支持/改进/冲突/差异四色，点击看证据</li>
+          <li>滚轮一格切到下一张图（幻灯片滚动，可开关）</li>
+        </ul>
+        <div class="go">进入满血版 <span>→</span></div>
+      </a>
+
+      <a class="card" href="mobile.html">
+        <div class="tag">兼容优先</div>
+        <h2>轻量版</h2>
+        <p>静态优先、无脚本也能读；同一份数据，含 PNG 长图与可交互图表，适用于性能不足或无法兼容满血版的环境。</p>
+        <ul>
+          <li>暗色科技风，桌面/手机两套比例自适应</li>
+          <li>首屏内联全部图表 SVG，不依赖动画帧</li>
+          <li>趋势/比较/主题三图可交互</li>
+          <li>网络/因素结局/方法/语义关系图谱静态可看</li>
+          <li>附七类图 PNG 长图，手机预览可直接看</li>
+        </ul>
+        <div class="go">进入轻量版 <span>→</span></div>
+      </a>
+    </section>
+
+    <div class="foot">
+      <b>数据口径：</b>分布/趋势=全量命中聚合；网络/图谱/导图=池内 __POOL_COUNT__ 篇。生成日期：__DATE__。
+    </div>
+  </main>
+</body>
+</html>

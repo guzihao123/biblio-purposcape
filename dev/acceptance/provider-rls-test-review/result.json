@@ -1,0 +1,224 @@
+{
+  "review": {
+    "title": "Supabase RLS 迁移脚本与测试矩阵 · 独立审计",
+    "date": "2026-11-24",
+    "reviewer": "独立审计（离线，非迁移脚本作者）",
+    "scope": "只审离线材料；未连接任何数据库、未执行迁移、未创建角色/表/策略、未做云端部署、未修改任何主线文件。",
+    "files_reviewed": [
+      "dev/acceptance/provider-live/migrate_rls.py",
+      "sites/schema.sql",
+      "dev/acceptance/provider-rls-review/result.json",
+      "dev/acceptance/provider-rls-review/rls-policy-draft.suggested.sql",
+      "dev/acceptance/provider-rls-review/mainline-fixes.json",
+      "dev/acceptance/provider-live/tests/（task_store_sessions_regression.test.mjs, test_client_error_mapping.py, test_primary_store_slice.py, test_wire_contract.py 及 fake_db.mjs / wire_server.mjs 的测试声明）"
+    ],
+    "method_notes": [
+      "逐表比对 schema.sql 六表结构与 POLICY_SQL 的策略覆盖面。",
+      "对 POLICY_SQL 逐条做名称解析走查：每条 USING/WITH CHECK 中的列名对照目标表与相关表的真实列清单。",
+      "对照上一轮复核 result.json 的 ISSUE-01~11 与建议补丁 P0~P4，核实 migrate_rls.py 是否落地及落地是否正确。",
+      "核对 mainline-fixes.json 声称的应用层修复与测试矩阵的实际覆盖范围。",
+      "对照 PostgreSQL 官方行为：策略表达式在建 policy 时解析校验（列不存在即报错）、默认拒绝、FORCE/BYPASSRLS 语义、FK/唯一检查绕过 RLS。"
+    ]
+  },
+
+  "issues": [
+    {
+      "id": "AUD-01",
+      "severity": "CRITICAL",
+      "title": "answers 与 artifacts 两条 WITH CHECK 引用不存在的列 session_id —— 迁移必然失败，RLS 一张表也落不了地",
+      "description": "migrate_rls.py 的 POLICY_SQL 中，sites_answers_owner_modify（行 96-100）与 sites_artifacts_owner_modify（行 112-116）的 WITH CHECK 子句写的是 EXISTS(SELECT 1 FROM sites_anonymous_sessions WHERE id = session_id ...)。但 sites_task_answers 的列是 (task_id, card_id, value, created_at, updated_at)，sites_task_artifacts 的列是 (task_id, name, object_path, size_bytes, content_type, checksum_sha256, metadata, created_at, updated_at) —— 两张表都没有 session_id 列；内层 sites_anonymous_sessions 也没有该列。PostgreSQL 在 CREATE POLICY 时即解析并校验表达式，列名无法解析会直接报错。由于整条 POLICY_SQL 在 conn.transaction() 内一次执行（行 164-175），异常导致整事务回滚：六张表、三个角色、GRANT、BYPASSRLS 全部不生效，脚本永远不会打印 'migration': 'passed'。这不是行为瑕疵，是迁移脚本按现状在任何真实 PostgreSQL 上都无法完成的确定性缺陷。对照建议补丁 P0 的正确写法（经 sites_tasks.session_id 关联、再判会话状态），migrate_rls.py 改成了直接引用不存在的列，意图正确（把撤销/过期检查放进 WITH CHECK）但实现错误。",
+      "evidence": [
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "96-100", "note": "sites_answers_owner_modify WITH CHECK 中 WHERE id = session_id，sites_task_answers 无此列" },
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "112-116", "note": "sites_artifacts_owner_modify WITH CHECK 同样引用不存在的 session_id" },
+        { "file": "sites/schema.sql", "lines": "66-79", "note": "sites_task_answers 实际列清单，无 session_id" },
+        { "file": "sites/schema.sql", "lines": "81-94", "note": "sites_task_artifacts 实际列清单，无 session_id" },
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "164-175", "note": "POLICY_SQL 在单事务内整串执行，建策略失败 → 整事务回滚" },
+        { "file": "dev/acceptance/provider-rls-review/rls-policy-draft.suggested.sql", "lines": "37-45", "note": "建议补丁中本表 WITH CHECK 的正确形态（经 sites_tasks 关联），可作修复参照" }
+      ],
+      "recommendation": "把两条 WITH CHECK 改为经 sites_tasks 关联后再判会话状态，例如：WITH CHECK (EXISTS (SELECT 1 FROM sites_tasks t JOIN sites_anonymous_sessions s ON s.id = t.session_id WHERE t.id = task_id AND t.session_id = current_setting('app.session_id', true) AND s.revoked_at IS NULL AND (s.expires_at IS NULL OR s.expires_at > now())))。修复后先在真实库的非生产环境完整跑通迁移，再谈行为测试。",
+      "status": "open"
+    },
+    {
+      "id": "AUD-02",
+      "severity": "HIGH",
+      "title": "六表 ENABLE+FORCE 覆盖面本身完整（含 answers），但被 AUD-01 连累整体不可用；且 FORCE 下 owner 语义需平台确认",
+      "description": "就覆盖面而言，migrate_rls.py 行 24-35 对 schema.sql 的全部六张表（sessions / skill_versions / tasks / task_answers / task_artifacts / quota_windows）都执行了 ENABLE + FORCE ROW LEVEL SECURITY，上一轮 ISSUE-01（answers 遗漏）在文本层面已修复。但在 AUD-01 修复之前，这一覆盖面是纸面的：迁移事务必然整体回滚。此外 FORCE 使表 owner（迁移角色自身）也受策略约束，且 Supabase 平台是否允许 FORCE/自建角色仍需平台书面确认（上一轮未决 a/b 依然悬而未决，migrate_rls.py 的守卫只查 CREATEROLE，不查 rolsuper）。",
+      "evidence": [
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "24-35", "note": "六表 ENABLE + FORCE 齐全" },
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "151-153", "note": "迁移守卫仅要求 rolcreaterole，未验证 Supabase 对 FORCE/建角色/BYPASSRLS 的放行" },
+        { "file": "dev/acceptance/provider-rls-review/result.json", "lines": "166-175", "note": "未决平台问题 a/b/c 原文" }
+      ],
+      "recommendation": "AUD-01 修复后，在真实 Supabase 的非生产项目完整执行一次迁移并核对 pg_policies / pg_tables(relrowsecurity, relforcerowsecurity) 实况；平台放行问题取得书面答复前，不得在生产项目执行。",
+      "status": "blocked_by_AUD-01"
+    },
+    {
+      "id": "AUD-03",
+      "severity": "HIGH",
+      "title": "会话 INSERT 的 NULL 门修复了创建失败，但放行面未书面收口；且会话行 UPDATE 的 WITH CHECK 允许持有者自行延长 expires_at",
+      "description": "相对上一轮 ISSUE-02，migrate_rls.py 行 43-49 采用了建议补丁 P1 的备选方案：GUC 为 NULL 或未绑定时允许插入任意新会话。这确实修复了 createAnonymousSession 必失败的矛盾，但随之带来的两个面必须书面确认：① 任何以 app_user 连接且不绑定 GUC 的代码路径都能伪造任意 id（含他人 id 的抢先占用，靠主键冲突报错兜底）创建会话——上一轮补丁注释中已要求确认'app_user 无其他写入路径'，该确认至今没有书面证据；② worker 同步路径（WIRE-01 钉入 id）与匿名路径都走同一 NULL 门，语义上等于'无身份即可开户'，与威胁模型'session_id 是不记名凭证'自洽，但须明文记录。另一处独立缺陷：sites_sessions_update（行 50-55）的 WITH CHECK 只查 id = GUC，不约束 expires_at 的新值——持有者可在过期前把 expires_at 改成远期，绕过过期设计；revoked 行因 USING 不可见而无法自救，但延期不受防。当前固定 SQL 清单无 sessions UPDATE 语句，属潜在面而非活路径，仍应收紧。",
+      "evidence": [
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "43-49", "note": "NULL 门 INSERT 策略" },
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "50-55", "note": "UPDATE 的 WITH CHECK 仅 id = GUC，不判 expires_at 新值" },
+        { "file": "dev/acceptance/provider-rls-review/rls-policy-draft.suggested.sql", "lines": "50-57", "note": "补丁对 NULL 门已写明'须书面确认无其他 app_user 代码路径'，该确认缺失" },
+        { "file": "dev/acceptance/provider-live/tests/task_store_sessions_regression.test.mjs", "lines": "36-66", "note": "离线测试覆盖了钉入 id / 非法 id 拒绝，但走的是 fake_db，不含 RLS 语义" }
+      ],
+      "recommendation": "① 书面确认以 app_user 连接的全部代码路径清单（应只有固定 Function 面）；② 会话 UPDATE 的 WITH CHECK 追加过期相关约束（例如禁止把 expires_at 延到当前之后，或干脆移除 UPDATE 授权——固定 SQL 清单本无 sessions UPDATE）；③ 将 NULL 门语义写入威胁模型与迁移脚本头注。",
+      "status": "open"
+    },
+    {
+      "id": "AUD-04",
+      "severity": "HIGH",
+      "title": "Skill 写入绑定独立 app_admin 角色（优于 GUC 方案），但 app_admin 在五张业务表上的 SELECT 授权是死授权；且角色切换的连接路径未定义",
+      "description": "相对上一轮 ISSUE-03，migrate_rls.py 行 57-61 采用建议补丁 P2 的方案 B：skill 写策略直接判定 current_user = 'app_admin'，不依赖可伪造的 GUC，方向正确且比方案 A 稳妥。但随之产生三个未收口点：① 行 172-173 给 app_admin 授予了全部六张表的 SELECT，其中五张（sessions/tasks/answers/artifacts/quota）没有任何面向 app_admin 的策略——FORCE + 默认拒绝下 app_admin 在这五张表上一行也读不到，授权与实际可见性不符（要么是死授权造成'有权限'的错觉，要么说明还有未写出的运营读取需求）；② worker 的 skill 发布路径（PUT /internal/task-store/skill-versions/:id）当前与匿名会话共用同一 store/连接，要落到 app_admin 角色，意味着 worker 需持有第二条数据库连接（不同凭据），该连接的配置来源、凭据存放（现仅写 ~/.config/purpose-landscape/provider-roles.env 三个密码）未在迁移脚本或文档中定义；③ upsertSkill 的 ON CONFLICT 全字段覆盖更新会改写其他行的 state，app_admin 策略 FOR ALL 不加区分地放行，配合部分唯一索引 sites_one_published_skill 由约束兜底——约束可信赖，但'publish 覆盖 published' 的过渡态依赖约束报错顺序，值得一个并发用例。另注意：FORCE RLS 不影响 BYPASSRLS 之外的普通角色，app_admin 无 BYPASSRLS 属性，策略判定本身有效（这点设计正确）。",
+      "evidence": [
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "57-61", "note": "skill_admin_write 以 current_user='app_admin' 判定，不依赖 GUC" },
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "172-173", "note": "app_admin 获六表 SELECT，其中五表无对应策略 → 默认拒绝零行" },
+        { "file": "sites/functions/task_store.ts", "lines": "49-61", "note": "upsertSkill 固定 SQL（ON CONFLICT 全字段覆盖）" },
+        { "file": "dev/acceptance/provider-rls-review/result.json", "lines": "50-62", "note": "ISSUE-03 原文：worker 发布路径与匿名路径共用连接的设计断层仍未闭合" }
+      ],
+      "recommendation": "二选一并书面定案：给 app_admin 在五张业务表补 owner 级读取策略（若运营读取是真需求），或删除行 173 的死授权（最小权限）。同时给出 worker 第二条连接（app_admin 凭据）的接线方案与凭据管理规范，并补'app_admin 会话路径禁连'的静态检查。",
+      "status": "open"
+    },
+    {
+      "id": "AUD-05",
+      "severity": "MEDIUM",
+      "title": "撤销/过期检查已部分进入写策略（tasks/quota 的 USING/WITH CHECK、answers/artifacts 的意图），但全部 SELECT 策略不判会话状态，历史数据可读性属未落纸的产品决策",
+      "description": "相对上一轮 ISSUE-05，migrate_rls.py 在 tasks insert/update（行 65-84）与 quota modify（行 120-137）中内嵌了'会话未撤销且未过期'的 EXISTS 检查，应用层 createTask 也已改用带检查的 getSessionRecord（mainline-fixes.json ISSUE-05 条目，结果 passed）——写路径的双层防线已成型。但 SELECT 面（sessions 自身除外：其读策略要求未撤销未过期）对 tasks/answers/artifacts/quota 完全不判会话状态：被撤销或过期会话仍可读全部历史任务与答案。上一轮未决 g 明确说这是产品决策（纳入则过期会话历史不可读），至今没有书面选择。另有一个一致性问题：sessions 读策略把'过期'判成不可见，会导致过期会话连自己这行都 404，而业务表历史数据仍可读——同一凭证两种可见性语义，需在文档中写明。",
+      "evidence": [
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "63-64, 86-90, 102-106, 118-119", "note": "四张业务表的 SELECT 策略仅按 session_id/GUC 匹配，不判会话状态" },
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "37-42", "note": "sessions 读策略要求未撤销未过期" },
+        { "file": "dev/acceptance/provider-rls-review/rls-policy-draft.suggested.sql", "lines": "79-83", "note": "未决 g 原文：历史可读性的取舍待产品决策" },
+        { "file": "dev/acceptance/provider-rls-review/mainline-fixes.json", "lines": "5-10", "note": "ISSUE-05 应用层修复已通过（离线验证）" }
+      ],
+      "recommendation": "把'过期/撤销后历史数据是否可读'写成一页决策记录；若选择'写拒读留'，在草案头注明 sessions 表与其余五表可见性语义差异的原因。",
+      "status": "open"
+    },
+    {
+      "id": "AUD-06",
+      "severity": "MEDIUM",
+      "title": "GUC 注入规范与连接池串号防护仍无任何可执行证据：SET LOCAL / set_config(..., true) 的约定只存在于上一轮文档，migrate_rls.py 与全部测试均未触碰",
+      "description": "上一轮 ISSUE-04 要求把注入规范写成强制约定：参数化 set_config、ID_PATTERN 校验、空值 fail-closed、仅事务级（SET LOCAL / set_config 第三参数 true）、连接池模式确认。本轮审查确认：migrate_rls.py 不含任何注入逻辑（符合其职责边界），worker 侧 task_store.ts 尚未出现 set_config 调用（本轮审查范围内未见其改动证据），六个测试文件全部跑在内存 fake_db 上，没有任何一条验证 GUC 绑定顺序、事务级作用域或池模式。也就是说'连接池 session 模式下误用持久 SET → 跨请求会话串号'这一最高危故障模式，当前既无代码约束也无测试约束，纯属文档愿望。",
+      "evidence": [
+        { "file": "dev/acceptance/provider-live/tests/test_wire_contract.py", "lines": "1-9", "note": "文件头自述：fake-adapter，不验证真实 RLS/事务原子性" },
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "141-175", "note": "迁移脚本不含 GUC 注入逻辑（属正确边界），也无对调用方的约束输出" },
+        { "file": "dev/acceptance/provider-rls-review/result.json", "lines": "66-76", "note": "ISSUE-04 原文约束清单" }
+      ],
+      "recommendation": "在 worker 代码落地时以注释+测试固定'事务内先 set_config 后业务 SQL'的次序；补一条静态检查禁止裸 'SET app.' 持久设置；测试矩阵加入'同连接先后绑定两个不同会话、断言后者看不到前者行'的串号用例（需真实库）。",
+      "status": "open"
+    },
+    {
+      "id": "AUD-07",
+      "severity": "MEDIUM",
+      "title": "审计角色 BYPASSRLS 已正确落地，但其授权登记与'只读'验证仍是未决项；迁移守卫与 BYPASSRLS 所需的超级用户权限不匹配",
+      "description": "migrate_rls.py 行 171、174：audit_reader 仅获六表 SELECT 且带 BYPASSRLS 属性——只读面在两层（GRANT 限定 DML 范围 + BYPASSRLS 保证可见性）都成立，上一轮 ISSUE-06 在设计上已闭合。遗留三点：① BYPASSRLS 只能由超级用户设置，而行 151-153 的守卫只校验迁移角色有 CREATEROLE——CREATEROLE 角色执行 ALTER ROLE ... BYPASSRLS 会被拒（官方：BYPASSRLS 属超级用户级操作），在非超级用户的迁移角色下迁移同样失败，守卫与实际操作所需权限不一致；② BYPASSRLS 的授权登记（平台侧书面备案）仍是上一轮未决 h，未见证据；③ 'audit_reader 能读全表、但 INSERT/UPDATE/DELETE 必被拒'缺一条负面测试（GRANT 层面已拒，但须实测留证）。",
+      "evidence": [
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "151-153", "note": "守卫只查 rolcreaterole" },
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "171, 174", "note": "audit_reader SELECT-only + BYPASSRLS" },
+        { "file": "dev/acceptance/provider-rls-review/result.json", "lines": "92-103", "note": "ISSUE-06 / 未决 h 原文" }
+      ],
+      "recommendation": "迁移守卫改为校验 rolsuper（或捕获 BYPASSRLS 报错给出明确提示）；平台书面登记 audit_reader 的 BYPASSRLS 授权；测试矩阵补审计写入被拒与跨会话全量读取两个用例。",
+      "status": "open"
+    },
+    {
+      "id": "AUD-08",
+      "severity": "LOW",
+      "title": "其余次要项：迁移幂等性、密码文件、配额窗口策略 USING 不含撤销/过期（读面一致即可）、sessions INSERT 对 NULL 门的 expires 校验意义有限",
+      "description": "① POLICY_SQL 无 IF NOT EXISTS，但配合空库守卫（行 157-159）与'角色已存在即拒'（行 154-156），幂等性依赖前置守卫，可接受，建议把'非空库拒绝'的理由写进脚本头注；② 角色密码以 0600 写入 ~/.config/purpose-landscape/provider-roles.env，处理正确，但该文件即 app_admin 第二连接的凭据来源（见 AUD-04），其分发方式未定；③ quota 读策略不判会话状态与 AUD-05 的选择一致，写策略已含检查，无需改；④ sessions INSERT 策略的 WITH CHECK 中 (revoked_at IS NULL AND 未过期) 作用于新插入行本身，创建者自带远期 expires_at 并不违规（NULL 门语义如此），仅提示不要把它误读为身份校验；⑤ last_seen_at 仍无更新路径（上一轮 ISSUE-09），迁移脚本亦未授权对应 UPDATE，与 RLS UPDATE 策略并存时若未来加续期，注意 AUD-03 的 expires_at 收紧需同步。",
+      "evidence": [
+        { "file": "dev/acceptance/provider-live/migrate_rls.py", "lines": "154-159, 177-183", "note": "幂等守卫与密码文件处理" },
+        { "file": "dev/acceptance/provider-rls-review/result.json", "lines": "129-138", "note": "ISSUE-09 原文" }
+      ],
+      "recommendation": "以上均为文档与流程项，不阻塞 AUD-01 修复。",
+      "status": "open"
+    },
+    {
+      "id": "AUD-09",
+      "severity": "INFO",
+      "title": "测试矩阵现状评估：应用层矩阵覆盖良好，RLS 行为矩阵为零覆盖",
+      "description": "dev/acceptance/provider-live/tests/ 现有五个测试文件合计覆盖：钉入 id 保留/非法 id 拒绝（task_store_sessions_regression）、错误码映射与 Retry-After 校验（test_client_error_mapping）、revision CAS / answer_conflict / 垂直切片（test_primary_store_slice）、并发幂等单扣费、跨会话 404、配额拒绝回滚、陈旧 revision 单次拒绝、制品 upsert、错误消毒（test_wire_contract）。mainline-fixes.json 记录的 41+41+13+422/4 结果与上述覆盖一致。但所有测试显式跑在内存 fake_db 上（test_wire_contract.py 头注自证'不验证真实 Provider/PostgreSQL 权限、RLS 或事务原子性'），因此：同会话允许/跨会话拒绝/管理员写 Skill/普通用户禁写 Skill/审计只读 这五个必须通过的 RLS 用例，目前一条可执行证据都没有；配额原子性与答案插入回滚也只有应用层单事务语义的离线模拟，真实 READ COMMITTED 下 ON CONFLICT + RLS 的并发行为仍是未决 e。",
+      "evidence": [
+        { "file": "dev/acceptance/provider-live/tests/test_wire_contract.py", "lines": "1-9", "note": "fake-adapter 声明" },
+        { "file": "dev/acceptance/provider-rls-review/mainline-fixes.json", "lines": "18-23", "note": "离线验证规模" }
+      ],
+      "recommendation": "见 must_pass_test_matrix：在真实 Provider 授权的非生产项目执行；AUD-01 修复并迁移成功后逐条跑通并留证。",
+      "status": "verified_by_inspection"
+    }
+  ],
+
+  "must_pass_test_matrix": [
+    {
+      "id": "T-01",
+      "name": "同会话允许（happy path）",
+      "setup": "会话 S1（未撤销未过期）绑定 GUC = S1，建任务、写答案、写制品、扣配额",
+      "expect": "SELECT/INSERT/UPDATE 全部成功；配额 used 正确 +1"
+    },
+    {
+      "id": "T-02",
+      "name": "跨会话拒绝（横断六表）",
+      "setup": "会话 S1 的数据，以 GUC = S2 尝试 4 种命令 × 4 张业务表（tasks/answers/artifacts/quota）+ sessions 表读写",
+      "expect": "全部 0 行影响/0 行返回，无任何报错信息差异泄漏行存在性（配合 task_store.ts 错误折叠策略）"
+    },
+    {
+      "id": "T-03",
+      "name": "管理员写 Skill",
+      "setup": "以 app_admin 连接执行 upsertSkill（draft → published → archived 全流转）",
+      "expect": "全部成功；且 app_admin 可读 draft/archived（read 策略 current_user 分支生效）"
+    },
+    {
+      "id": "T-04",
+      "name": "普通用户禁写 Skill、只读 published",
+      "setup": "以 app_user 连接（GUC 任意）尝试 INSERT/UPDATE/DELETE skill_versions，及 SELECT draft/archived 行",
+      "expect": "写全部默认拒绝；SELECT 仅返回 state='published' 的行"
+    },
+    {
+      "id": "T-05",
+      "name": "审计只读",
+      "setup": "以 audit_reader 连接：六表 SELECT（含跨会话全量）+ 每表尝试 INSERT/UPDATE/DELETE",
+      "expect": "SELECT 全量可见（BYPASSRLS 生效）；全部写操作被 GRANT 层拒绝"
+    },
+    {
+      "id": "T-06",
+      "name": "撤销/过期会话写拒绝",
+      "setup": "将 S1 的 revoked_at 置位或令 expires_at 过期后，以 GUC = S1 尝试建任务/写答案/写制品/扣配额",
+      "expect": "全部拒绝；按 AUD-05 的书面决策验证历史数据读面"
+    },
+    {
+      "id": "T-07",
+      "name": "会话创建双路径",
+      "setup": "① GUC 未绑定时以 app_user 插入新会话（匿名路径与 worker 钉入 id 路径）；② GUC 已绑定为 S1 时再插 S2 的新会话",
+      "expect": "① 成功；② 拒绝——并书面确认以 app_user 连接的全部代码路径清单（AUD-03①）"
+    },
+    {
+      "id": "T-08",
+      "name": "Skill 发布并发唯一性",
+      "setup": "并发 publish 两个不同 version 的 skill",
+      "expect": "sites_one_published_skill 部分唯一索引恰好一个赢家，输家报错且响应不泄漏内部细节"
+    },
+    {
+      "id": "T-09",
+      "name": "连接池串号回归",
+      "setup": "同一物理连接先后绑定 GUC = S1、GUC = S2（模拟 session pooling 复用）",
+      "expect": "S2 请求看不到 S1 任何行；断言注入一律事务级（SET LOCAL / set_config(..., true)）"
+    },
+    {
+      "id": "T-10",
+      "name": "revision CAS + 答案插入回滚（真实库）",
+      "setup": "并发 stale revision 写；答案插入中途失败后检查 task revision 与 updated_at",
+      "expect": "409 恰好一次、无覆盖；失败事务整体回滚（答案与 revision 自增同时消失）；ON CONFLICT + RLS 并发下单赢家单扣费"
+    }
+  ],
+
+  "unverified_boundaries": [
+    "AUD-01 的列名缺陷基于静态解析走查（内层/外层作用域均无 session_id 列），未在真实库执行 CREATE POLICY 复现——但 PostgreSQL 在建策略时校验表达式，置信度极高。",
+    "Supabase 平台对 FORCE ROW LEVEL SECURITY、CREATE ROLE、ALTER ROLE ... BYPASSRLS 的放行与所需权限（CREATEROLE 守卫是否够用，见 AUD-07）——需平台书面答复。",
+    "GUC 经平台连接代理（Supavisor 等）的放行与连接池模式（transaction vs session）——实测前 T-09 无保障。",
+    "app_user 连接的全部代码路径清单——AUD-03 的书面确认缺失。",
+    "worker 第二条连接（app_admin）的接线与凭据管理——无设计证据。",
+    "真实 READ COMMITTED 下 ON CONFLICT + RLS 的并发语义（未决 e）与凭据泄露场景的 blast radius 抽查（T6）。"
+  ],
+
+  "deliverables": {
+    "result_json": "dev/acceptance/provider-rls-test-review/result.json（本文件）",
+    "disclaimer": "本次审计未连接任何数据库、未执行 migrate_rls.py 或任何 SQL、未创建角色/表/策略、未做云端部署、未修改主线文件；所有结论均为静态走查与官方文档对照。RLS 行为本身在修复 AUD-01 并完成真实迁移前，无任何已执行证据。"
+  }
+}

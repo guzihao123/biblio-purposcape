@@ -1,0 +1,1011 @@
+{
+  "queries": [
+    "hepatocellular carcinoma immunotherapy resistance"
+  ],
+  "from_year": 2023,
+  "group_by": "topics.id",
+  "topic_series": null,
+  "total_hits": 1094,
+  "groups": [
+    {
+      "key": "https://openalex.org/T10158",
+      "name": "Cancer Immunotherapy and Biomarkers",
+      "count": 759
+    },
+    {
+      "key": "https://openalex.org/T10073",
+      "name": "Hepatocellular Carcinoma Treatment and Prognosis",
+      "count": 742
+    },
+    {
+      "key": "https://openalex.org/T11313",
+      "name": "Immune cells in cancer",
+      "count": 164
+    },
+    {
+      "key": "https://openalex.org/T11297",
+      "name": "Ferroptosis and cancer prognosis",
+      "count": 128
+    },
+    {
+      "key": "https://openalex.org/T10580",
+      "name": "Immunotherapy and Immune Responses",
+      "count": 117
+    },
+    {
+      "key": "https://openalex.org/T11067",
+      "name": "Colorectal Cancer Treatments and Studies",
+      "count": 107
+    },
+    {
+      "key": "https://openalex.org/T10340",
+      "name": "Hepatitis B Virus Studies",
+      "count": 81
+    },
+    {
+      "key": "https://openalex.org/T10515",
+      "name": "Cancer-related molecular mechanisms research",
+      "count": 81
+    },
+    {
+      "key": "https://openalex.org/T10631",
+      "name": "Cancer, Hypoxia, and Metabolism",
+      "count": 58
+    },
+    {
+      "key": "https://openalex.org/T10782",
+      "name": "Nanoplatforms for cancer theranostics",
+      "count": 42
+    },
+    {
+      "key": "https://openalex.org/T11287",
+      "name": "Cancer Genomics and Diagnostics",
+      "count": 39
+    },
+    {
+      "key": "https://openalex.org/T10031",
+      "name": "T-cell and B-cell Immunology",
+      "count": 35
+    },
+    {
+      "key": "https://openalex.org/T10063",
+      "name": "Nanoparticle-Based Drug Delivery",
+      "count": 33
+    },
+    {
+      "key": "https://openalex.org/T10066",
+      "name": "Gut microbiota and health",
+      "count": 32
+    },
+    {
+      "key": "https://openalex.org/T10336",
+      "name": "Cancer Cells and Metastasis",
+      "count": 32
+    },
+    {
+      "key": "https://openalex.org/T10966",
+      "name": "Liver physiology and pathology",
+      "count": 29
+    },
+    {
+      "key": "https://openalex.org/T11482",
+      "name": "RNA modifications and cancer",
+      "count": 29
+    },
+    {
+      "key": "https://openalex.org/T12465",
+      "name": "Cancer, Lipids, and Metabolism",
+      "count": 28
+    },
+    {
+      "key": "https://openalex.org/T10773",
+      "name": "Extracellular vesicles in disease",
+      "count": 25
+    },
+    {
+      "key": "https://openalex.org/T11289",
+      "name": "Single-cell and spatial transcriptomics",
+      "count": 23
+    },
+    {
+      "key": "https://openalex.org/T11020",
+      "name": "Immune Cell Function and Interaction",
+      "count": 22
+    },
+    {
+      "key": "https://openalex.org/T10269",
+      "name": "Epigenetics and DNA Methylation",
+      "count": 21
+    },
+    {
+      "key": "https://openalex.org/T11491",
+      "name": "CAR-T cell therapy research",
+      "count": 17
+    },
+    {
+      "key": "https://openalex.org/T10725",
+      "name": "RNA Interference and Gene Delivery",
+      "count": 16
+    },
+    {
+      "key": "https://openalex.org/T11364",
+      "name": "Cholangiocarcinoma and Gallbladder Cancer Studies",
+      "count": 16
+    },
+    {
+      "key": "https://openalex.org/T10062",
+      "name": "MicroRNA in disease regulation",
+      "count": 15
+    },
+    {
+      "key": "https://openalex.org/T10929",
+      "name": "Wnt/β-catenin signaling in development and cancer",
+      "count": 15
+    },
+    {
+      "key": "https://openalex.org/T11041",
+      "name": "Ubiquitin and proteasome pathways",
+      "count": 15
+    },
+    {
+      "key": "https://openalex.org/T11395",
+      "name": "Radiopharmaceutical Chemistry and Applications",
+      "count": 15
+    },
+    {
+      "key": "https://openalex.org/T10422",
+      "name": "Angiogenesis and VEGF in Cancer",
+      "count": 14
+    },
+    {
+      "key": "https://openalex.org/T11668",
+      "name": "interferon and immune responses",
+      "count": 13
+    },
+    {
+      "key": "https://openalex.org/T12996",
+      "name": "Bacterial Cancer Therapy",
+      "count": 13
+    },
+    {
+      "key": "https://openalex.org/T10231",
+      "name": "Pancreatic and Hepatic Oncology Research",
+      "count": 12
+    },
+    {
+      "key": "https://openalex.org/T10587",
+      "name": "Autophagy in Disease and Therapy",
+      "count": 12
+    },
+    {
+      "key": "https://openalex.org/T10613",
+      "name": "Virus-based gene therapy research",
+      "count": 12
+    },
+    {
+      "key": "https://openalex.org/T10294",
+      "name": "Cell death mechanisms and regulation",
+      "count": 11
+    },
+    {
+      "key": "https://openalex.org/T10583",
+      "name": "Cancer-related Molecular Pathways",
+      "count": 11
+    },
+    {
+      "key": "https://openalex.org/T10885",
+      "name": "Gene expression and cancer classification",
+      "count": 11
+    },
+    {
+      "key": "https://openalex.org/T10958",
+      "name": "Ultrasound and Hyperthermia Applications",
+      "count": 11
+    },
+    {
+      "key": "https://openalex.org/T10570",
+      "name": "Drug Transport and Resistance Mechanisms",
+      "count": 10
+    },
+    {
+      "key": "https://openalex.org/T11339",
+      "name": "Metabolism, Diabetes, and Cancer",
+      "count": 10
+    },
+    {
+      "key": "https://openalex.org/T10351",
+      "name": "Liver Disease Diagnosis and Treatment",
+      "count": 9
+    },
+    {
+      "key": "https://openalex.org/T10417",
+      "name": "Lung Cancer Treatments and Mutations",
+      "count": 9
+    },
+    {
+      "key": "https://openalex.org/T10452",
+      "name": "Iron Metabolism and Disorders",
+      "count": 9
+    },
+    {
+      "key": "https://openalex.org/T13157",
+      "name": "Cancer-related gene regulation",
+      "count": 9
+    },
+    {
+      "key": "https://openalex.org/T11501",
+      "name": "TGF-β signaling in diseases",
+      "count": 8
+    },
+    {
+      "key": "https://openalex.org/T11765",
+      "name": "Circular RNAs in diseases",
+      "count": 8
+    },
+    {
+      "key": "https://openalex.org/T10449",
+      "name": "Renal cell carcinoma treatment",
+      "count": 7
+    },
+    {
+      "key": "https://openalex.org/T10602",
+      "name": "Glycosylation and Glycoproteins Research",
+      "count": 7
+    },
+    {
+      "key": "https://openalex.org/T10937",
+      "name": "Telomeres, Telomerase, and Senescence",
+      "count": 7
+    },
+    {
+      "key": "https://openalex.org/T11016",
+      "name": "Monoclonal and Polyclonal Antibodies Research",
+      "count": 7
+    },
+    {
+      "key": "https://openalex.org/T12672",
+      "name": "Phagocytosis and Immune Regulation",
+      "count": 7
+    },
+    {
+      "key": "https://openalex.org/T10102",
+      "name": "scientometrics and bibliometrics research",
+      "count": 6
+    },
+    {
+      "key": "https://openalex.org/T10151",
+      "name": "Hepatitis C virus research",
+      "count": 6
+    },
+    {
+      "key": "https://openalex.org/T10211",
+      "name": "Computational Drug Discovery Methods",
+      "count": 6
+    },
+    {
+      "key": "https://openalex.org/T10522",
+      "name": "Medical Imaging Techniques and Applications",
+      "count": 6
+    },
+    {
+      "key": "https://openalex.org/T10887",
+      "name": "Bioinformatics and Genomic Networks",
+      "count": 6
+    },
+    {
+      "key": "https://openalex.org/T11332",
+      "name": "Genomics, phytochemicals, and oxidative stress",
+      "count": 6
+    },
+    {
+      "key": "https://openalex.org/T12422",
+      "name": "Radiomics and Machine Learning in Medical Imaging",
+      "count": 6
+    },
+    {
+      "key": "https://openalex.org/T10183",
+      "name": "Breast Cancer Treatment Studies",
+      "count": 5
+    },
+    {
+      "key": "https://openalex.org/T10952",
+      "name": "PI3K/AKT/mTOR signaling in cancer",
+      "count": 5
+    },
+    {
+      "key": "https://openalex.org/T11369",
+      "name": "Genetic factors in colorectal cancer",
+      "count": 5
+    },
+    {
+      "key": "https://openalex.org/T11503",
+      "name": "Cytokine Signaling Pathways and Interactions",
+      "count": 5
+    },
+    {
+      "key": "https://openalex.org/T11597",
+      "name": "Neutrophil, Myeloperoxidase and Oxidative Mechanisms",
+      "count": 5
+    },
+    {
+      "key": "https://openalex.org/T11736",
+      "name": "Histone Deacetylase Inhibitors Research",
+      "count": 5
+    },
+    {
+      "key": "https://openalex.org/T11885",
+      "name": "MRI in cancer diagnosis",
+      "count": 5
+    },
+    {
+      "key": "https://openalex.org/T12820",
+      "name": "Chromatin Remodeling and Cancer",
+      "count": 5
+    },
+    {
+      "key": "https://openalex.org/T13779",
+      "name": "Cancer Mechanisms and Therapy",
+      "count": 5
+    },
+    {
+      "key": "https://openalex.org/T10222",
+      "name": "Genomics and Chromatin Dynamics",
+      "count": 4
+    },
+    {
+      "key": "https://openalex.org/T11078",
+      "name": "Inflammasome and immune disorders",
+      "count": 4
+    },
+    {
+      "key": "https://openalex.org/T11355",
+      "name": "Inflammatory Biomarkers in Disease Prognosis",
+      "count": 4
+    },
+    {
+      "key": "https://openalex.org/T11532",
+      "name": "Chemokine receptors and signaling",
+      "count": 4
+    },
+    {
+      "key": "https://openalex.org/T12287",
+      "name": "Fibroblast Growth Factor Research",
+      "count": 4
+    },
+    {
+      "key": "https://openalex.org/T12534",
+      "name": "Protein Degradation and Inhibitors",
+      "count": 4
+    },
+    {
+      "key": "https://openalex.org/T10307",
+      "name": "Head and Neck Cancer Studies",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T10358",
+      "name": "Advanced Radiotherapy Techniques",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T10371",
+      "name": "Immune Response and Inflammation",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T10458",
+      "name": "Bladder and Urothelial Cancer Treatments",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T10543",
+      "name": "Prostate Cancer Treatment and Research",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T10604",
+      "name": "RNA Research and Splicing",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T10878",
+      "name": "CRISPR and Genetic Engineering",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T10957",
+      "name": "Photodynamic Therapy Research Studies",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T11193",
+      "name": "Adenosine and Purinergic Signaling",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T11207",
+      "name": "Alcohol Consumption and Health Effects",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T12334",
+      "name": "Lung Cancer Research Studies",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T12576",
+      "name": "vaccines and immunoinformatics approaches",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T12770",
+      "name": "Amino Acid Enzymes and Metabolism",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T12827",
+      "name": "Biochemical and Molecular Research",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T13444",
+      "name": "Traditional Chinese Medicine Clinical Research",
+      "count": 3
+    },
+    {
+      "key": "https://openalex.org/T10027",
+      "name": "Diabetes, Cardiovascular Risks, and Lipoproteins",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T10123",
+      "name": "DNA Repair Mechanisms",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T10129",
+      "name": "Glioma Diagnosis and Treatment",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T10268",
+      "name": "Developmental Biology and Gene Regulation",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T10301",
+      "name": "Mitochondrial Function and Pathology",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T10337",
+      "name": "Liver Disease and Transplantation",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T10343",
+      "name": "Hydrogels: synthesis, properties, applications",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T10519",
+      "name": "Advanced Proteomics Techniques and Applications",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T10678",
+      "name": "Inflammatory mediators and NSAID effects",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T10915",
+      "name": "Trace Elements in Health",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T10934",
+      "name": "Heat shock proteins research",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T11150",
+      "name": "Endoplasmic Reticulum Stress and Disease",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T11176",
+      "name": "Radiation Therapy and Dosimetry",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T11308",
+      "name": "Sphingolipid Metabolism and Signaling",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T11385",
+      "name": "Natural product bioactivities and synthesis",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T11636",
+      "name": "Artificial Intelligence in Healthcare and Education",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T11845",
+      "name": "Cancer therapeutics and mechanisms",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T11924",
+      "name": "Polyamine Metabolism and Applications",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T12030",
+      "name": "S100 Proteins and Annexins",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T12065",
+      "name": "Hippo pathway signaling and YAP/TAZ",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T12104",
+      "name": "Protein Tyrosine Phosphatases",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T12215",
+      "name": "Phytochemical Studies and Bioactivities",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T12302",
+      "name": "Advanced Nanomaterials in Catalysis",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T12387",
+      "name": "Galectins and Cancer Biology",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T12505",
+      "name": "Peptidase Inhibition and Analysis",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T12582",
+      "name": "Flavonoids in Medical Research",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T12626",
+      "name": "Cancer, Stress, Anesthesia, and Immune Response",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T13415",
+      "name": "Calcium signaling and nucleotide metabolism",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T13437",
+      "name": "Mechanisms of cancer metastasis",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T13452",
+      "name": "GDF15 and Related Biomarkers",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T13656",
+      "name": "Science, Research, and Medicine",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T14135",
+      "name": "Cancer and biochemical research",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T14521",
+      "name": "Medicinal Plant Research",
+      "count": 2
+    },
+    {
+      "key": "https://openalex.org/T10035",
+      "name": "Phytochemicals and Antioxidant Activities",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10093",
+      "name": "Nuclear physics research studies",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10112",
+      "name": "HIV Research and Treatment",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10124",
+      "name": "Prostate Cancer Diagnosis and Treatment",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10141",
+      "name": "Probiotics and Fermented Foods",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10146",
+      "name": "Cervical Cancer and HPV Research",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10150",
+      "name": "Antifungal resistance and susceptibility",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10176",
+      "name": "Mesenchymal stem cell research",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10185",
+      "name": "Lymphoma Diagnosis and Treatment",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10198",
+      "name": "Heart Failure Treatment and Management",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10261",
+      "name": "Genetic Associations and Epidemiology",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10274",
+      "name": "Heterocyclic Compound Synthesis and Bioactivity",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10309",
+      "name": "Acute Myeloid Leukemia Research",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10375",
+      "name": "Pharmacogenetics and Drug Metabolism",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10397",
+      "name": "Nutrition and Health in Aging",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10476",
+      "name": "Algal biology and biofuel production",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10521",
+      "name": "RNA and protein synthesis mechanisms",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10619",
+      "name": "Esophageal Cancer Research and Treatment",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10668",
+      "name": "Endometrial and Cervical Cancer Treatments",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10676",
+      "name": "Genetics, Aging, and Longevity in Model Organisms",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10696",
+      "name": "Gastric Cancer Management and Outcomes",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10754",
+      "name": "Neuroendocrine Tumor Research Advances",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10756",
+      "name": "Estrogen and related hormone effects",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10831",
+      "name": "Cell Adhesion Molecules Research",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10836",
+      "name": "Metabolomics and Mass Spectrometry Studies",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10862",
+      "name": "AI in cancer detection",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10881",
+      "name": "Blood Coagulation and Thrombosis Mechanisms",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10911",
+      "name": "Chemical Synthesis and Analysis",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T10920",
+      "name": "Advanced Drug Delivery Systems",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11026",
+      "name": "Occupational and environmental lung diseases",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11048",
+      "name": "Bacteriophages and microbial interactions",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11051",
+      "name": "Sirtuins and Resveratrol in Medicine",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11077",
+      "name": "Genetic and Clinical Aspects of Sex Determination and Chromosomal Abnormalities",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11107",
+      "name": "Selenium in Biological Systems",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11157",
+      "name": "Chronic Lymphocytic Leukemia Research",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11194",
+      "name": "Ocular Diseases and Behçet’s Syndrome",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11213",
+      "name": "Genomic variations and chromosomal abnormalities",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11217",
+      "name": "Cardiac Arrhythmias and Treatments",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11328",
+      "name": "Ocular Oncology and Treatments",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11390",
+      "name": "Seaweed-derived Bioactive Compounds",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11401",
+      "name": "Minerals Flotation and Separation Techniques",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11465",
+      "name": "Drug-Induced Hepatotoxicity and Protection",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11469",
+      "name": "Lymphatic System and Diseases",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11481",
+      "name": "Sulfur Compounds in Biology",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11547",
+      "name": "Sesquiterpenes and Asteraceae Studies",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11576",
+      "name": "IgG4-Related and Inflammatory Diseases",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11591",
+      "name": "NF-κB Signaling Pathways",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11600",
+      "name": "Brain Metastases and Treatment",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11618",
+      "name": "Cholesterol and Lipid Metabolism",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11709",
+      "name": "Traditional Chinese Medicine Analysis",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11791",
+      "name": "Microbial Community Ecology and Physiology",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11829",
+      "name": "Mathematical Biology Tumor Growth",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11834",
+      "name": "Liver Diseases and Immunity",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11841",
+      "name": "Nuclear Structure and Function",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11844",
+      "name": "Lipid metabolism and biosynthesis",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11889",
+      "name": "Ginseng Biological Effects and Applications",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11909",
+      "name": "Histiocytic Disorders and Treatments",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11914",
+      "name": "PARP inhibition in cancer therapy",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11940",
+      "name": "Layered Double Hydroxides Synthesis and Applications",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11962",
+      "name": "Cardiac Fibrosis and Remodeling",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T11979",
+      "name": "Garlic and Onion Studies",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12064",
+      "name": "Intraperitoneal and Appendiceal Malignancies",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12087",
+      "name": "Natural Compound Pharmacology Studies",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12103",
+      "name": "Cancer Risks and Factors",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12110",
+      "name": "Bone and Dental Protein Studies",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12257",
+      "name": "Bioactive natural compounds",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12278",
+      "name": "Vascular Tumors and Angiosarcomas",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12279",
+      "name": "Body Composition Measurement Techniques",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12356",
+      "name": "Bioactive Compounds and Antitumor Agents",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12434",
+      "name": "Phosphodiesterase function and regulation",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12460",
+      "name": "Pediatric Hepatobiliary Diseases and Treatments",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12477",
+      "name": "Toxin Mechanisms and Immunotoxins",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12604",
+      "name": "Glycogen Storage Diseases and Myoclonus",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12610",
+      "name": "RNA regulation and disease",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12817",
+      "name": "Pharmacological Effects of Natural Compounds",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12829",
+      "name": "Advanced Breast Cancer Therapies",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T12992",
+      "name": "Metastasis and carcinoma case studies",
+      "count": 1
+    },
+    {
+      "key": "https://openalex.org/T13123",
+      "name": "Advances in Oncology and Radiotherapy",
+      "count": 1
+    }
+  ]
+}

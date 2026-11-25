@@ -1,0 +1,32 @@
+{
+  "mode": "C2",
+  "direction": "肝细胞癌免疫治疗耐药机制",
+  "key_points": [
+    "| [1] | S1P 与耐药 | 代谢机制和干预 | NEK2/S1P 干预增强阻断疗效 | 跨体系外推未确认 |",
+    "| [2] | IL-8/CXCR2 与应答 | 动态活检、单细胞测序 | 循环 IL-8 关联较差应答 | 不等于普遍预测 |",
+    "| [3] | 乳酸化与 PD-L1 | 测序和分子实验 | MVP 上调稳定 PD-L1 | 联合机制待验证 |",
+    "| [4] | 微环境综合 | 细胞群与临床试验综述 | 细胞通讯参与逃逸和耐药 | 不替代机制实验 |",
+    "| 理论基础 | 免疫抑制微环境 [1][4] | 关注免疫逃逸 |",
+    "| 研究对象 | 巨噬细胞、髓源抑制细胞等 [1][2][3] | 细胞层级不同 |",
+    "| 研究问题 | 代谢、迁移、蛋白稳定性 [1][2][3] | 问题互补 |",
+    "| 技术方法 | 代谢干预、单细胞测序、分子实验 [1][2][3] | 不可混写 |"
+  ],
+  "references": [
+    {
+      "ref_no": 1,
+      "text": "[1] ZHANG X, LAO M, SUN K, et al. Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma[J]. Science Advances, 2025. DOI:10.1126/sciadv.adv0558."
+    },
+    {
+      "ref_no": 2,
+      "text": "[2] Tsz Tung Kwong, XIONG Z, ZHANG Y, et al. Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling[J]. Molecular Therapy, 2025. DOI:10.1016/j.ymthe.2025.02.002."
+    },
+    {
+      "ref_no": 3,
+      "text": "[3] LIU S, PAN Y, LIU W, et al. Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma[J]. Journal for ImmunoTherapy of Cancer, 2025. DOI:10.1136/jitc-2025-012230."
+    },
+    {
+      "ref_no": 4,
+      "text": "[4] FU Y, GUO X, SUN L, et al. Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance[J]. eLife, 2024. DOI:10.7554/elife.95009."
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "mode": "C",
+  "files": [
+    {
+      "name": "report.docx",
+      "bytes": 40872,
+      "signature": "PK",
+      "paragraphs": 90,
+      "references": 4
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "frontend": "http://127.0.0.1:5194",
+  "backend": "http://127.0.0.1:8026",
+  "skill_regression_backend": "http://127.0.0.1:8027",
+  "skill_regression_frontend": "http://127.0.0.1:5195",
+  "redis": "redis://127.0.0.1:6394/0",
+  "queue": "landscape",
+  "runner_pid": 18381,
+  "processes": {
+    "redis": 18382,
+    "web": 18383,
+    "worker": 18386,
+    "frontend": 18387
+  },
+  "provider_boundary": "offline HCC OpenAlex/statistics/model/reference providers; real app API/SQLite/RQ/graphs/delivery",
+  "health": {
+    "status": "ok",
+    "database": "ok",
+    "worker": "ready"
+  }
+}

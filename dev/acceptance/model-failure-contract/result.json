@@ -1,0 +1,87 @@
+{
+  "generated_at": "2026-11-25T00:20:00+08:00",
+  "matrix": "model-failure-contract",
+  "location": "dev/acceptance/model-failure-contract/",
+  "method": {
+    "transport": "全部假传输：ChatModel(client=FakeOpenAIClient(...)) 注入脚本化假 completions 端点；openai.AuthenticationError/RateLimitError/APITimeoutError/BadRequestError 用构造的 httpx.Request/Response 实例化，无任何网络 IO",
+    "environment": "测试会话期间删除 QWEN_API_KEY/QWEN_BASE_URL/QWEN_MODEL，绝不读取真实模型环境变量；哨兵秘密全部为 fake-* 假值",
+    "persistence": "Worker 层用内存 sqlite + fakeredis 本地配额限流器，不连接共享数据库/Redis，不启动服务",
+    "command": "cd dev/acceptance/model-failure-contract && <工地>/.venv/bin/python -m pytest . -p no:cacheprovider -q"
+  },
+  "test_summary": {
+    "total": 30,
+    "passed": 30,
+    "failed": 0,
+    "files": {
+      "test_transport_contract.py": 12,
+      "test_worker_failure_contract.py": 9,
+      "test_bounded_retry_contract.py": 6,
+      "conftest.py + matrix_shared.py": "fixtures/fake transport（不计测试数）"
+    }
+  },
+  "status_legend": {
+    "offline_verified": "离线已验证：假传输下断言全部通过",
+    "existing_coverage": "backend/tests 已有等价覆盖，按只补缺失原则未重复",
+    "live_unverified": "真实服务未验证：需要真实 Provider 响应才能验收；本矩阵的 mock 结果不代表真实 401/429 已验收"
+  },
+  "scenarios": [
+    {"id": "M-01", "scenario": "401 认证错误：原样上抛、单次调用、无伪成功", "layer": "transport", "status": "offline_verified", "tests": ["test_401_authentication_error_propagates_unchanged_single_attempt"]},
+    {"id": "M-02", "scenario": "429 + 合法 Retry-After：上抛、complete_json 内不重试", "layer": "transport", "status": "offline_verified", "tests": ["test_429_with_valid_retry_after_propagates_without_in_call_retry"]},
+    {"id": "M-03", "scenario": "429 + 非法 Retry-After（not-a-number / -5 / 空 / 超范围）", "layer": "transport", "status": "offline_verified", "tests": ["test_429_with_invalid_retry_after_values_still_propagate[4]"]},
+    {"id": "M-04", "scenario": "429 无 Retry-After 头", "layer": "transport", "status": "offline_verified", "tests": ["test_429_without_retry_after_header_still_propagates"]},
+    {"id": "M-05", "scenario": "传输超时 APITimeoutError：原样上抛", "layer": "transport", "status": "offline_verified", "tests": ["test_timeout_error_propagates_unchanged"]},
+    {"id": "M-06", "scenario": "上下文过长 400 BadRequestError：原样上抛", "layer": "transport", "status": "offline_verified", "tests": ["test_context_length_400_propagates_unchanged"]},
+    {"id": "M-07", "scenario": "空响应体：固定文案 ValueError，不夹带 Provider 原文", "layer": "transport", "status": "offline_verified", "tests": ["test_empty_response_body_raises_value_error_without_provider_text"]},
+    {"id": "M-08", "scenario": "非 JSON 响应", "layer": "transport", "status": "existing_coverage", "note": "backend/tests/test_analysis.py::test_chat_model_rejects_non_json_model_content 已覆盖，未重复"},
+    {"id": "M-09", "scenario": "结构不符 JSON（标量 42 / \"hello\" / true / 3.14）", "layer": "transport", "status": "offline_verified", "tests": ["test_scalar_json_raises_structure_error[4]"]},
+    {"id": "M-10", "scenario": "None content / 空 choices 列表", "layer": "transport", "status": "offline_verified", "tests": ["test_none_content_raises_value_error", "test_empty_choices_raises_value_error"]},
+    {"id": "M-11", "scenario": "正常 JSON 对象/数组对照组", "layer": "transport", "status": "offline_verified", "tests": ["test_valid_json_object_and_array_pass_through"]},
+    {"id": "W-01", "scenario": "401 经 run_stage：task=error、job=failed、无 completed/checkpoint 事件、checkpoint=None、traceback/message/事件无 API Key/Base URL 凭据/请求头、对外仅安全文案、retryable 但不带 retry_after", "layer": "worker", "status": "offline_verified", "tests": ["test_401_failure_is_safe_retryable_and_never_leaks_credentials"]},
+    {"id": "W-02", "scenario": "429 合法 Retry-After 经 run_stage：走通用 failed 通道、无 retry_after 入事件（缺口 D-01 行为证据）", "layer": "worker", "status": "offline_verified", "tests": ["test_429_valid_retry_after_is_recorded_as_plain_failure_without_wiring"]},
+    {"id": "W-03", "scenario": "429 非法 Retry-After 经 run_stage：失败记录不崩溃、无泄漏", "layer": "worker", "status": "offline_verified", "tests": ["test_429_invalid_retry_after_does_not_break_failure_recording[3]"]},
+    {"id": "W-04", "scenario": "超时经 run_stage：安全落库、单次尝试（缺口 D-02 行为证据）", "layer": "worker", "status": "offline_verified", "tests": ["test_timeout_failure_is_safe_single_attempt"]},
+    {"id": "W-05", "scenario": "上下文过长经 run_stage：安全落库、诊断保留异常类型", "layer": "worker", "status": "offline_verified", "tests": ["test_context_length_failure_is_safe"]},
+    {"id": "W-06", "scenario": "异常消息夹带 Provider 私密正文+凭据：全表面 [REDACTED_PROVIDER_BODY]/[REDACTED] 脱敏", "layer": "worker", "status": "offline_verified", "tests": ["test_provider_body_echo_is_redacted_from_every_surface"]},
+    {"id": "W-07", "scenario": "failed 作业不被恢复流程误结算（无不可恢复检查点被当成成功恢复）", "layer": "worker+recovery", "status": "offline_verified", "tests": ["test_failed_job_is_not_auto_settled_by_recovery"]},
+    {"id": "W-08", "scenario": "成功路径对照组：checkpoint/状态正确，证明失败断言非假象", "layer": "worker", "status": "offline_verified", "tests": ["test_success_path_still_records_checkpoint_for_control"]},
+    {"id": "W-09", "scenario": "本地配额拒绝端到端：rate_limited 事件带 retry_after，是恢复调度器有界重试唯一入口", "layer": "worker", "status": "offline_verified", "tests": ["test_worker_quota_denial_records_rate_limited_with_retry_after"]},
+    {"id": "R-01", "scenario": "限流后有界重试：未到上限重排一次，达 max_attempts 记 retry_exhausted、不再重排、不落完成态", "layer": "recovery", "status": "offline_verified", "tests": ["test_bounded_retry_requeues_until_attempt_cap_then_marks_exhausted"]},
+    {"id": "R-02", "scenario": "已达上限直接 retry_exhausted、任务保持 error", "layer": "recovery", "status": "offline_verified", "tests": ["test_exhausted_retry_emits_single_terminal_event_and_stays_failed"]},
+    {"id": "R-03", "scenario": "retry_after 未到期不重排", "layer": "recovery", "status": "offline_verified", "tests": ["test_retry_not_due_yet_waits_for_retry_after"]},
+    {"id": "R-04", "scenario": "Provider 通用 failed 事件永不进入有界重试通道（缺口 D-01 演示）", "layer": "recovery", "status": "offline_verified", "tests": ["test_generic_model_failure_never_enters_bounded_retry_channel"]},
+    {"id": "R-05", "scenario": "retry_call：内置 TimeoutError 有界重试；openai.APITimeoutError/APIConnectionError 不被视为瞬时（缺口 D-02 演示）", "layer": "recovery", "status": "offline_verified", "tests": ["test_retry_call_treats_builtin_timeout_as_transient_but_not_openai_errors"]}
+  ],
+  "defects": [
+    {
+      "id": "D-01",
+      "severity": "medium",
+      "title": "Provider 429 的 Retry-After 未解析、未进入 rate_limited 重试通道",
+      "evidence": "backend/app/queueing.py run_stage 只有本地配额超限抛 StageRateLimitError 才记录 event_type='rate_limited'（带 retry_after）；openai.RateLimitError 落入通用 except Exception → event_type='failed' 且 payload 无 retry_after。backend/app/recovery.py schedule_due_retries 只扫描 rate_limited 事件，故 Provider 429 永远不会被自动有界重试。offline 证据：W-02 / R-04。",
+      "impact": "真实 Qwen 限流时任务直接 error，需人工重试；Retry-After 头被丢弃。"
+    },
+    {
+      "id": "D-02",
+      "severity": "medium",
+      "title": "模型调用无传输层有界重试，且 retry_call 的 TRANSIENT_ERRORS 不覆盖 openai 异常",
+      "evidence": "grep 显示 retry_call 在 app/ 内无调用点（仅定义与单测）；analysis.py/writing.py 直接调 complete_json。TRANSIENT_ERRORS=(TimeoutError, ConnectionError, URLError, RedisError)，而 openai.APITimeoutError/APIConnectionError 均不继承内置 TimeoutError/ConnectionError（MRO 已验证），即使接线也不会重试。offline 证据：W-04 / R-05。",
+      "impact": "瞬时网络抖动直接失败落库，依赖人工或上层重排；与 D-01 叠加后 Provider 侧无自动恢复路径。"
+    }
+  ],
+  "unverified_boundaries": [
+    "真实 Qwen 返回的 401/429/400/超时响应头与体格式：本矩阵仅用构造的 openai 异常模拟，真实 401/429 验收状态=真实服务未验证（不能用 mock 结果宣称已验收）",
+    "真实 Provider 在 401 响应体中回显 Key 的具体措辞：脱敏依赖 redact_sensitive_text 的环境值扫描，离线仅验证 fake 哨兵场景",
+    "多批量分析（analysis.py 分批 classify/factor/relations）中途失败的半成品 analysis.json 内容正确性：本矩阵只断言状态机与泄漏不变量",
+    "recovery.py recover_interrupted_tasks 对 stale 'started' 且无 checkpoint 的 manual_review 路径与 failed 作业的交互已在 W-07 部分覆盖，但真实崩溃（进程 kill）时机下的落库原子性未模拟",
+    "C1+C2 双任务生成中单个模式失败的交付半成品状态未在本矩阵展开（属 delivery/orchestration 域）",
+    "本地配额 limiter 在真实 Redis 上的并发争用（WatchError 路径）不在本矩阵范围"
+  ],
+  "constraints_confirmed": {
+    "no_network": true,
+    "no_real_env_reads": "会话级删除 QWEN_*，测试只使用 fake 哨兵值",
+    "no_paid_model_calls": true,
+    "no_service_start": true,
+    "no_shared_db_redis": "内存 sqlite + fakeredis",
+    "no_dependency_install": true,
+    "backend_frontend_sites_untouched": "只读源码；新增/修改仅限 dev/acceptance/model-failure-contract/"
+  }
+}

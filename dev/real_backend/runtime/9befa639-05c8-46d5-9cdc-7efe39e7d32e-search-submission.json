@@ -1,0 +1,17 @@
+{
+  "id": "9befa639-05c8-46d5-9cdc-7efe39e7d32e",
+  "session_id": "6e9b3c03-3b37-410e-8ce3-a28e4cdfd70c",
+  "skill_version_id": "23b60c2a-37e2-481a-a336-c68e529aafe8",
+  "direction": "肝细胞癌免疫治疗耐药机制",
+  "state": "searching",
+  "next_card": null,
+  "card": null,
+  "created_at": "2026-11-24T11:50:21.554088",
+  "updated_at": "2026-11-24T11:50:22.766133",
+  "progress": {
+    "stage": "search",
+    "message": "等待检索与论文池整理",
+    "checkpoint": null
+  },
+  "job_id": "f1fd3980-12ee-4e0e-9e90-259d090ebd7e"
+}

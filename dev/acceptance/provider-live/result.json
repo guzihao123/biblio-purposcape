@@ -1,0 +1,91 @@
+{
+  "run_id": "offline-acceptance-2026-11-24-1935",
+  "run_type": "offline_only_with_authorized_fixes",
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "scope_note": "主线已授权修复 WIRE-01 与错误码链路（仍禁止 LIVE-*、云库、迁移）。本轮完成修复并全量离线回归。结论仍为离线证据：假 Provider/假数据库/跨栈真实传输边界；不得提升为真实 Provider/RLS 验收通过。",
+  "authorization": {
+    "received": ["修复 WIRE-01（失败回归先行）", "错误码白名单映射与命名统一", "RLS 离线草案+威胁模型（不执行）"],
+    "still_forbidden": ["LIVE-* 执行", "创建云数据库", "云端迁移", "接线主存储", "修改 recovery.py/queueing.py/worker.py/main.py/浏览器配置"]
+  },
+  "fixes_applied": [
+    {
+      "id": "FIX-WIRE-01",
+      "files": ["sites/functions/task_store.ts"],
+      "change": "/internal/task-store/sessions 处理器将受权请求 body.id 透传 createAnonymousSession（仅提供时）；未提供保持服务端生成。",
+      "regression": "tests/task_store_sessions_regression.test.mjs（4 项：固定 id 透传/匿名行为保留/非法 id 拒绝且无副作��/405）"
+    },
+    {
+      "id": "FIX-ERR-MAP",
+      "files": ["backend/app/sites_task_store.py", "backend/app/task_store_sync.py", "backend/tests/test_sites_task_store.py", "backend/tests/test_task_store_sync.py"],
+      "change": "SitesTaskStoreError 增加 status 与校验后 retry_after（1..999999999 纯数字秒）；_http_failure 按固定 (status, method, path) 白名单映射：PUT state 409→revision_conflict、POST /tasks 409→skill_version_unavailable、POST /tasks 429→quota_exceeded(+Retry-After)、401→session_not_found、403→worker_unauthorized，其余→task_store_unavailable（均带 status）；不读 Provider 正文、不重试、异常不带 cause。task_store_sync 安全码统一为 skill_version_unavailable（移除 not_published 混用），TaskStoreSyncError 透传校验后 retry_after。",
+      "regression": "tests/test_client_error_mapping.py（30 项）+ tests/test_wire_contract.py::test_error_codes_survive_the_real_chain + 主线 test_other_http_statuses_keep_safe_codes_with_one_call、test_non_state_write_http_409_is_skill_version_unavailable"
+    },
+    {
+      "id": "FIX-RESP-VALID",
+      "files": ["backend/app/sites_task_store.py"],
+      "change": "create_anonymous_session 对返回 id 增加校验：缺失/空/非字符串/超64字符/非法字符一律 invalid_worker_response（不被掩盖、不变成其他异常）。",
+      "regression": "tests/test_client_error_mapping.py::test_create_anonymous_session_validates_returned_id（8 参数）"
+    },
+    {
+      "id": "RLS-DRAFT",
+      "files": ["dev/acceptance/provider-live/rls-policy-draft.sql", "dev/acceptance/provider-live/threat-model.md"],
+      "change": "离线 RLS 策略草案（5 表 ENABLE+FORCE RLS + owner/published 策略）与威胁模型（T1-T7）。明确未执行，列有平台确认前 5 项未决问题；当前 Schema 无 RLS，不得声称 RLS 已覆盖。"
+    }
+  ],
+  "changed_files": [
+    "sites/functions/task_store.ts",
+    "backend/app/sites_task_store.py",
+    "backend/app/task_store_sync.py",
+    "backend/tests/test_sites_task_store.py",
+    "backend/tests/test_task_store_sync.py",
+    "dev/acceptance/provider-live/tests/fake_db.mjs",
+    "dev/acceptance/provider-live/tests/wire_server.mjs",
+    "dev/acceptance/provider-live/tests/test_wire_contract.py",
+    "dev/acceptance/provider-live/tests/test_client_error_mapping.py",
+    "dev/acceptance/provider-live/tests/task_store_sessions_regression.test.mjs",
+    "dev/acceptance/provider-live/rls-policy-draft.sql",
+    "dev/acceptance/provider-live/threat-model.md",
+    "dev/acceptance/provider-live/result.json"
+  ],
+  "source_hashes_after_fix": {
+    "sites/schema.sql": "sha256:b7ad68cf5df43fcf6992aeba0ff5c78a830eae39a99779f00e610b558ff4b9fe (未改动)",
+    "sites/functions/task_store.ts": "sha256:344139a8a79f55e3718ba91fc139af251792b1746ba2a936ace81529b59c391e",
+    "backend/app/sites_task_store.py": "sha256:0630b562c23c9629ebd587fa5c3f65015c4112b9632f9b28ec165bb5ce7f6999",
+    "backend/app/task_store_sync.py": "sha256:773f4629796d63e0fd32a55111ca4dbe80796b191ce00615a981b06ec32c7148",
+    "backend/tests/test_sites_task_store.py": "sha256:b0ff15abd9a695ff783dd1d425b37011cfa5ce1ce748470a5c7a1a517bf20bc6",
+    "backend/tests/test_task_store_sync.py": "sha256:20a6e8d04268ec799ab3029fe0d7f62a0389991e122b426deee3e25c09e527cb"
+  },
+  "failed_to_passed": [
+    {"regression": "test_wire01_fixed_session_id_preserved_end_to_end", "before": "FAIL（服务端丢弃 body.id，sync_session 必然 invalid_provider_response）", "after": "PASS（固定 id 经真实 client→真实 handler 一致，匿名路径行为不变）"},
+    {"regression": "test_wire01_illegal_session_id_rejected_without_side_effects", "before": "不适用（旧行为无校验入口）", "after": "PASS（非法 id 422 invalid_session_id，无插入副作用）"},
+    {"regression": "test_error_codes_survive_the_real_chain", "before": "FAIL（skill/session 码被压平为 task_store_unavailable）", "after": "PASS（skill_version_unavailable / session_not_found 经真实链路保留）"},
+    {"regression": "test_quota_denial_rolls_back_task_and_reports_safe_client_error", "before": "断言压平行为（gap 记录）", "after": "PASS（quota_exceeded + 校验后 retry_after 经 sync 层保留）"},
+    {"regression": "test_client_error_mapping.py 全部 30 项", "before": "22 项 FAIL（红）", "after": "30/30 PASS（绿）"}
+  ],
+  "full_offline_regression": {
+    "mainline_python_contract": {"result": "24 passed / 0 failed", "log": "logs/pytest-offline-contract.log"},
+    "ts_fixed_contract": {"result": "13 passed / 0 failed", "log": "logs/node-fake-db-contract.log"},
+    "ts_session_regression": {"result": "4 passed / 0 failed", "log": "logs/node-session-regression.log"},
+    "client_error_mapping": {"result": "30 passed / 0 failed", "log": "logs/pytest-client-error-mapping.log"},
+    "cross_stack_wire": {"result": "12 passed / 0 failed", "log": "logs/pytest-wire-contract.log"},
+    "full_backend_suite": {"result": "405 passed, 1 failed, 4 errors", "note": "唯一失败与 4 个错误均在 tests/test_ppt_visual_integrity.py（PPT 视觉夹具，与本次改动模块无关的既有环境问题）；本任务相关测试全绿"},
+    "ports": "8021 已释放；未触碰 8020/5190/6390"
+  },
+  "preconditions": {
+    "WIRE-01": {"status": "fixed_and_verified_offline", "evidence": "test_wire01_fixed_session_id_preserved_end_to_end + task_store_sessions_regression.test.mjs", "remaining": "真实 Provider 上复核"},
+    "WIRE-02": {"status": "ready_offline", "note": "409→revision_conflict 映射未改动，仅 409 且 PUT state 路径"},
+    "WIRE-03": {"status": "partially_verified_offline"},
+    "RLS": {"status": "not_covered_no_claim", "note": "Schema 仍无 RLS；草案+威胁模型已提交待平台确认，未执行任何迁移"},
+    "wiring": {"status": "still_unwired_unverified", "note": "task_store_sync 仍未接入权威运行链，保持未接线/未验证记录；单独调用同步函数不构成主存储切换证据"}
+  },
+  "live_items_still_not_executed": [
+    "LIVE-ID-01/02/03/04、LIVE-SEC-01、LIVE-IDEM-01/02/03、LIVE-TX-01~05、LIVE-REV-01/02/03、LIVE-ART-01/02/03、LIVE-STORAGE-01：均未获独立测试 Provider/PostgreSQL 授权，未执行"
+  ],
+  "sanitization_check": "全部日志已扫描：无测试秘密、无注入的伪造敏感串、无连接串/本地路径泄露；凭据未写入任何文件",
+  "recommendations_for_mainline": [
+    "复核 4 个变更源码文件 + 2 个主线测试文件的补丁（见 changed_files 与 source_hashes_after_fix）",
+    "确认 RLS 草案 5 项未决问题（角色划分、FORCE RLS、session 变量注入方式等）后再谈迁移",
+    "复核通过后可授权 LIVE-*：建议用唯一 LIVE_TEST_RUN_ID 从 LIVE-ID-01（现 WIRE-01 已修复）开始按方案顺序执行，本目录 tests/ 可作运行器基础"
+  ]
+}

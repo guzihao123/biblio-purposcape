@@ -1,0 +1,15 @@
+{
+  "page_count": 2,
+  "pages": [
+    {
+      "page": 1,
+      "width": 200.0,
+      "height": 200.0
+    },
+    {
+      "page": 2,
+      "width": 200.0,
+      "height": 200.0
+    }
+  ]
+}

@@ -1,0 +1,262 @@
+{
+  "generated_at": "2026-11-24T11:15:29.397Z",
+  "scope": "local-stub (127.0.0.1:5192 -> function stubs -> api :8024, redis :6392)",
+  "passed": 17,
+  "failed": 0,
+  "results": [
+    {
+      "id": "LOCAL-SESS-01",
+      "name": "两名匿名访客经同源代理各建会话（201 + HttpOnly Cookie）",
+      "scope": "local-stub",
+      "expected": "201, 两个不同 session_id",
+      "actual": "201/201 distinct=true",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-SESS-02",
+      "name": "无 Cookie 匿名访问任务列表被拒绝",
+      "scope": "local-stub",
+      "expected": "401",
+      "actual": "401",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-IDEM-01",
+      "name": "同会话同 Idempotency-Key 重放只建一单",
+      "scope": "local-stub",
+      "expected": "两次同 task id，列表仅 1 单",
+      "actual": "create=201 replay=201 same=true count=1",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-IDEM-02",
+      "name": "不同会话使用相同 Key 互不串单",
+      "scope": "local-stub",
+      "expected": "B 得到不同任务",
+      "actual": "B=201 distinct=true",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-ISO-01",
+      "name": "非所有者读任务/列表制品/写答案一律 404",
+      "scope": "local-stub",
+      "expected": "全部 404",
+      "actual": "read=404 artifacts=404 answer=404",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-ISO-02",
+      "name": "B 的任务列表不含 A 的任务（历史隔离）",
+      "scope": "local-stub",
+      "expected": "false",
+      "actual": "false",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-ISO-03",
+      "name": "所有者可正常提交答案并推进",
+      "scope": "local-stub",
+      "expected": "200",
+      "actual": "200",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-ART-01",
+      "name": "制品列表含全部六类制品（含 Unicode 名）且带签名 URL",
+      "scope": "local-stub",
+      "expected": "6 项",
+      "actual": "count=6",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-ART-02",
+      "name": "DOCX/PPTX/PNG/HTML/SVG 经代理下载字节与 SHA-256 一致",
+      "scope": "local-stub",
+      "expected": "全部一致",
+      "actual": "{\"report.docx\":true,\"slides.pptx\":true,\"文献图谱仪表盘.png\":true,\"mobile.html\":true,\"图表.svg\":true,\"调研报告-最终版.docx\":true}",
+      "passed": true,
+      "details": {
+        "report.docx": {
+          "status": 200,
+          "bytes": 120000,
+          "sha256Match": true,
+          "contentDisposition": "attachment; filename=\"report.docx\"",
+          "cacheControl": "private, no-store",
+          "contentType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        },
+        "slides.pptx": {
+          "status": 200,
+          "bytes": 96000,
+          "sha256Match": true,
+          "contentDisposition": "attachment; filename=\"slides.pptx\"",
+          "cacheControl": "private, no-store",
+          "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        },
+        "文献图谱仪表盘.png": {
+          "status": 200,
+          "bytes": 64000,
+          "sha256Match": true,
+          "contentDisposition": "attachment; filename*=utf-8''%E6%96%87%E7%8C%AE%E5%9B%BE%E8%B0%B1%E4%BB%AA%E8%A1%A8%E7%9B%98.png",
+          "cacheControl": "private, no-store",
+          "contentType": "image/png"
+        },
+        "mobile.html": {
+          "status": 200,
+          "bytes": 614,
+          "sha256Match": true,
+          "contentDisposition": "inline; filename=\"mobile.html\"",
+          "cacheControl": "private, no-store",
+          "contentType": "text/html; charset=utf-8"
+        },
+        "图表.svg": {
+          "status": 200,
+          "bytes": 300,
+          "sha256Match": true,
+          "contentDisposition": "inline; filename*=utf-8''%E5%9B%BE%E8%A1%A8.svg",
+          "cacheControl": "private, no-store",
+          "contentType": "image/svg+xml"
+        },
+        "调研报告-最终版.docx": {
+          "status": 200,
+          "bytes": 80000,
+          "sha256Match": true,
+          "contentDisposition": "attachment; filename*=utf-8''%E8%B0%83%E7%A0%94%E6%8A%A5%E5%91%8A-%E6%9C%80%E7%BB%88%E7%89%88.docx",
+          "cacheControl": "private, no-store",
+          "contentType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        }
+      }
+    },
+    {
+      "id": "LOCAL-CDN-01",
+      "name": "HTML/SVG inline，DOCX/PPTX attachment，Cache-Control private, no-store",
+      "scope": "local-stub",
+      "expected": "全部符合",
+      "actual": "{\"report.docx\":[\"attachment; filename=\\\"report.docx\\\"\",\"private, no-store\"],\"slides.pptx\":[\"attachment; filename=\\\"slides.pptx\\\"\",\"private, no-store\"],\"文献图谱仪表盘.png\":[\"attachment; filename*=utf-8''%E6%96%87%E7%8C%AE%E5%9B%BE%E8%B0%B1%E4%BB%AA%E8%A1%A8%E7%9B%98.png\",\"private, no-store\"],\"mobile.html\":[\"inline; filename=\\\"mobile.html\\\"\",\"private, no-store\"],\"图表.svg\":[\"inline; filename*=utf-8''%E5%9B%BE%E8%A1%A8.svg\",\"private, no-store\"],\"调研报告-最终版.docx\":[\"attachment; filename*=utf-8''%E8%B0%83%E7%A0%94%E6%8A%A5%E5%91%8A-%E6%9C%80%E7%BB%88%E7%89%88.docx\",\"private, no-store\"]}",
+      "passed": true,
+      "details": {
+        "report.docx": {
+          "status": 200,
+          "bytes": 120000,
+          "sha256Match": true,
+          "contentDisposition": "attachment; filename=\"report.docx\"",
+          "cacheControl": "private, no-store",
+          "contentType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        },
+        "slides.pptx": {
+          "status": 200,
+          "bytes": 96000,
+          "sha256Match": true,
+          "contentDisposition": "attachment; filename=\"slides.pptx\"",
+          "cacheControl": "private, no-store",
+          "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        },
+        "文献图谱仪表盘.png": {
+          "status": 200,
+          "bytes": 64000,
+          "sha256Match": true,
+          "contentDisposition": "attachment; filename*=utf-8''%E6%96%87%E7%8C%AE%E5%9B%BE%E8%B0%B1%E4%BB%AA%E8%A1%A8%E7%9B%98.png",
+          "cacheControl": "private, no-store",
+          "contentType": "image/png"
+        },
+        "mobile.html": {
+          "status": 200,
+          "bytes": 614,
+          "sha256Match": true,
+          "contentDisposition": "inline; filename=\"mobile.html\"",
+          "cacheControl": "private, no-store",
+          "contentType": "text/html; charset=utf-8"
+        },
+        "图表.svg": {
+          "status": 200,
+          "bytes": 300,
+          "sha256Match": true,
+          "contentDisposition": "inline; filename*=utf-8''%E5%9B%BE%E8%A1%A8.svg",
+          "cacheControl": "private, no-store",
+          "contentType": "image/svg+xml"
+        },
+        "调研报告-最终版.docx": {
+          "status": 200,
+          "bytes": 80000,
+          "sha256Match": true,
+          "contentDisposition": "attachment; filename*=utf-8''%E8%B0%83%E7%A0%94%E6%8A%A5%E5%91%8A-%E6%9C%80%E7%BB%88%E7%89%88.docx",
+          "cacheControl": "private, no-store",
+          "contentType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        }
+      }
+    },
+    {
+      "id": "LOCAL-CDN-02",
+      "name": "mobile.html 内嵌长图使用 PNG 自己的签名 URL",
+      "scope": "local-stub",
+      "expected": "存在内嵌签名",
+      "actual": "embedded signature present",
+      "passed": true,
+      "embeddedSignature": "<redacted-to-verifier>"
+    },
+    {
+      "id": "LOCAL-SIG-01",
+      "name": "所有者签名篡改/缺失/换文件名 403；跨会话访问非所有者 404",
+      "scope": "local-stub",
+      "expected": "tampered=403 cross=404 missing=403 wrongfile=403",
+      "actual": "tampered=403 cross=404 missing=403 wrongfile=403",
+      "passed": true,
+      "note": "跨会话访问在签名校验前即被所有者隔离拦截（require_owner 404），与“非所有者统一 404”规格一致"
+    },
+    {
+      "id": "LOCAL-STO-01",
+      "name": "内部制品接口：匿名 403，worker 令牌可上传/下载/列举",
+      "scope": "local-stub",
+      "expected": "403→201→字节一致→403→200",
+      "actual": "putNoToken=403 put=201 get=200 bytes=true listNoToken=403 list=200 listed=true",
+      "passed": true,
+      "internalCacheControl": "private, no-store"
+    },
+    {
+      "id": "LOCAL-CDN-03",
+      "name": "签名/Cookie/Idempotency-Key 白名单转发，无关头被丢弃",
+      "scope": "local-stub",
+      "expected": "白名单 6 个在，黑名单 0 个在",
+      "actual": "allowedPresent=true blockedAbsent=true",
+      "passed": true,
+      "echoHeaders": [
+        "content-length",
+        "cookie",
+        "user-agent",
+        "x-forwarded-for",
+        "x-admin-token",
+        "idempotency-key",
+        "content-type",
+        "accept",
+        "accept-language",
+        "accept-encoding",
+        "host"
+      ]
+    },
+    {
+      "id": "LOCAL-ADM-01",
+      "name": "管理接口：匿名 403，持令牌 200",
+      "scope": "local-stub",
+      "expected": "403/200",
+      "actual": "noToken=403 withToken=200",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-ADM-02",
+      "name": "撤销会话立即失效且不影响他人",
+      "scope": "local-stub",
+      "expected": "revoke 200，A→401，B→200",
+      "actual": "revoke=200 A=401 B=200",
+      "passed": true
+    },
+    {
+      "id": "LOCAL-LOG-01",
+      "name": "签名/令牌/Cookie 不进入本地访问日志",
+      "scope": "local-stub",
+      "expected": "0 泄露",
+      "actual": "leaks=[]",
+      "passed": true,
+      "leakedKinds": [],
+      "note": "本地 uvicorn/Deno 访问日志若含查询串会记录签名，属本地发现，云端需平台日志脱敏确认"
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "review": {
+    "title": "PostgreSQL RLS 草案与威胁模型 · 独立安全复核",
+    "date": "2026-11-24",
+    "reviewer": "独立安全复核（离线，非原草案作者）",
+    "scope": "只审离线材料；未执行任何 SQL、未创建数据库/角色/云资源；不宣称 RLS 已验证。",
+    "files_reviewed": [
+      "dev/acceptance/provider-live/rls-policy-draft.sql",
+      "dev/acceptance/provider-live/threat-model.md",
+      "sites/schema.sql",
+      "sites/functions/task_store.ts"
+    ],
+    "method_notes": [
+      "逐表比对 schema.sql 的 6 张表与 rls-policy-draft.sql 的 RLS 覆盖面。",
+      "比对 task_store.ts 固定 SQL 允许清单与每条策略的 USING/WITH CHECK 语义。",
+      "对照 PostgreSQL 官方文档 ddl-rowsecurity（current 版，2026-11-24 核对）：默认拒绝、owner 绕过与 FORCE、BYPASSRLS、FK/唯一约束检查绕过 RLS 及隐蔽信道提示、策略子查询在 READ COMMITTED 下的竞态、策略表达式以查询者权限执行。",
+      "固定 SQL 条件过滤（应用层单层）与 RLS（数据库层按命令逐行判定、对所有查询路径生效、FORCE 下连表 owner 也受约束）是两种不同的机制；前者已被 offline OFF-ID-02/03 验证，后者在本仓库中没有任何已执行的证据。"
+    ]
+  },
+
+  "issues": [
+    {
+      "id": "ISSUE-01",
+      "severity": "HIGH",
+      "title": "sites_task_answers 完全缺少 RLS（FORCE 覆盖不全）",
+      "description": "schema.sql 定义了 6 张表，rls-policy-draft.sql 只对其中 5 张启用 RLS，sites_task_answers 被整体遗漏。该表固定 SQL listTaskAnswers / insertTaskAnswer / getTaskAnswer 均不带 session_id 条件（getTaskAnswer 只有 task_id+card_id，listTaskAnswers 只有 task_id），完全依赖调用方先执行 getOwnedTask 的应用层约定。这正是威胁模型 T1/T2 描述的'任何绕过固定面的新查询路径'场景：一旦新 Function 或后台工具直接复用这些固定语句，答案数据（用户填写的调研内容）即可跨所有者读写，数据库层无任何拦截。",
+      "evidence": [
+        { "file": "rls-policy-draft.sql", "lines": "10-59", "note": "五张表的策略中没有任何 sites_task_answers 段落" },
+        { "file": "schema.sql", "lines": "66-79", "note": "sites_task_answers 表定义存在，PK (task_id, card_id)" },
+        { "file": "sites/functions/task_store.ts", "lines": "96-105", "note": "getTaskAnswer/listTaskAnswers/insertTaskAnswer 无 session_id 条件" },
+        { "file": "threat-model.md", "lines": "20-21", "note": "T1/T2 残余风险：新查询路径无数据库层拦截" }
+      ],
+      "recommendation": "按建议补丁 P0：对 sites_task_answers 执行 ENABLE + FORCE ROW LEVEL SECURITY，并以 EXISTS 关联 sites_tasks（session_id = current_setting('app.session_id', true)）建 SELECT 与 FOR ALL(WITH CHECK) 策略。",
+      "status": "open"
+    },
+    {
+      "id": "ISSUE-02",
+      "severity": "HIGH",
+      "title": "会话表 WITH CHECK 与新建会话流程冲突（策略将使 createAnonymousSession 必然失败）",
+      "description": "sites_sessions_owner 的 WITH CHECK 要求插入行的 id 等于 current_setting('app.session_id')。但 createAnonymousSession 插入的正是一个全新生成的 id（randomUUID 或 worker 钉入的 id），此时请求上下文中要么没有 app.session_id，要么该变量不等于新 id，INSERT 必然违反 WITH CHECK 而失败。也就是说：草案按现状执行后，会话创建这一最基础路径直接不可用。这与'FORCE 是否覆盖'无关，是策略语义与唯一写入路径之间的矛盾。",
+      "evidence": [
+        { "file": "rls-policy-draft.sql", "lines": "13-15", "note": "USING/WITH CHECK 均要求 id = current_setting('app.session_id')" },
+        { "file": "sites/functions/task_store.ts", "lines": "36-41", "note": "createSession 固定 SQL 插入全新 id" },
+        { "file": "sites/functions/task_store.ts", "lines": "433-452", "note": "createAnonymousSession 生成/接收新 id 后插入，未先绑定 GUC" }
+      ],
+      "recommendation": "首选：创建会话的固定 Function 在同一事务内先执行 set_config('app.session_id', 新 id, true) 再 INSERT，并用测试固定该次序。备选：按建议补丁 P1 增加一条 FOR INSERT 的 NULL 门策略（变量未设置时放行新建），同时在注释中确认 app_user 无其他写入路径。",
+      "status": "open"
+    },
+    {
+      "id": "ISSUE-03",
+      "severity": "HIGH",
+      "title": "Skill 发布写入路径与单一 app_user 角色冲突（权限拆分未落地）",
+      "description": "草案声称 skill_versions 的写入'仅迁移/管理角色（owner 或 BYPASSRLS），不在应用角色策略内放行'，但在 task_store.ts 中，upsertSkill 由固定 worker 面 PUT /internal/task-store/skill-versions/:id 调用（task_store.ts:814-820 → 481-501），而 worker 连接数据库用的正是草案中唯一的应用角色 app_user。RLS 默认拒绝下，app_user 对 skill_versions 没有任何写策略，发布/回滚会全部失败。换言之：草案隐含要求 worker 使用第二个数据库角色（或第二 GUC 门），但这一点没有写成策略，也没有列入未决问题，属于设计断层而非措辞问题。另注：读取面无混淆——published 只读策略 + 部分唯一索引使 draft/publish/rollback 与对外读取正确分离，此半面良好。",
+      "evidence": [
+        { "file": "rls-policy-draft.sql", "lines": "54-59", "note": "仅 SELECT 策略，写面依赖'迁移/管理角色'但未定义其连接路径" },
+        { "file": "sites/functions/task_store.ts", "lines": "49-61", "note": "upsertSkill 固定 SQL（含 ON CONFLICT 全字段覆盖更新）" },
+        { "file": "sites/functions/task_store.ts", "lines": "814-820", "note": "worker 面暴露 PUT skill-versions/:id，与匿名会话操作共用同一 store/连接" },
+        { "file": "threat-model.md", "lines": "12-14", "note": "角色清单中不存在'worker 专用数据库角色'" }
+      ],
+      "recommendation": "按建议补丁 P2 二选一并书面定案：方案 A，第二 GUC 门 app.skill_admin（仅发布 Function 在事务内置 'on'，匿名作用域 Function 严禁设置）；方案 B（更稳妥），独立角色 app_admin 供 skill 发布路径使用。无论哪案，迁移/管理角色与 app_user 的 owner 归属必须错开，否则 FORCE RLS 也约束不到 owner。",
+      "status": "open"
+    },
+    {
+      "id": "ISSUE-04",
+      "severity": "MEDIUM",
+      "title": "app.session_id 注入方式未规范化：可伪造面与连接池残留面",
+      "description": "草案假定'Fixed Function 每个请求 SET LOCAL'，但未规定：①注入必须用 set_config('app.session_id', $1, true) 这类参数化调用，禁止任何字符串拼接（拼接即注入面）；②注入前必须以与 task_store.ts:13 相同的 ID_PATTERN 校验，空值/缺省必须 fail-closed（current_setting(..., true) 返回 NULL 时 id = NULL 为假，行为正确，但变量被显式设为空串时同样为假，需统一拒绝语义）；③连接池模式下必须用 SET LOCAL（事务级），任何持久 SET 在 session pooling 下会把上一个请求的会话身份泄漏给下一个请求，等价于跨所有者串号。由于威胁模型将 session_id 定义为不记名身份凭证（threat-model.md:11），头部可直接伪造意味着 RLS 按请求头锁定行范围在语义上等同于'持有该 id 即授权'——这与不记名凭证模型自洽，但必须书面写明，否则读者会误以为 RLS 本身提供了身份验证（它没有）。",
+      "evidence": [
+        { "file": "rls-policy-draft.sql", "lines": "3-5", "note": "假定按请求头 session_id 设定 LOCAL 变量，未规定校验与 fail-closed" },
+        { "file": "rls-policy-draft.sql", "lines": "63-67", "note": "未决问题 c 提了注入方式但未提伪造/残留约束" },
+        { "file": "sites/functions/task_store.ts", "lines": "13, 260-263", "note": "ID_PATTERN 存在于应用代码，未要求注入点复用" },
+        { "file": "sites/functions/task_store.ts", "lines": "802-827", "note": "x-session-id 直接来自请求头，由 store 层 validId 校验" }
+      ],
+      "recommendation": "把注入规范写进草案头注：参数化 set_config、ID_PATTERN 校验、空值 fail-closed、仅 SET LOCAL、事务内设置、连接池模式确认。作为纵深，建议 worker 路由在 GET /sessions/:id 处校验 x-session-id 头与路径 id 一致（当前该路由忽略头，见 ISSUE-08）。",
+      "status": "open"
+    },
+    {
+      "id": "ISSUE-05",
+      "severity": "MEDIUM",
+      "title": "撤销/过期会话缺数据库层约束，且应用层 createTask 也未做撤销/过期检查",
+      "description": "schema 有 expires_at/revoked_at（schema.sql:13-14），应用层仅在 getSessionRecord 检查（task_store.ts:463-467），但 createTask 走的是不带检查的 getSession（task_store.ts:530）。因此即使不谈 RLS：一个已撤销或过期的 session_id 当前仍可正常建单。RLS 草案的所有策略只按 session_id 匹配行，不 consult 会话状态，数据库层对被盗/已撤销凭证不设任何防线。",
+      "evidence": [
+        { "file": "schema.sql", "lines": "13-14", "note": "expires_at / revoked_at 列存在但无任何约束或策略引用" },
+        { "file": "sites/functions/task_store.ts", "lines": "530", "note": "createTask 用 getSession（无撤销/过期检查）而非 getSessionRecord" },
+        { "file": "sites/functions/task_store.ts", "lines": "463-467", "note": "撤销/过期检查只存在于 getSessionRecord" },
+        { "file": "rls-policy-draft.sql", "lines": "10-52", "note": "全部策略仅按 id/session_id 匹配，不判会话状态" }
+      ],
+      "recommendation": "应用层：createTask 的会话存在性检查应换用 getSessionRecord（或与其实现对齐）。数据库层（产品决策，列入未决项 g）：在任务/制品/配额/答案策略 USING 中追加'会话未撤销且未过期'条件；代价是已过期会话的历史任务同时不可读，需确认产品可接受，或将过期会话的历史数据归档策略单独定义。",
+      "status": "open"
+    },
+    {
+      "id": "ISSUE-06",
+      "severity": "MEDIUM",
+      "title": "只读审计角色在 FORCE RLS 下同样被过滤，快照方案未定义",
+      "description": "FORCE ROW LEVEL SECURITY 使表 owner 之外的普通角色全部受策略约束，只读审计角色（threat-model.md:15，PRE-04）如以普通角色连接，只能看到 state='published' 的 Skill 行和'恰好等于其 GUC 的会话行'——跨会话验收快照将拿不到数据。官方途径是给该角色 BYPASSRLS（或为其在表 owner 之外另设属主方案），但草案与威胁模型均未写出这一点。",
+      "evidence": [
+        { "file": "threat-model.md", "lines": "15", "note": "只读审计角色存在，无 RLS 交互说明" },
+        { "file": "rls-policy-draft.sql", "lines": "12, 20, 31, 49, 57", "note": "FORCE 施加于全部五张表" },
+        { "file": "rls-policy-draft.sql", "lines": "65", "note": "未决问题 b 仅问角色划分，未含审计角色的 BYPASSRLS 安排" }
+      ],
+      "recommendation": "未决项 h：书面确认审计角色持 BYPASSRLS 或在迁移时以表 owner 身份导出；并在验收报告中记录其授权证据。",
+      "status": "open"
+    },
+    {
+      "id": "ISSUE-07",
+      "severity": "LOW",
+      "title": "FK/唯一约束检查绕过 RLS：官方行为需在草案中显式文档化（本设计下可接受）",
+      "description": "按官方文档，引用完整性检查（PK/唯一/FK）始终绕过 RLS 以维护数据完整性，并提示由此产生'隐蔽信道'泄漏面。映射到本设计：① tasks.artifact/quota/answers 的 FK 插入可被策略之外的旁路尝试利用错误信息探测行存在性（如向 tasks 插入猜测的 session_id 触发 FK 错误 vs 违反 WITH CHECK 错误，两者报错文本不同）；② ON DELETE CASCADE（会话删除级联任务/配额）以 owner 权限执行、不受策略限制，属预期，但应写明。残余风险低，因为行探测需要 app_user 具备相应 INSERT 权限且报错通道未被错误处理抹平（task_store.ts:402-409 已将 Provider 错误折叠为 task_store_unavailable，降低了该面）。",
+      "evidence": [
+        { "file": "schema.sql", "lines": "38, 68, 83, 100", "note": "FK 与级联定义" },
+        { "file": "sites/functions/task_store.ts", "lines": "402-409", "note": "错误折叠降低报错侧信道" },
+        { "pg_docs": "ddl-rowsecurity", "note": "'Referential integrity checks ... always bypass row security' + covert channel 提示" }
+      ],
+      "recommendation": "在草案注释中记录：FK/唯一检查不受 RLS 约束、级联删除为 owner 级操作、错误响应不区分 RLS 违反与不存在。无代码变更。",
+      "status": "open"
+    },
+    {
+      "id": "ISSUE-08",
+      "severity": "LOW",
+      "title": "GET /sessions/:id 路由忽略 x-session-id 头（RLS 落地后将表现为对合法调用也 401）",
+      "description": "该路由用路径 id 读取会话记录，但 app.session_id 的注入来源是请求头；RLS 生效后头与路径不一致会被策略拒成 session_not_found(401)。当前无 RLS 时该路由会把任意会话的 client_ip/user_agent 元数据返回给持 worker token 的调用方——worker token 持有者在威胁模型中是可信的，故定 LOW，但 RLS 落地前需对齐头/路径一致性校验，否则是兼容性地雷。",
+      "evidence": [
+        { "file": "sites/functions/task_store.ts", "lines": "763-768", "note": "sessionMatch 路由直接以路径 id 调用 getSessionRecord" }
+      ],
+      "recommendation": "RLS 迁移时要求该路由校验 x-session-id 头与路径 id 相等，或以路径 id 显式设置 GUC。",
+      "status": "open"
+    },
+    {
+      "id": "ISSUE-09",
+      "severity": "LOW",
+      "title": "会话 last_seen_at 无任何更新路径",
+      "description": "固定 SQL 允许清单中没有 UPDATE sites_anonymous_sessions 语句，last_seen_at 自创建后不再变化。与 RLS 无直接冲突，但若未来以 last_seen_at 驱动过期/审计，该列是死数据。",
+      "evidence": [
+        { "file": "sites/functions/task_store.ts", "lines": "35-125", "note": "SQL 允许清单中无 sessions 的 UPDATE" }
+      ],
+      "recommendation": "确认是否有意为之（expires_at 为绝对时间则无害）；如需要活跃续期，新增固定 UPDATE 语句并评估其与会话表策略的 USING 兼容性（UPDATE 走 sites_sessions_owner 的 USING，当前该行仅当 id = GUC 时可见，同会话续期可行）。",
+      "status": "open"
+    },
+    {
+      "id": "ISSUE-10",
+      "severity": "INFO",
+      "title": "配额扣减与建单的原子性：策略面检查通过，真并发验证待真实 Provider",
+      "description": "逐语句比对结论：insertTask（INSERT ... ON CONFLICT DO NOTHING）与 consumeQuota（INSERT ... ON CONFLICT DO UPDATE）在同一事务内以同一 app.session_id 执行，两张表的 USING/WITH CHECK 均要求 session_id = GUC，同会话行天然可见，策略不会切断冲突行的可见性；RLS 不破坏 schema.sql:96-97 注释宣称的'insert + charge one transaction'。schema 中 (session_id, idempotency_key) 唯一键保证同会话重放幂等，跨会话重复 key 由 CHECK 隔离，互不干扰。剩余不确定性只在真实 PostgreSQL 的 READ COMMITTED 下 ON CONFLICT + RLS 的并发行为与锁顺序，这属于未决问题 e 的既有范围。",
+      "evidence": [
+        { "file": "sites/functions/task_store.ts", "lines": "525-553", "note": "findTaskByKey → insertTask → consumeQuota 同事务；失败抛错整体回滚" },
+        { "file": "rls-policy-draft.sql", "lines": "19-27, 48-52", "note": "tasks/quota 策略与同会话 GUC 同向" },
+        { "file": "schema.sql", "lines": "59-60, 96-106", "note": "幂等键与配额窗口约束" }
+      ],
+      "recommendation": "无策略变更；把'ON CONFLICT + RLS 并发'列入真实 Provider 授权后的测试计划（未决问题 e）。",
+      "status": "verified_by_inspection"
+    },
+    {
+      "id": "ISSUE-11",
+      "severity": "INFO",
+      "title": "制品/答案策略的 EXISTS 子查询：官方竞态提示在本设计下残余窗口可接受",
+      "description": "官方文档警告：策略表达式中 consult 其他行的子 SELECT 在 READ COMMITTED 下存在竞态（被引用行的安全相关值并发变更时可能用旧值判定）。制品策略经 task_id EXISTS 关联 tasks.session_id；由于 WITH CHECK 禁止把任务改写为他人会话、固定面不存在 UPDATE session_id 语句，session_id 实质不可变，竞态窗口趋近于零。同理论证适用于建议补丁新增的 answers 策略。",
+      "evidence": [
+        { "file": "rls-policy-draft.sql", "lines": "32-45", "note": "EXISTS 子查询策略" },
+        { "pg_docs": "ddl-rowsecurity", "note": "子 SELECT 竞态章节（users/group_id 示例）" }
+      ],
+      "recommendation": "在草案注释记录该论证；若未来允许任务迁移会话，必须重评此条。",
+      "status": "verified_by_inspection"
+    }
+  ],
+
+  "unresolved_platform_questions": [
+    "a) Provider 是否允许 FORCE ROW LEVEL SECURITY（含表 owner 受约束的语义）？（沿用草案）",
+    "b) 数据库角色划分：app_user、迁移角色、只读审计角色分别是什么？Provider 能否创建/管理自定义角色？（沿用草案）",
+    "c) app.session_id 的注入方式：set_config/SET LOCAL 是否被平台连接代理放行？连接池是 transaction 还是 session 模式？（沿用草案，复核扩展见 ISSUE-04）",
+    "d) worker 内部跨会话管理操作（运营审计）走哪个角色？（沿用草案）",
+    "e) ON CONFLICT/条件更新在 RLS 下的并发语义测试计划？（沿用草案）",
+    "f) 新增：Skill 发布走第二 GUC 门还是独立 app_admin 角色（ISSUE-03 方案 A/B 二选一）？",
+    "g) 新增：撤销/过期是否纳入策略 USING（ISSUE-05，产品决策：纳入则过期会话历史任务不可读）？",
+    "h) 新增：只读审计角色的 BYPASSRLS 授权与登记（ISSUE-06）？",
+    "i) 新增：FK/唯一检查绕过 RLS 的官方行为是否在平台安全评审中被接受（ISSUE-07）？"
+  ],
+
+  "docs_distinction": {
+    "fixed_sql_condition_filtering": "task_store.ts 的隔离是应用层单层：每条语句内嵌 session_id = $n 条件 + 输入校验 + 固定允许清单。它已被 offline OFF-ID-02（跨所有者 404）与 OFF-ID-03（worker 未授权 403）验证，但对'固定面之外的新查询路径'（新 Function、迁移脚本、后台工具、凭据泄露后的即席查询）不设防。",
+    "true_rls_defense_in_depth": "PostgreSQL RLS 是数据库层机制：策略按命令（ALL/SELECT/INSERT/UPDATE/DELETE）对每一行在查询条件之前求值，默认拒绝；对所有以受约束角色连接的查询路径生效（与 SQL 来源无关）；FORCE 使表 owner 也受约束；BYPASSRLS 角色与超级用户始终绕过。这才构成威胁模型 T6（凭据泄露后的 blast radius 限制）所要求的第二层。",
+    "key_official_facts_verified_2026-11-24": [
+      "无策略的表在 ENABLE RLS 后默认拒绝一切行访问。",
+      "表 owner 默认绕过 RLS；FORCE ROW LEVEL SECURITY 使 owner 也受约束；BYPASSRLS 属性始终绕过。",
+      "引用完整性检查（PK/唯一/FK）始终绕过 RLS，存在隐蔽信道提示。",
+      "策略表达式中的子 SELECT 在 READ COMMITTED 下存在竞态（本设计下残余窗口见 ISSUE-11）。",
+      "官方文档：https://www.postgresql.org/docs/current/ddl-rowsecurity.html"
+    ],
+    "conclusion": "当前仓库状态：固定 SQL 条件过滤 = 已验证的单层；RLS = 未执行的草案。在真实 Provider 授权执行并完成行为测试之前，任何'RLS 已覆盖'的表述都不成立——威胁模型第 29 行的结论与本次复核一致。"
+  },
+
+  "verification_plan": {
+    "offline_fake_provider_verifiable_now": [
+      "固定 SQL 允许清单与新策略文本的一致性静态比对（本复核已完成，见各 ISSUE 的 evidence）。",
+      "task_store.ts 输入校验/幂等/配额回滚语义的 fake-adapter 单测（仓库既有模式，可继续扩展，如 createTask 的撤销会话场景 ISSUE-05）。",
+      "建议补丁 SQL 的语法级人工走查与 schema 列名/类型比对（已完成；未在任何数据库上执行）。",
+      "worker 路由头/路径一致性等应用层修补的 fake 环境测试（ISSUE-04/08）。"
+    ],
+    "requires_real_provider_authorization": [
+      "FORCE ROW LEVEL SECURITY 的可用性与 owner 语义（未决 a）。",
+      "自定义角色创建、GRANT、BYPASSRLS 授权（未决 b/f/h）。",
+      "set_config/SET LOCAL 经平台连接代理的放行与连接池模式实测（未决 c）。",
+      "RLS 行为矩阵实测：跨会话 SELECT/INSERT/UPDATE/DELETE 全部应被拒、同会话应通过、published 只读面（建 3×6 可见性矩阵用例）。",
+      "ON CONFLICT + RLS 在 READ COMMITTED 下的并发回归（未决 e）。",
+      "凭据泄露场景（以 app_user 即席查询）的 blast radius 抽查（T6 的验收证据）。"
+    ]
+  },
+
+  "deliverables": {
+    "result_json": "dev/acceptance/provider-rls-review/result.json（本文件）",
+    "suggested_patch": "dev/acceptance/provider-rls-review/rls-policy-draft.suggested.sql —— 未执行／未验证；含 P0（answers 表 RLS）、P1（会话 INSERT 策略）、P2（Skill 写入门）与 f–i 未决项。",
+    "disclaimer": "本次复核未执行 rls-policy-draft.sql 或建议补丁，未创建数据库/角色/云资源，未验证任何 RLS 行为；所有策略语义结论均为静态比对与官方文档对照所得。"
+  }
+}

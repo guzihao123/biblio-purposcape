@@ -1,0 +1,1200 @@
+{
+  "topic": "肝细胞癌免疫治疗耐药机制",
+  "generated_at": "2026-11-24",
+  "condition": "模式 C1+C2",
+  "sources": "OpenAlex 真实聚合与论文池",
+  "chart_order": [
+    "network",
+    "topics",
+    "compare",
+    "trend",
+    "knowledge",
+    "methods",
+    "relations"
+  ],
+  "scope_switch": {
+    "available": [
+      "all",
+      "limited"
+    ],
+    "scoped_charts": [
+      "network",
+      "topics",
+      "knowledge",
+      "methods",
+      "relations"
+    ],
+    "fixed_all_charts": [
+      "compare",
+      "trend"
+    ]
+  },
+  "trend_all": [
+    {
+      "year": 2024,
+      "count": 1
+    },
+    {
+      "year": 2025,
+      "count": 3
+    }
+  ],
+  "trend_status": "ready",
+  "trend_message": "",
+  "compare": [
+    {
+      "name": "髓系代谢与 S1P",
+      "name_zh": "髓系代谢与 S1P",
+      "series": [
+        {
+          "year": 2025,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "IL-8/CXCR2 动态分层",
+      "name_zh": "IL-8/CXCR2 动态分层",
+      "series": [
+        {
+          "year": 2025,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "乳酸化与 PD-L1",
+      "name_zh": "乳酸化与 PD-L1",
+      "series": [
+        {
+          "year": 2025,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "免疫微环境综述",
+      "name_zh": "免疫微环境综述",
+      "series": [
+        {
+          "year": 2024,
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "compare_status": "ready",
+  "compare_message": "",
+  "scopes": {
+    "all": {
+      "label": "不限年限",
+      "total_hits": 4,
+      "pool_count": 4,
+      "topics": [
+        {
+          "name": "髓系代谢与 S1P",
+          "name_zh": "髓系代谢与 S1P",
+          "count": 1
+        },
+        {
+          "name": "IL-8/CXCR2 动态分层",
+          "name_zh": "IL-8/CXCR2 动态分层",
+          "count": 1
+        },
+        {
+          "name": "乳酸化与 PD-L1",
+          "name_zh": "乳酸化与 PD-L1",
+          "count": 1
+        },
+        {
+          "name": "免疫微环境综述",
+          "name_zh": "免疫微环境综述",
+          "count": 1
+        }
+      ],
+      "topics_status": "ready",
+      "topics_message": "",
+      "network": {
+        "nodes": [
+          {
+            "id": "https://openalex.org/W4410553523",
+            "ref": 1,
+            "label": "Zhang, X 2025",
+            "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+            "authors": "Xiaozhen Zhang, Mengyi Lao, Kang Sun, Hanshen Yang, Lihong He",
+            "year": 2025,
+            "venue": "Science Advances",
+            "cited": 48,
+            "url": "https://doi.org/10.1126/sciadv.adv0558",
+            "excerpt": "Dysregulated metabolism of immune cells in the tumor microenvironment leads to immune evasion and tumor progression. As a major cell component in the tumor, the metabolic reprogramming of tumor-associ"
+          },
+          {
+            "id": "https://openalex.org/W4407165094",
+            "ref": 2,
+            "label": "Kwong, T 2025",
+            "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+            "authors": "Tsz Tung Kwong, Zhewen Xiong, Yiling Zhang, Haoran Wu, Jian Cao",
+            "year": 2025,
+            "venue": "Molecular Therapy",
+            "cited": 48,
+            "url": "https://doi.org/10.1016/j.ymthe.2025.02.002",
+            "excerpt": "Durable responses to immune checkpoint blockade (ICB) in hepatocellular carcinoma (HCC) are limited to a minority of patients, yet reliable biomarkers are still lacking. Inflammatory cytokines such as"
+          },
+          {
+            "id": "https://openalex.org/W4414398194",
+            "ref": 3,
+            "label": "Liu, S 2025",
+            "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+            "authors": "Shuang Liu, Yihui Pan, Wenjian Liu, Xiaoyun Bu, Ruonan Shao",
+            "year": 2025,
+            "venue": "Journal for ImmunoTherapy of Cancer",
+            "cited": 43,
+            "url": "https://doi.org/10.1136/jitc-2025-012230",
+            "excerpt": "BACKGROUND: Hepatocellular carcinoma (HCC) is a prevalent malignancy and the third leading cause of cancer-related mortality worldwide. Immune checkpoint inhibitors (ICIs) have emerged as first-line t"
+          },
+          {
+            "id": "https://openalex.org/W4401612664",
+            "ref": 4,
+            "label": "Fu, Y 2024",
+            "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+            "authors": "Yumin Fu, Xinyu Guo, Linmao Sun, Tianming Cui, Chenghui Wu",
+            "year": 2024,
+            "venue": "eLife",
+            "cited": 39,
+            "url": "https://doi.org/10.7554/elife.95009",
+            "excerpt": "Hepatocellular carcinoma (HCC), the most common type of liver tumor, is a leading cause of cancer-related deaths, and the incidence of liver cancer is still increasing worldwide. Curative hepatectomy "
+          }
+        ],
+        "edges": [],
+        "status": "ready",
+        "message": "",
+        "edge_status": "empty",
+        "edge_message": "池内暂无真实互引（不补造引用边）"
+      },
+      "knowledge": {
+        "nodes": [
+          {
+            "id": "k1",
+            "name": "IL-8/CXCR2",
+            "type": "factor",
+            "papers": [
+              {
+                "ref": 2,
+                "ref_no": 2,
+                "label": "Kwong, T 2025",
+                "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+                "url": "https://doi.org/10.1016/j.ymthe.2025.02.002"
+              }
+            ]
+          },
+          {
+            "id": "k2",
+            "name": "NEK2/S1P",
+            "type": "factor",
+            "papers": [
+              {
+                "ref": 1,
+                "ref_no": 1,
+                "label": "Zhang, X 2025",
+                "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1126/sciadv.adv0558"
+              }
+            ]
+          },
+          {
+            "id": "k3",
+            "name": "PD-L1 稳定性",
+            "type": "outcome",
+            "papers": [
+              {
+                "ref": 3,
+                "ref_no": 3,
+                "label": "Liu, S 2025",
+                "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1136/jitc-2025-012230"
+              }
+            ]
+          },
+          {
+            "id": "k4",
+            "name": "乳酸化/MVP",
+            "type": "factor",
+            "papers": [
+              {
+                "ref": 3,
+                "ref_no": 3,
+                "label": "Liu, S 2025",
+                "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1136/jitc-2025-012230"
+              }
+            ]
+          },
+          {
+            "id": "k5",
+            "name": "免疫微环境",
+            "type": "factor",
+            "papers": [
+              {
+                "ref": 4,
+                "ref_no": 4,
+                "label": "Fu, Y 2024",
+                "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+                "url": "https://doi.org/10.7554/elife.95009"
+              }
+            ]
+          },
+          {
+            "id": "k6",
+            "name": "免疫治疗耐药",
+            "type": "outcome",
+            "papers": [
+              {
+                "ref": 1,
+                "ref_no": 1,
+                "label": "Zhang, X 2025",
+                "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1126/sciadv.adv0558"
+              }
+            ]
+          },
+          {
+            "id": "k7",
+            "name": "免疫逃逸与耐药框架",
+            "type": "outcome",
+            "papers": [
+              {
+                "ref": 4,
+                "ref_no": 4,
+                "label": "Fu, Y 2024",
+                "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+                "url": "https://doi.org/10.7554/elife.95009"
+              }
+            ]
+          },
+          {
+            "id": "k8",
+            "name": "髓系细胞迁移与应答",
+            "type": "outcome",
+            "papers": [
+              {
+                "ref": 2,
+                "ref_no": 2,
+                "label": "Kwong, T 2025",
+                "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+                "url": "https://doi.org/10.1016/j.ymthe.2025.02.002"
+              }
+            ]
+          }
+        ],
+        "edges": [
+          {
+            "s": "k1",
+            "t": "k8",
+            "polarity": "pos",
+            "effect": "",
+            "support": 1,
+            "papers": [
+              {
+                "ref": 2,
+                "ref_no": 2,
+                "label": "Kwong, T 2025",
+                "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+                "url": "https://doi.org/10.1016/j.ymthe.2025.02.002"
+              }
+            ],
+            "evidence": [
+              {
+                "factor": "IL-8/CXCR2",
+                "outcome": "髓系细胞迁移与应答",
+                "polarity": "pos",
+                "effect": "",
+                "ref": 2,
+                "ref_no": 2,
+                "quote": "Durable responses to immune checkpoint blockade (ICB) in hepatocellular carcinoma (HCC) are limited to a minority of patients, yet reliable biomarkers are still lacking. Inflammatory cytokines such as interleukin-8 (IL-8) are associated with HCC progression, and IL-8 is known as the chemoattractant for immunosuppressive myeloid cells. Therefore, we aim to elucidate the ICB resistance mechanisms mediated by the activation of the IL-8/CXCR2 pathway. Single-cell RNA sequencing (scRNA-seq) was performed in advanced HCC patients with baseline and on-treatment biopsy after pembrolizumab in a phase 2 clinical trial cohort. Our data revealed that IL-8 and its receptor, CXCR2, mainly derived from immunosuppressive myeloid-derived suppressor cells (MDSCs). In particular, the high circulating IL-8 level was strongly associated with poor ICB response. This myeloid IL-8/CXCR2 pathway was further elucidated in our ICB-resistant orthotopic mouse model using AZD5069, a clinically available CXCR2 antagonist. Suppression of the IL-8/CXCR2 pathway significantly abrogated MDSC trafficking and immunosuppressive activity, which sensitized the anti-PD-L1 blockade to reduce tumor growth and prolong survival. The association between myeloid IL-8 and ICB therapeutic outcomes also extended to multiple cancer types. Collectively, our study not only suggests a potential non-invasive biomarker for patient stratification and monitoring of ICB response but it also provides a proof of concept for combinational immunotherapy to benefit patients who are non-responsive to ICB monotherapy.",
+                "confidence": "high"
+              }
+            ],
+            "disputed": false
+          },
+          {
+            "s": "k2",
+            "t": "k6",
+            "polarity": "pos",
+            "effect": "",
+            "support": 1,
+            "papers": [
+              {
+                "ref": 1,
+                "ref_no": 1,
+                "label": "Zhang, X 2025",
+                "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1126/sciadv.adv0558"
+              }
+            ],
+            "evidence": [
+              {
+                "factor": "NEK2/S1P",
+                "outcome": "免疫治疗耐药",
+                "polarity": "pos",
+                "effect": "",
+                "ref": 1,
+                "ref_no": 1,
+                "quote": "Dysregulated metabolism of immune cells in the tumor microenvironment leads to immune evasion and tumor progression. As a major cell component in the tumor, the metabolic reprogramming of tumor-associated macrophages (TAMs) creates an immunosuppressive microenvironment in hepatocellular carcinoma (HCC). Our study found that sphingolipid (particularly, sphingosine-1-phosphate or S1P) levels are a clinical indicator for prognosis and immunotherapy response in patients with HCC. S1P primarily derived from TAMs, where NIMA-related kinase 2 (NEK2) plays a key role in controlling the activity of serine palmitoyl-CoA transferase, a rate-limiting enzyme in S1P biosynthesis. The S1P produced by NEK2 hi TAMs promotes hepatic tumor progression and confers immunotherapy resistance. Targeting S1P synthesis with a NEK2 inhibitor or S1P antagonist disrupted the immunosuppressive function of macrophages, shifted regulatory T cells (T regs ) to T H 17 cells, and increased the number and activity of tumor-infiltrating T effectors, thereby enhancing antitumor efficacy in synergy with immune checkpoint blockade therapy.",
+                "confidence": "high"
+              }
+            ],
+            "disputed": false
+          },
+          {
+            "s": "k4",
+            "t": "k3",
+            "polarity": "pos",
+            "effect": "",
+            "support": 1,
+            "papers": [
+              {
+                "ref": 3,
+                "ref_no": 3,
+                "label": "Liu, S 2025",
+                "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1136/jitc-2025-012230"
+              }
+            ],
+            "evidence": [
+              {
+                "factor": "乳酸化/MVP",
+                "outcome": "PD-L1 稳定性",
+                "polarity": "pos",
+                "effect": "",
+                "ref": 3,
+                "ref_no": 3,
+                "quote": "BACKGROUND: Hepatocellular carcinoma (HCC) is a prevalent malignancy and the third leading cause of cancer-related mortality worldwide. Immune checkpoint inhibitors (ICIs) have emerged as first-line therapies for advanced HCC, substantially improving clinical outcomes. However, resistance to ICIs remains a major therapeutic challenge. Lactylation, a recently identified post-translational modification, has been implicated in tumor progression, although its role in ICIs resistance in HCC remains unclear. METHODS: Cytotoxicity assays, flow cytometry and orthotopic HCC mouse model were used to evaluate the effects of lactylation in remodeling the immune microenvironment. Chromatin immunoprecipitation sequencing and RNA sequencing were employed to identify lactylation-regulated gene profiles. Programmed cell death-ligand 1 (PD-L1) protein degradation was assayed by cycloheximide-chase analysis and ubiquitination assay. Interactions between major vault protein (MVP) and β-transducin repeat-containing protein (β-TrCP) were analyzed by co-immunoprecipitation experiments. Site-directed mutagenesis and truncation mutants were designed to determine binding sites of MVP-β-TrCP complex. RESULTS: T cell-mediated antitumor immunity. Elevated MVP expression is associated with resistance to checkpoint blockade therapy. Mechanistic studies reveal that histone lactylation-induced MVP upregulation stabilizes PD-L1 by preventing β-TrCP-mediated proteasomal degradation. Pharmacological inhibition of lactylation restores ICIs sensitivity in orthotopic HCC mouse models. CONCLUSIONS: Our findings demonstrate that histone lactylation promotes ICIs resistance via MVP-dependent PD-L1 stabilization. Therefore, targeting lactylation in combination with programmed cell death protein-1/PD-L1 blockade offers a promising strategy to overcome immunotherapy resistance in HCC.",
+                "confidence": "high"
+              }
+            ],
+            "disputed": false
+          },
+          {
+            "s": "k5",
+            "t": "k7",
+            "polarity": "pos",
+            "effect": "",
+            "support": 1,
+            "papers": [
+              {
+                "ref": 4,
+                "ref_no": 4,
+                "label": "Fu, Y 2024",
+                "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+                "url": "https://doi.org/10.7554/elife.95009"
+              }
+            ],
+            "evidence": [
+              {
+                "factor": "免疫微环境",
+                "outcome": "免疫逃逸与耐药框架",
+                "polarity": "pos",
+                "effect": "",
+                "ref": 4,
+                "ref_no": 4,
+                "quote": "Hepatocellular carcinoma (HCC), the most common type of liver tumor, is a leading cause of cancer-related deaths, and the incidence of liver cancer is still increasing worldwide. Curative hepatectomy or liver transplantation is only indicated for a small population of patients with early-stage HCC. However, most patients with HCC are not candidates for radical resection due to disease progression, leading to the choice of the conventional tyrosine kinase inhibitor drug sorafenib as first-line treatment. In the past few years, immunotherapy, mainly immune checkpoint inhibitors (ICIs), has revolutionized the clinical strategy for HCC. Combination therapy with ICIs has proven more effective than sorafenib, and clinical trials have been conducted to apply these therapies to patients. Despite significant progress in immunotherapy, the molecular mechanisms behind it remain unclear, and immune resistance is often challenging to overcome. Several studies have pointed out that the complex intercellular communication network in the immune microenvironment of HCC regulates tumor escape and drug resistance to immune response. This underscores the urgent need to analyze the immune microenvironment of HCC. This review describes the immunosuppressive cell populations in the immune microenvironment of HCC, as well as the related clinical trials, aiming to provide insights for the next generation of precision immunotherapy.",
+                "confidence": "high"
+              }
+            ],
+            "disputed": false
+          }
+        ],
+        "votes": [
+          {
+            "factor": "NEK2/S1P",
+            "outcome": "免疫治疗耐药",
+            "polarity": "pos",
+            "effect": "",
+            "ref": 1,
+            "ref_no": 1,
+            "quote": "Dysregulated metabolism of immune cells in the tumor microenvironment leads to immune evasion and tumor progression. As a major cell component in the tumor, the metabolic reprogramming of tumor-associated macrophages (TAMs) creates an immunosuppressive microenvironment in hepatocellular carcinoma (HCC). Our study found that sphingolipid (particularly, sphingosine-1-phosphate or S1P) levels are a clinical indicator for prognosis and immunotherapy response in patients with HCC. S1P primarily derived from TAMs, where NIMA-related kinase 2 (NEK2) plays a key role in controlling the activity of serine palmitoyl-CoA transferase, a rate-limiting enzyme in S1P biosynthesis. The S1P produced by NEK2 hi TAMs promotes hepatic tumor progression and confers immunotherapy resistance. Targeting S1P synthesis with a NEK2 inhibitor or S1P antagonist disrupted the immunosuppressive function of macrophages, shifted regulatory T cells (T regs ) to T H 17 cells, and increased the number and activity of tumor-infiltrating T effectors, thereby enhancing antitumor efficacy in synergy with immune checkpoint blockade therapy.",
+            "confidence": "high"
+          },
+          {
+            "factor": "IL-8/CXCR2",
+            "outcome": "髓系细胞迁移与应答",
+            "polarity": "pos",
+            "effect": "",
+            "ref": 2,
+            "ref_no": 2,
+            "quote": "Durable responses to immune checkpoint blockade (ICB) in hepatocellular carcinoma (HCC) are limited to a minority of patients, yet reliable biomarkers are still lacking. Inflammatory cytokines such as interleukin-8 (IL-8) are associated with HCC progression, and IL-8 is known as the chemoattractant for immunosuppressive myeloid cells. Therefore, we aim to elucidate the ICB resistance mechanisms mediated by the activation of the IL-8/CXCR2 pathway. Single-cell RNA sequencing (scRNA-seq) was performed in advanced HCC patients with baseline and on-treatment biopsy after pembrolizumab in a phase 2 clinical trial cohort. Our data revealed that IL-8 and its receptor, CXCR2, mainly derived from immunosuppressive myeloid-derived suppressor cells (MDSCs). In particular, the high circulating IL-8 level was strongly associated with poor ICB response. This myeloid IL-8/CXCR2 pathway was further elucidated in our ICB-resistant orthotopic mouse model using AZD5069, a clinically available CXCR2 antagonist. Suppression of the IL-8/CXCR2 pathway significantly abrogated MDSC trafficking and immunosuppressive activity, which sensitized the anti-PD-L1 blockade to reduce tumor growth and prolong survival. The association between myeloid IL-8 and ICB therapeutic outcomes also extended to multiple cancer types. Collectively, our study not only suggests a potential non-invasive biomarker for patient stratification and monitoring of ICB response but it also provides a proof of concept for combinational immunotherapy to benefit patients who are non-responsive to ICB monotherapy.",
+            "confidence": "high"
+          },
+          {
+            "factor": "乳酸化/MVP",
+            "outcome": "PD-L1 稳定性",
+            "polarity": "pos",
+            "effect": "",
+            "ref": 3,
+            "ref_no": 3,
+            "quote": "BACKGROUND: Hepatocellular carcinoma (HCC) is a prevalent malignancy and the third leading cause of cancer-related mortality worldwide. Immune checkpoint inhibitors (ICIs) have emerged as first-line therapies for advanced HCC, substantially improving clinical outcomes. However, resistance to ICIs remains a major therapeutic challenge. Lactylation, a recently identified post-translational modification, has been implicated in tumor progression, although its role in ICIs resistance in HCC remains unclear. METHODS: Cytotoxicity assays, flow cytometry and orthotopic HCC mouse model were used to evaluate the effects of lactylation in remodeling the immune microenvironment. Chromatin immunoprecipitation sequencing and RNA sequencing were employed to identify lactylation-regulated gene profiles. Programmed cell death-ligand 1 (PD-L1) protein degradation was assayed by cycloheximide-chase analysis and ubiquitination assay. Interactions between major vault protein (MVP) and β-transducin repeat-containing protein (β-TrCP) were analyzed by co-immunoprecipitation experiments. Site-directed mutagenesis and truncation mutants were designed to determine binding sites of MVP-β-TrCP complex. RESULTS: T cell-mediated antitumor immunity. Elevated MVP expression is associated with resistance to checkpoint blockade therapy. Mechanistic studies reveal that histone lactylation-induced MVP upregulation stabilizes PD-L1 by preventing β-TrCP-mediated proteasomal degradation. Pharmacological inhibition of lactylation restores ICIs sensitivity in orthotopic HCC mouse models. CONCLUSIONS: Our findings demonstrate that histone lactylation promotes ICIs resistance via MVP-dependent PD-L1 stabilization. Therefore, targeting lactylation in combination with programmed cell death protein-1/PD-L1 blockade offers a promising strategy to overcome immunotherapy resistance in HCC.",
+            "confidence": "high"
+          },
+          {
+            "factor": "免疫微环境",
+            "outcome": "免疫逃逸与耐药框架",
+            "polarity": "pos",
+            "effect": "",
+            "ref": 4,
+            "ref_no": 4,
+            "quote": "Hepatocellular carcinoma (HCC), the most common type of liver tumor, is a leading cause of cancer-related deaths, and the incidence of liver cancer is still increasing worldwide. Curative hepatectomy or liver transplantation is only indicated for a small population of patients with early-stage HCC. However, most patients with HCC are not candidates for radical resection due to disease progression, leading to the choice of the conventional tyrosine kinase inhibitor drug sorafenib as first-line treatment. In the past few years, immunotherapy, mainly immune checkpoint inhibitors (ICIs), has revolutionized the clinical strategy for HCC. Combination therapy with ICIs has proven more effective than sorafenib, and clinical trials have been conducted to apply these therapies to patients. Despite significant progress in immunotherapy, the molecular mechanisms behind it remain unclear, and immune resistance is often challenging to overcome. Several studies have pointed out that the complex intercellular communication network in the immune microenvironment of HCC regulates tumor escape and drug resistance to immune response. This underscores the urgent need to analyze the immune microenvironment of HCC. This review describes the immunosuppressive cell populations in the immune microenvironment of HCC, as well as the related clinical trials, aiming to provide insights for the next generation of precision immunotherapy.",
+            "confidence": "high"
+          }
+        ],
+        "status": "ready",
+        "message": ""
+      },
+      "methods": {
+        "name": "肝细胞癌免疫治疗耐药机制",
+        "children": [
+          {
+            "name": "实验与干预",
+            "count": 3,
+            "papers": [
+              {
+                "ref": 1,
+                "ref_no": 1,
+                "label": "Zhang, X 2025",
+                "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1126/sciadv.adv0558"
+              },
+              {
+                "ref": 2,
+                "ref_no": 2,
+                "label": "Kwong, T 2025",
+                "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+                "url": "https://doi.org/10.1016/j.ymthe.2025.02.002"
+              },
+              {
+                "ref": 3,
+                "ref_no": 3,
+                "label": "Liu, S 2025",
+                "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1136/jitc-2025-012230"
+              }
+            ],
+            "children": [
+              {
+                "name": "NEK2/S1P 代谢干预",
+                "count": 1,
+                "papers": [
+                  {
+                    "ref": 1,
+                    "ref_no": 1,
+                    "label": "Zhang, X 2025",
+                    "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+                    "url": "https://doi.org/10.1126/sciadv.adv0558"
+                  }
+                ],
+                "evidence": [
+                  {
+                    "ref": 1,
+                    "ref_no": 1,
+                    "quote": "Dysregulated metabolism of immune cells in the tumor microenvironment leads to immune evasion and tumor progression. As a major cell component in the tumor, the metabolic reprogramming of tumor-associated macrophages (TAMs) creates an immunosuppressive microenvironment in hepatocellular carcinoma (HCC). Our study found that sphingolipid (particularly, sphingosine-1-phosphate or S1P) levels are a clinical indicator for prognosis and immunotherapy response in patients with HCC. S1P primarily derived from TAMs, where NIMA-related kinase 2 (NEK2) plays a key role in controlling the activity of serine palmitoyl-CoA transferase, a rate-limiting enzyme in S1P biosynthesis. The S1P produced by NEK2 hi TAMs promotes hepatic tumor progression and confers immunotherapy resistance. Targeting S1P synthesis with a NEK2 inhibitor or S1P antagonist disrupted the immunosuppressive function of macrophages, shifted regulatory T cells (T regs ) to T H 17 cells, and increased the number and activity of tumor-infiltrating T effectors, thereby enhancing antitumor efficacy in synergy with immune checkpoint blockade therapy.",
+                    "key": "hcc_method_1",
+                    "confidence": "high"
+                  }
+                ]
+              },
+              {
+                "name": "乳酸化与蛋白稳定性实验",
+                "count": 1,
+                "papers": [
+                  {
+                    "ref": 3,
+                    "ref_no": 3,
+                    "label": "Liu, S 2025",
+                    "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+                    "url": "https://doi.org/10.1136/jitc-2025-012230"
+                  }
+                ],
+                "evidence": [
+                  {
+                    "ref": 3,
+                    "ref_no": 3,
+                    "quote": "BACKGROUND: Hepatocellular carcinoma (HCC) is a prevalent malignancy and the third leading cause of cancer-related mortality worldwide. Immune checkpoint inhibitors (ICIs) have emerged as first-line therapies for advanced HCC, substantially improving clinical outcomes. However, resistance to ICIs remains a major therapeutic challenge. Lactylation, a recently identified post-translational modification, has been implicated in tumor progression, although its role in ICIs resistance in HCC remains unclear. METHODS: Cytotoxicity assays, flow cytometry and orthotopic HCC mouse model were used to evaluate the effects of lactylation in remodeling the immune microenvironment. Chromatin immunoprecipitation sequencing and RNA sequencing were employed to identify lactylation-regulated gene profiles. Programmed cell death-ligand 1 (PD-L1) protein degradation was assayed by cycloheximide-chase analysis and ubiquitination assay. Interactions between major vault protein (MVP) and β-transducin repeat-containing protein (β-TrCP) were analyzed by co-immunoprecipitation experiments. Site-directed mutagenesis and truncation mutants were designed to determine binding sites of MVP-β-TrCP complex. RESULTS: T cell-mediated antitumor immunity. Elevated MVP expression is associated with resistance to checkpoint blockade therapy. Mechanistic studies reveal that histone lactylation-induced MVP upregulation stabilizes PD-L1 by preventing β-TrCP-mediated proteasomal degradation. Pharmacological inhibition of lactylation restores ICIs sensitivity in orthotopic HCC mouse models. CONCLUSIONS: Our findings demonstrate that histone lactylation promotes ICIs resistance via MVP-dependent PD-L1 stabilization. Therefore, targeting lactylation in combination with programmed cell death protein-1/PD-L1 blockade offers a promising strategy to overcome immunotherapy resistance in HCC.",
+                    "key": "hcc_method_3",
+                    "confidence": "high"
+                  }
+                ]
+              },
+              {
+                "name": "动态单细胞 RNA 测序",
+                "count": 1,
+                "papers": [
+                  {
+                    "ref": 2,
+                    "ref_no": 2,
+                    "label": "Kwong, T 2025",
+                    "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+                    "url": "https://doi.org/10.1016/j.ymthe.2025.02.002"
+                  }
+                ],
+                "evidence": [
+                  {
+                    "ref": 2,
+                    "ref_no": 2,
+                    "quote": "Durable responses to immune checkpoint blockade (ICB) in hepatocellular carcinoma (HCC) are limited to a minority of patients, yet reliable biomarkers are still lacking. Inflammatory cytokines such as interleukin-8 (IL-8) are associated with HCC progression, and IL-8 is known as the chemoattractant for immunosuppressive myeloid cells. Therefore, we aim to elucidate the ICB resistance mechanisms mediated by the activation of the IL-8/CXCR2 pathway. Single-cell RNA sequencing (scRNA-seq) was performed in advanced HCC patients with baseline and on-treatment biopsy after pembrolizumab in a phase 2 clinical trial cohort. Our data revealed that IL-8 and its receptor, CXCR2, mainly derived from immunosuppressive myeloid-derived suppressor cells (MDSCs). In particular, the high circulating IL-8 level was strongly associated with poor ICB response. This myeloid IL-8/CXCR2 pathway was further elucidated in our ICB-resistant orthotopic mouse model using AZD5069, a clinically available CXCR2 antagonist. Suppression of the IL-8/CXCR2 pathway significantly abrogated MDSC trafficking and immunosuppressive activity, which sensitized the anti-PD-L1 blockade to reduce tumor growth and prolong survival. The association between myeloid IL-8 and ICB therapeutic outcomes also extended to multiple cancer types. Collectively, our study not only suggests a potential non-invasive biomarker for patient stratification and monitoring of ICB response but it also provides a proof of concept for combinational immunotherapy to benefit patients who are non-responsive to ICB monotherapy.",
+                    "key": "hcc_method_2",
+                    "confidence": "high"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "文献与二手数据",
+            "count": 1,
+            "papers": [
+              {
+                "ref": 4,
+                "ref_no": 4,
+                "label": "Fu, Y 2024",
+                "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+                "url": "https://doi.org/10.7554/elife.95009"
+              }
+            ],
+            "children": [
+              {
+                "name": "叙述性领域综合",
+                "count": 1,
+                "papers": [
+                  {
+                    "ref": 4,
+                    "ref_no": 4,
+                    "label": "Fu, Y 2024",
+                    "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+                    "url": "https://doi.org/10.7554/elife.95009"
+                  }
+                ],
+                "evidence": [
+                  {
+                    "ref": 4,
+                    "ref_no": 4,
+                    "quote": "Hepatocellular carcinoma (HCC), the most common type of liver tumor, is a leading cause of cancer-related deaths, and the incidence of liver cancer is still increasing worldwide. Curative hepatectomy or liver transplantation is only indicated for a small population of patients with early-stage HCC. However, most patients with HCC are not candidates for radical resection due to disease progression, leading to the choice of the conventional tyrosine kinase inhibitor drug sorafenib as first-line treatment. In the past few years, immunotherapy, mainly immune checkpoint inhibitors (ICIs), has revolutionized the clinical strategy for HCC. Combination therapy with ICIs has proven more effective than sorafenib, and clinical trials have been conducted to apply these therapies to patients. Despite significant progress in immunotherapy, the molecular mechanisms behind it remain unclear, and immune resistance is often challenging to overcome. Several studies have pointed out that the complex intercellular communication network in the immune microenvironment of HCC regulates tumor escape and drug resistance to immune response. This underscores the urgent need to analyze the immune microenvironment of HCC. This review describes the immunosuppressive cell populations in the immune microenvironment of HCC, as well as the related clinical trials, aiming to provide insights for the next generation of precision immunotherapy.",
+                    "key": "hcc_method_4",
+                    "confidence": "high"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "status": "ready",
+        "message": ""
+      },
+      "relations": {
+        "types": {
+          "support": {
+            "name": "支持",
+            "color": "#61d6a6"
+          },
+          "improve": {
+            "name": "改进",
+            "color": "#63b3ff"
+          },
+          "conflict": {
+            "name": "冲突",
+            "color": "#ff7b7b"
+          },
+          "difference": {
+            "name": "差异",
+            "color": "#b58cff"
+          }
+        },
+        "edges": [
+          {
+            "s": "https://openalex.org/W4410553523",
+            "t": "https://openalex.org/W4407165094",
+            "s_ref": 1,
+            "t_ref": 2,
+            "type": "difference",
+            "reason": "两篇摘要使用不同方法与机制层级；这是离线证据约束下的差异判断。",
+            "evidence_ref": 1,
+            "quote": "Dysregulated metabolism of immune cells in the tumor microenvironment leads to immune evasion and tumor progression. As a major cell component in the tumor, the metabolic reprogramming of tumor-associated macrophages (TAMs) creates an immunosuppressive microenvironment in hepatocellular carcinoma (HCC). Our study found that sphingolipid (particularly, sphingosine-1-phosphate or S1P) levels are a clinical indicator for prognosis and immunotherapy response in patients with HCC. S1P primarily derived from TAMs, where NIMA-related kinase 2 (NEK2) plays a key role in controlling the activity of serine palmitoyl-CoA transferase, a rate-limiting enzyme in S1P biosynthesis. The S1P produced by NEK2 hi TAMs promotes hepatic tumor progression and confers immunotherapy resistance. Targeting S1P synthesis with a NEK2 inhibitor or S1P antagonist disrupted the immunosuppressive function of macrophages, shifted regulatory T cells (T regs ) to T H 17 cells, and increased the number and activity of tumor-infiltrating T effectors, thereby enhancing antitumor efficacy in synergy with immune checkpoint blockade therapy.",
+            "basis_ref": 2,
+            "basis_quote": "Durable responses to immune checkpoint blockade (ICB) in hepatocellular carcinoma (HCC) are limited to a minority of patients, yet reliable biomarkers are still lacking. Inflammatory cytokines such as interleukin-8 (IL-8) are associated with HCC progression, and IL-8 is known as the chemoattractant for immunosuppressive myeloid cells. Therefore, we aim to elucidate the ICB resistance mechanisms mediated by the activation of the IL-8/CXCR2 pathway. Single-cell RNA sequencing (scRNA-seq) was performed in advanced HCC patients with baseline and on-treatment biopsy after pembrolizumab in a phase 2 clinical trial cohort. Our data revealed that IL-8 and its receptor, CXCR2, mainly derived from immunosuppressive myeloid-derived suppressor cells (MDSCs). In particular, the high circulating IL-8 level was strongly associated with poor ICB response. This myeloid IL-8/CXCR2 pathway was further elucidated in our ICB-resistant orthotopic mouse model using AZD5069, a clinically available CXCR2 antagonist. Suppression of the IL-8/CXCR2 pathway significantly abrogated MDSC trafficking and immunosuppressive activity, which sensitized the anti-PD-L1 blockade to reduce tumor growth and prolong survival. The association between myeloid IL-8 and ICB therapeutic outcomes also extended to multiple cancer types. Collectively, our study not only suggests a potential non-invasive biomarker for patient stratification and monitoring of ICB response but it also provides a proof of concept for combinational immunotherapy to benefit patients who are non-responsive to ICB monotherapy.",
+            "confidence": "high",
+            "evidence": [
+              {
+                "role": "evidence",
+                "ref": 1,
+                "ref_no": 1,
+                "quote": "Dysregulated metabolism of immune cells in the tumor microenvironment leads to immune evasion and tumor progression. As a major cell component in the tumor, the metabolic reprogramming of tumor-associated macrophages (TAMs) creates an immunosuppressive microenvironment in hepatocellular carcinoma (HCC). Our study found that sphingolipid (particularly, sphingosine-1-phosphate or S1P) levels are a clinical indicator for prognosis and immunotherapy response in patients with HCC. S1P primarily derived from TAMs, where NIMA-related kinase 2 (NEK2) plays a key role in controlling the activity of serine palmitoyl-CoA transferase, a rate-limiting enzyme in S1P biosynthesis. The S1P produced by NEK2 hi TAMs promotes hepatic tumor progression and confers immunotherapy resistance. Targeting S1P synthesis with a NEK2 inhibitor or S1P antagonist disrupted the immunosuppressive function of macrophages, shifted regulatory T cells (T regs ) to T H 17 cells, and increased the number and activity of tumor-infiltrating T effectors, thereby enhancing antitumor efficacy in synergy with immune checkpoint blockade therapy."
+              },
+              {
+                "role": "basis",
+                "ref": 2,
+                "ref_no": 2,
+                "quote": "Durable responses to immune checkpoint blockade (ICB) in hepatocellular carcinoma (HCC) are limited to a minority of patients, yet reliable biomarkers are still lacking. Inflammatory cytokines such as interleukin-8 (IL-8) are associated with HCC progression, and IL-8 is known as the chemoattractant for immunosuppressive myeloid cells. Therefore, we aim to elucidate the ICB resistance mechanisms mediated by the activation of the IL-8/CXCR2 pathway. Single-cell RNA sequencing (scRNA-seq) was performed in advanced HCC patients with baseline and on-treatment biopsy after pembrolizumab in a phase 2 clinical trial cohort. Our data revealed that IL-8 and its receptor, CXCR2, mainly derived from immunosuppressive myeloid-derived suppressor cells (MDSCs). In particular, the high circulating IL-8 level was strongly associated with poor ICB response. This myeloid IL-8/CXCR2 pathway was further elucidated in our ICB-resistant orthotopic mouse model using AZD5069, a clinically available CXCR2 antagonist. Suppression of the IL-8/CXCR2 pathway significantly abrogated MDSC trafficking and immunosuppressive activity, which sensitized the anti-PD-L1 blockade to reduce tumor growth and prolong survival. The association between myeloid IL-8 and ICB therapeutic outcomes also extended to multiple cancer types. Collectively, our study not only suggests a potential non-invasive biomarker for patient stratification and monitoring of ICB response but it also provides a proof of concept for combinational immunotherapy to benefit patients who are non-responsive to ICB monotherapy."
+              }
+            ]
+          }
+        ],
+        "status": "ready",
+        "message": ""
+      }
+    },
+    "limited": {
+      "label": "限定 2016–2026",
+      "total_hits": 4,
+      "pool_count": 4,
+      "topics": [
+        {
+          "name": "髓系代谢与 S1P",
+          "name_zh": "髓系代谢与 S1P",
+          "count": 1
+        },
+        {
+          "name": "IL-8/CXCR2 动态分层",
+          "name_zh": "IL-8/CXCR2 动态分层",
+          "count": 1
+        },
+        {
+          "name": "乳酸化与 PD-L1",
+          "name_zh": "乳酸化与 PD-L1",
+          "count": 1
+        },
+        {
+          "name": "免疫微环境综述",
+          "name_zh": "免疫微环境综述",
+          "count": 1
+        }
+      ],
+      "topics_status": "ready",
+      "topics_message": "",
+      "network": {
+        "nodes": [
+          {
+            "id": "https://openalex.org/W4410553523",
+            "ref": 1,
+            "label": "Zhang, X 2025",
+            "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+            "authors": "Xiaozhen Zhang, Mengyi Lao, Kang Sun, Hanshen Yang, Lihong He",
+            "year": 2025,
+            "venue": "Science Advances",
+            "cited": 48,
+            "url": "https://doi.org/10.1126/sciadv.adv0558",
+            "excerpt": "Dysregulated metabolism of immune cells in the tumor microenvironment leads to immune evasion and tumor progression. As a major cell component in the tumor, the metabolic reprogramming of tumor-associ"
+          },
+          {
+            "id": "https://openalex.org/W4407165094",
+            "ref": 2,
+            "label": "Kwong, T 2025",
+            "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+            "authors": "Tsz Tung Kwong, Zhewen Xiong, Yiling Zhang, Haoran Wu, Jian Cao",
+            "year": 2025,
+            "venue": "Molecular Therapy",
+            "cited": 48,
+            "url": "https://doi.org/10.1016/j.ymthe.2025.02.002",
+            "excerpt": "Durable responses to immune checkpoint blockade (ICB) in hepatocellular carcinoma (HCC) are limited to a minority of patients, yet reliable biomarkers are still lacking. Inflammatory cytokines such as"
+          },
+          {
+            "id": "https://openalex.org/W4414398194",
+            "ref": 3,
+            "label": "Liu, S 2025",
+            "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+            "authors": "Shuang Liu, Yihui Pan, Wenjian Liu, Xiaoyun Bu, Ruonan Shao",
+            "year": 2025,
+            "venue": "Journal for ImmunoTherapy of Cancer",
+            "cited": 43,
+            "url": "https://doi.org/10.1136/jitc-2025-012230",
+            "excerpt": "BACKGROUND: Hepatocellular carcinoma (HCC) is a prevalent malignancy and the third leading cause of cancer-related mortality worldwide. Immune checkpoint inhibitors (ICIs) have emerged as first-line t"
+          },
+          {
+            "id": "https://openalex.org/W4401612664",
+            "ref": 4,
+            "label": "Fu, Y 2024",
+            "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+            "authors": "Yumin Fu, Xinyu Guo, Linmao Sun, Tianming Cui, Chenghui Wu",
+            "year": 2024,
+            "venue": "eLife",
+            "cited": 39,
+            "url": "https://doi.org/10.7554/elife.95009",
+            "excerpt": "Hepatocellular carcinoma (HCC), the most common type of liver tumor, is a leading cause of cancer-related deaths, and the incidence of liver cancer is still increasing worldwide. Curative hepatectomy "
+          }
+        ],
+        "edges": [],
+        "status": "ready",
+        "message": "",
+        "edge_status": "empty",
+        "edge_message": "池内暂无真实互引（不补造引用边）"
+      },
+      "knowledge": {
+        "nodes": [
+          {
+            "id": "k1",
+            "name": "IL-8/CXCR2",
+            "type": "factor",
+            "papers": [
+              {
+                "ref": 2,
+                "ref_no": 2,
+                "label": "Kwong, T 2025",
+                "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+                "url": "https://doi.org/10.1016/j.ymthe.2025.02.002"
+              }
+            ]
+          },
+          {
+            "id": "k2",
+            "name": "NEK2/S1P",
+            "type": "factor",
+            "papers": [
+              {
+                "ref": 1,
+                "ref_no": 1,
+                "label": "Zhang, X 2025",
+                "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1126/sciadv.adv0558"
+              }
+            ]
+          },
+          {
+            "id": "k3",
+            "name": "PD-L1 稳定性",
+            "type": "outcome",
+            "papers": [
+              {
+                "ref": 3,
+                "ref_no": 3,
+                "label": "Liu, S 2025",
+                "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1136/jitc-2025-012230"
+              }
+            ]
+          },
+          {
+            "id": "k4",
+            "name": "乳酸化/MVP",
+            "type": "factor",
+            "papers": [
+              {
+                "ref": 3,
+                "ref_no": 3,
+                "label": "Liu, S 2025",
+                "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1136/jitc-2025-012230"
+              }
+            ]
+          },
+          {
+            "id": "k5",
+            "name": "免疫微环境",
+            "type": "factor",
+            "papers": [
+              {
+                "ref": 4,
+                "ref_no": 4,
+                "label": "Fu, Y 2024",
+                "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+                "url": "https://doi.org/10.7554/elife.95009"
+              }
+            ]
+          },
+          {
+            "id": "k6",
+            "name": "免疫治疗耐药",
+            "type": "outcome",
+            "papers": [
+              {
+                "ref": 1,
+                "ref_no": 1,
+                "label": "Zhang, X 2025",
+                "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1126/sciadv.adv0558"
+              }
+            ]
+          },
+          {
+            "id": "k7",
+            "name": "免疫逃逸与耐药框架",
+            "type": "outcome",
+            "papers": [
+              {
+                "ref": 4,
+                "ref_no": 4,
+                "label": "Fu, Y 2024",
+                "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+                "url": "https://doi.org/10.7554/elife.95009"
+              }
+            ]
+          },
+          {
+            "id": "k8",
+            "name": "髓系细胞迁移与应答",
+            "type": "outcome",
+            "papers": [
+              {
+                "ref": 2,
+                "ref_no": 2,
+                "label": "Kwong, T 2025",
+                "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+                "url": "https://doi.org/10.1016/j.ymthe.2025.02.002"
+              }
+            ]
+          }
+        ],
+        "edges": [
+          {
+            "s": "k1",
+            "t": "k8",
+            "polarity": "pos",
+            "effect": "",
+            "support": 1,
+            "papers": [
+              {
+                "ref": 2,
+                "ref_no": 2,
+                "label": "Kwong, T 2025",
+                "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+                "url": "https://doi.org/10.1016/j.ymthe.2025.02.002"
+              }
+            ],
+            "evidence": [
+              {
+                "factor": "IL-8/CXCR2",
+                "outcome": "髓系细胞迁移与应答",
+                "polarity": "pos",
+                "effect": "",
+                "ref": 2,
+                "ref_no": 2,
+                "quote": "Durable responses to immune checkpoint blockade (ICB) in hepatocellular carcinoma (HCC) are limited to a minority of patients, yet reliable biomarkers are still lacking. Inflammatory cytokines such as interleukin-8 (IL-8) are associated with HCC progression, and IL-8 is known as the chemoattractant for immunosuppressive myeloid cells. Therefore, we aim to elucidate the ICB resistance mechanisms mediated by the activation of the IL-8/CXCR2 pathway. Single-cell RNA sequencing (scRNA-seq) was performed in advanced HCC patients with baseline and on-treatment biopsy after pembrolizumab in a phase 2 clinical trial cohort. Our data revealed that IL-8 and its receptor, CXCR2, mainly derived from immunosuppressive myeloid-derived suppressor cells (MDSCs). In particular, the high circulating IL-8 level was strongly associated with poor ICB response. This myeloid IL-8/CXCR2 pathway was further elucidated in our ICB-resistant orthotopic mouse model using AZD5069, a clinically available CXCR2 antagonist. Suppression of the IL-8/CXCR2 pathway significantly abrogated MDSC trafficking and immunosuppressive activity, which sensitized the anti-PD-L1 blockade to reduce tumor growth and prolong survival. The association between myeloid IL-8 and ICB therapeutic outcomes also extended to multiple cancer types. Collectively, our study not only suggests a potential non-invasive biomarker for patient stratification and monitoring of ICB response but it also provides a proof of concept for combinational immunotherapy to benefit patients who are non-responsive to ICB monotherapy.",
+                "confidence": "high"
+              }
+            ],
+            "disputed": false
+          },
+          {
+            "s": "k2",
+            "t": "k6",
+            "polarity": "pos",
+            "effect": "",
+            "support": 1,
+            "papers": [
+              {
+                "ref": 1,
+                "ref_no": 1,
+                "label": "Zhang, X 2025",
+                "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1126/sciadv.adv0558"
+              }
+            ],
+            "evidence": [
+              {
+                "factor": "NEK2/S1P",
+                "outcome": "免疫治疗耐药",
+                "polarity": "pos",
+                "effect": "",
+                "ref": 1,
+                "ref_no": 1,
+                "quote": "Dysregulated metabolism of immune cells in the tumor microenvironment leads to immune evasion and tumor progression. As a major cell component in the tumor, the metabolic reprogramming of tumor-associated macrophages (TAMs) creates an immunosuppressive microenvironment in hepatocellular carcinoma (HCC). Our study found that sphingolipid (particularly, sphingosine-1-phosphate or S1P) levels are a clinical indicator for prognosis and immunotherapy response in patients with HCC. S1P primarily derived from TAMs, where NIMA-related kinase 2 (NEK2) plays a key role in controlling the activity of serine palmitoyl-CoA transferase, a rate-limiting enzyme in S1P biosynthesis. The S1P produced by NEK2 hi TAMs promotes hepatic tumor progression and confers immunotherapy resistance. Targeting S1P synthesis with a NEK2 inhibitor or S1P antagonist disrupted the immunosuppressive function of macrophages, shifted regulatory T cells (T regs ) to T H 17 cells, and increased the number and activity of tumor-infiltrating T effectors, thereby enhancing antitumor efficacy in synergy with immune checkpoint blockade therapy.",
+                "confidence": "high"
+              }
+            ],
+            "disputed": false
+          },
+          {
+            "s": "k4",
+            "t": "k3",
+            "polarity": "pos",
+            "effect": "",
+            "support": 1,
+            "papers": [
+              {
+                "ref": 3,
+                "ref_no": 3,
+                "label": "Liu, S 2025",
+                "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1136/jitc-2025-012230"
+              }
+            ],
+            "evidence": [
+              {
+                "factor": "乳酸化/MVP",
+                "outcome": "PD-L1 稳定性",
+                "polarity": "pos",
+                "effect": "",
+                "ref": 3,
+                "ref_no": 3,
+                "quote": "BACKGROUND: Hepatocellular carcinoma (HCC) is a prevalent malignancy and the third leading cause of cancer-related mortality worldwide. Immune checkpoint inhibitors (ICIs) have emerged as first-line therapies for advanced HCC, substantially improving clinical outcomes. However, resistance to ICIs remains a major therapeutic challenge. Lactylation, a recently identified post-translational modification, has been implicated in tumor progression, although its role in ICIs resistance in HCC remains unclear. METHODS: Cytotoxicity assays, flow cytometry and orthotopic HCC mouse model were used to evaluate the effects of lactylation in remodeling the immune microenvironment. Chromatin immunoprecipitation sequencing and RNA sequencing were employed to identify lactylation-regulated gene profiles. Programmed cell death-ligand 1 (PD-L1) protein degradation was assayed by cycloheximide-chase analysis and ubiquitination assay. Interactions between major vault protein (MVP) and β-transducin repeat-containing protein (β-TrCP) were analyzed by co-immunoprecipitation experiments. Site-directed mutagenesis and truncation mutants were designed to determine binding sites of MVP-β-TrCP complex. RESULTS: T cell-mediated antitumor immunity. Elevated MVP expression is associated with resistance to checkpoint blockade therapy. Mechanistic studies reveal that histone lactylation-induced MVP upregulation stabilizes PD-L1 by preventing β-TrCP-mediated proteasomal degradation. Pharmacological inhibition of lactylation restores ICIs sensitivity in orthotopic HCC mouse models. CONCLUSIONS: Our findings demonstrate that histone lactylation promotes ICIs resistance via MVP-dependent PD-L1 stabilization. Therefore, targeting lactylation in combination with programmed cell death protein-1/PD-L1 blockade offers a promising strategy to overcome immunotherapy resistance in HCC.",
+                "confidence": "high"
+              }
+            ],
+            "disputed": false
+          },
+          {
+            "s": "k5",
+            "t": "k7",
+            "polarity": "pos",
+            "effect": "",
+            "support": 1,
+            "papers": [
+              {
+                "ref": 4,
+                "ref_no": 4,
+                "label": "Fu, Y 2024",
+                "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+                "url": "https://doi.org/10.7554/elife.95009"
+              }
+            ],
+            "evidence": [
+              {
+                "factor": "免疫微环境",
+                "outcome": "免疫逃逸与耐药框架",
+                "polarity": "pos",
+                "effect": "",
+                "ref": 4,
+                "ref_no": 4,
+                "quote": "Hepatocellular carcinoma (HCC), the most common type of liver tumor, is a leading cause of cancer-related deaths, and the incidence of liver cancer is still increasing worldwide. Curative hepatectomy or liver transplantation is only indicated for a small population of patients with early-stage HCC. However, most patients with HCC are not candidates for radical resection due to disease progression, leading to the choice of the conventional tyrosine kinase inhibitor drug sorafenib as first-line treatment. In the past few years, immunotherapy, mainly immune checkpoint inhibitors (ICIs), has revolutionized the clinical strategy for HCC. Combination therapy with ICIs has proven more effective than sorafenib, and clinical trials have been conducted to apply these therapies to patients. Despite significant progress in immunotherapy, the molecular mechanisms behind it remain unclear, and immune resistance is often challenging to overcome. Several studies have pointed out that the complex intercellular communication network in the immune microenvironment of HCC regulates tumor escape and drug resistance to immune response. This underscores the urgent need to analyze the immune microenvironment of HCC. This review describes the immunosuppressive cell populations in the immune microenvironment of HCC, as well as the related clinical trials, aiming to provide insights for the next generation of precision immunotherapy.",
+                "confidence": "high"
+              }
+            ],
+            "disputed": false
+          }
+        ],
+        "votes": [
+          {
+            "factor": "NEK2/S1P",
+            "outcome": "免疫治疗耐药",
+            "polarity": "pos",
+            "effect": "",
+            "ref": 1,
+            "ref_no": 1,
+            "quote": "Dysregulated metabolism of immune cells in the tumor microenvironment leads to immune evasion and tumor progression. As a major cell component in the tumor, the metabolic reprogramming of tumor-associated macrophages (TAMs) creates an immunosuppressive microenvironment in hepatocellular carcinoma (HCC). Our study found that sphingolipid (particularly, sphingosine-1-phosphate or S1P) levels are a clinical indicator for prognosis and immunotherapy response in patients with HCC. S1P primarily derived from TAMs, where NIMA-related kinase 2 (NEK2) plays a key role in controlling the activity of serine palmitoyl-CoA transferase, a rate-limiting enzyme in S1P biosynthesis. The S1P produced by NEK2 hi TAMs promotes hepatic tumor progression and confers immunotherapy resistance. Targeting S1P synthesis with a NEK2 inhibitor or S1P antagonist disrupted the immunosuppressive function of macrophages, shifted regulatory T cells (T regs ) to T H 17 cells, and increased the number and activity of tumor-infiltrating T effectors, thereby enhancing antitumor efficacy in synergy with immune checkpoint blockade therapy.",
+            "confidence": "high"
+          },
+          {
+            "factor": "IL-8/CXCR2",
+            "outcome": "髓系细胞迁移与应答",
+            "polarity": "pos",
+            "effect": "",
+            "ref": 2,
+            "ref_no": 2,
+            "quote": "Durable responses to immune checkpoint blockade (ICB) in hepatocellular carcinoma (HCC) are limited to a minority of patients, yet reliable biomarkers are still lacking. Inflammatory cytokines such as interleukin-8 (IL-8) are associated with HCC progression, and IL-8 is known as the chemoattractant for immunosuppressive myeloid cells. Therefore, we aim to elucidate the ICB resistance mechanisms mediated by the activation of the IL-8/CXCR2 pathway. Single-cell RNA sequencing (scRNA-seq) was performed in advanced HCC patients with baseline and on-treatment biopsy after pembrolizumab in a phase 2 clinical trial cohort. Our data revealed that IL-8 and its receptor, CXCR2, mainly derived from immunosuppressive myeloid-derived suppressor cells (MDSCs). In particular, the high circulating IL-8 level was strongly associated with poor ICB response. This myeloid IL-8/CXCR2 pathway was further elucidated in our ICB-resistant orthotopic mouse model using AZD5069, a clinically available CXCR2 antagonist. Suppression of the IL-8/CXCR2 pathway significantly abrogated MDSC trafficking and immunosuppressive activity, which sensitized the anti-PD-L1 blockade to reduce tumor growth and prolong survival. The association between myeloid IL-8 and ICB therapeutic outcomes also extended to multiple cancer types. Collectively, our study not only suggests a potential non-invasive biomarker for patient stratification and monitoring of ICB response but it also provides a proof of concept for combinational immunotherapy to benefit patients who are non-responsive to ICB monotherapy.",
+            "confidence": "high"
+          },
+          {
+            "factor": "乳酸化/MVP",
+            "outcome": "PD-L1 稳定性",
+            "polarity": "pos",
+            "effect": "",
+            "ref": 3,
+            "ref_no": 3,
+            "quote": "BACKGROUND: Hepatocellular carcinoma (HCC) is a prevalent malignancy and the third leading cause of cancer-related mortality worldwide. Immune checkpoint inhibitors (ICIs) have emerged as first-line therapies for advanced HCC, substantially improving clinical outcomes. However, resistance to ICIs remains a major therapeutic challenge. Lactylation, a recently identified post-translational modification, has been implicated in tumor progression, although its role in ICIs resistance in HCC remains unclear. METHODS: Cytotoxicity assays, flow cytometry and orthotopic HCC mouse model were used to evaluate the effects of lactylation in remodeling the immune microenvironment. Chromatin immunoprecipitation sequencing and RNA sequencing were employed to identify lactylation-regulated gene profiles. Programmed cell death-ligand 1 (PD-L1) protein degradation was assayed by cycloheximide-chase analysis and ubiquitination assay. Interactions between major vault protein (MVP) and β-transducin repeat-containing protein (β-TrCP) were analyzed by co-immunoprecipitation experiments. Site-directed mutagenesis and truncation mutants were designed to determine binding sites of MVP-β-TrCP complex. RESULTS: T cell-mediated antitumor immunity. Elevated MVP expression is associated with resistance to checkpoint blockade therapy. Mechanistic studies reveal that histone lactylation-induced MVP upregulation stabilizes PD-L1 by preventing β-TrCP-mediated proteasomal degradation. Pharmacological inhibition of lactylation restores ICIs sensitivity in orthotopic HCC mouse models. CONCLUSIONS: Our findings demonstrate that histone lactylation promotes ICIs resistance via MVP-dependent PD-L1 stabilization. Therefore, targeting lactylation in combination with programmed cell death protein-1/PD-L1 blockade offers a promising strategy to overcome immunotherapy resistance in HCC.",
+            "confidence": "high"
+          },
+          {
+            "factor": "免疫微环境",
+            "outcome": "免疫逃逸与耐药框架",
+            "polarity": "pos",
+            "effect": "",
+            "ref": 4,
+            "ref_no": 4,
+            "quote": "Hepatocellular carcinoma (HCC), the most common type of liver tumor, is a leading cause of cancer-related deaths, and the incidence of liver cancer is still increasing worldwide. Curative hepatectomy or liver transplantation is only indicated for a small population of patients with early-stage HCC. However, most patients with HCC are not candidates for radical resection due to disease progression, leading to the choice of the conventional tyrosine kinase inhibitor drug sorafenib as first-line treatment. In the past few years, immunotherapy, mainly immune checkpoint inhibitors (ICIs), has revolutionized the clinical strategy for HCC. Combination therapy with ICIs has proven more effective than sorafenib, and clinical trials have been conducted to apply these therapies to patients. Despite significant progress in immunotherapy, the molecular mechanisms behind it remain unclear, and immune resistance is often challenging to overcome. Several studies have pointed out that the complex intercellular communication network in the immune microenvironment of HCC regulates tumor escape and drug resistance to immune response. This underscores the urgent need to analyze the immune microenvironment of HCC. This review describes the immunosuppressive cell populations in the immune microenvironment of HCC, as well as the related clinical trials, aiming to provide insights for the next generation of precision immunotherapy.",
+            "confidence": "high"
+          }
+        ],
+        "status": "ready",
+        "message": ""
+      },
+      "methods": {
+        "name": "肝细胞癌免疫治疗耐药机制",
+        "children": [
+          {
+            "name": "实验与干预",
+            "count": 3,
+            "papers": [
+              {
+                "ref": 1,
+                "ref_no": 1,
+                "label": "Zhang, X 2025",
+                "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1126/sciadv.adv0558"
+              },
+              {
+                "ref": 2,
+                "ref_no": 2,
+                "label": "Kwong, T 2025",
+                "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+                "url": "https://doi.org/10.1016/j.ymthe.2025.02.002"
+              },
+              {
+                "ref": 3,
+                "ref_no": 3,
+                "label": "Liu, S 2025",
+                "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+                "url": "https://doi.org/10.1136/jitc-2025-012230"
+              }
+            ],
+            "children": [
+              {
+                "name": "NEK2/S1P 代谢干预",
+                "count": 1,
+                "papers": [
+                  {
+                    "ref": 1,
+                    "ref_no": 1,
+                    "label": "Zhang, X 2025",
+                    "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+                    "url": "https://doi.org/10.1126/sciadv.adv0558"
+                  }
+                ],
+                "evidence": [
+                  {
+                    "ref": 1,
+                    "ref_no": 1,
+                    "quote": "Dysregulated metabolism of immune cells in the tumor microenvironment leads to immune evasion and tumor progression. As a major cell component in the tumor, the metabolic reprogramming of tumor-associated macrophages (TAMs) creates an immunosuppressive microenvironment in hepatocellular carcinoma (HCC). Our study found that sphingolipid (particularly, sphingosine-1-phosphate or S1P) levels are a clinical indicator for prognosis and immunotherapy response in patients with HCC. S1P primarily derived from TAMs, where NIMA-related kinase 2 (NEK2) plays a key role in controlling the activity of serine palmitoyl-CoA transferase, a rate-limiting enzyme in S1P biosynthesis. The S1P produced by NEK2 hi TAMs promotes hepatic tumor progression and confers immunotherapy resistance. Targeting S1P synthesis with a NEK2 inhibitor or S1P antagonist disrupted the immunosuppressive function of macrophages, shifted regulatory T cells (T regs ) to T H 17 cells, and increased the number and activity of tumor-infiltrating T effectors, thereby enhancing antitumor efficacy in synergy with immune checkpoint blockade therapy.",
+                    "key": "hcc_method_1",
+                    "confidence": "high"
+                  }
+                ]
+              },
+              {
+                "name": "乳酸化与蛋白稳定性实验",
+                "count": 1,
+                "papers": [
+                  {
+                    "ref": 3,
+                    "ref_no": 3,
+                    "label": "Liu, S 2025",
+                    "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+                    "url": "https://doi.org/10.1136/jitc-2025-012230"
+                  }
+                ],
+                "evidence": [
+                  {
+                    "ref": 3,
+                    "ref_no": 3,
+                    "quote": "BACKGROUND: Hepatocellular carcinoma (HCC) is a prevalent malignancy and the third leading cause of cancer-related mortality worldwide. Immune checkpoint inhibitors (ICIs) have emerged as first-line therapies for advanced HCC, substantially improving clinical outcomes. However, resistance to ICIs remains a major therapeutic challenge. Lactylation, a recently identified post-translational modification, has been implicated in tumor progression, although its role in ICIs resistance in HCC remains unclear. METHODS: Cytotoxicity assays, flow cytometry and orthotopic HCC mouse model were used to evaluate the effects of lactylation in remodeling the immune microenvironment. Chromatin immunoprecipitation sequencing and RNA sequencing were employed to identify lactylation-regulated gene profiles. Programmed cell death-ligand 1 (PD-L1) protein degradation was assayed by cycloheximide-chase analysis and ubiquitination assay. Interactions between major vault protein (MVP) and β-transducin repeat-containing protein (β-TrCP) were analyzed by co-immunoprecipitation experiments. Site-directed mutagenesis and truncation mutants were designed to determine binding sites of MVP-β-TrCP complex. RESULTS: T cell-mediated antitumor immunity. Elevated MVP expression is associated with resistance to checkpoint blockade therapy. Mechanistic studies reveal that histone lactylation-induced MVP upregulation stabilizes PD-L1 by preventing β-TrCP-mediated proteasomal degradation. Pharmacological inhibition of lactylation restores ICIs sensitivity in orthotopic HCC mouse models. CONCLUSIONS: Our findings demonstrate that histone lactylation promotes ICIs resistance via MVP-dependent PD-L1 stabilization. Therefore, targeting lactylation in combination with programmed cell death protein-1/PD-L1 blockade offers a promising strategy to overcome immunotherapy resistance in HCC.",
+                    "key": "hcc_method_3",
+                    "confidence": "high"
+                  }
+                ]
+              },
+              {
+                "name": "动态单细胞 RNA 测序",
+                "count": 1,
+                "papers": [
+                  {
+                    "ref": 2,
+                    "ref_no": 2,
+                    "label": "Kwong, T 2025",
+                    "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+                    "url": "https://doi.org/10.1016/j.ymthe.2025.02.002"
+                  }
+                ],
+                "evidence": [
+                  {
+                    "ref": 2,
+                    "ref_no": 2,
+                    "quote": "Durable responses to immune checkpoint blockade (ICB) in hepatocellular carcinoma (HCC) are limited to a minority of patients, yet reliable biomarkers are still lacking. Inflammatory cytokines such as interleukin-8 (IL-8) are associated with HCC progression, and IL-8 is known as the chemoattractant for immunosuppressive myeloid cells. Therefore, we aim to elucidate the ICB resistance mechanisms mediated by the activation of the IL-8/CXCR2 pathway. Single-cell RNA sequencing (scRNA-seq) was performed in advanced HCC patients with baseline and on-treatment biopsy after pembrolizumab in a phase 2 clinical trial cohort. Our data revealed that IL-8 and its receptor, CXCR2, mainly derived from immunosuppressive myeloid-derived suppressor cells (MDSCs). In particular, the high circulating IL-8 level was strongly associated with poor ICB response. This myeloid IL-8/CXCR2 pathway was further elucidated in our ICB-resistant orthotopic mouse model using AZD5069, a clinically available CXCR2 antagonist. Suppression of the IL-8/CXCR2 pathway significantly abrogated MDSC trafficking and immunosuppressive activity, which sensitized the anti-PD-L1 blockade to reduce tumor growth and prolong survival. The association between myeloid IL-8 and ICB therapeutic outcomes also extended to multiple cancer types. Collectively, our study not only suggests a potential non-invasive biomarker for patient stratification and monitoring of ICB response but it also provides a proof of concept for combinational immunotherapy to benefit patients who are non-responsive to ICB monotherapy.",
+                    "key": "hcc_method_2",
+                    "confidence": "high"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "文献与二手数据",
+            "count": 1,
+            "papers": [
+              {
+                "ref": 4,
+                "ref_no": 4,
+                "label": "Fu, Y 2024",
+                "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+                "url": "https://doi.org/10.7554/elife.95009"
+              }
+            ],
+            "children": [
+              {
+                "name": "叙述性领域综合",
+                "count": 1,
+                "papers": [
+                  {
+                    "ref": 4,
+                    "ref_no": 4,
+                    "label": "Fu, Y 2024",
+                    "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+                    "url": "https://doi.org/10.7554/elife.95009"
+                  }
+                ],
+                "evidence": [
+                  {
+                    "ref": 4,
+                    "ref_no": 4,
+                    "quote": "Hepatocellular carcinoma (HCC), the most common type of liver tumor, is a leading cause of cancer-related deaths, and the incidence of liver cancer is still increasing worldwide. Curative hepatectomy or liver transplantation is only indicated for a small population of patients with early-stage HCC. However, most patients with HCC are not candidates for radical resection due to disease progression, leading to the choice of the conventional tyrosine kinase inhibitor drug sorafenib as first-line treatment. In the past few years, immunotherapy, mainly immune checkpoint inhibitors (ICIs), has revolutionized the clinical strategy for HCC. Combination therapy with ICIs has proven more effective than sorafenib, and clinical trials have been conducted to apply these therapies to patients. Despite significant progress in immunotherapy, the molecular mechanisms behind it remain unclear, and immune resistance is often challenging to overcome. Several studies have pointed out that the complex intercellular communication network in the immune microenvironment of HCC regulates tumor escape and drug resistance to immune response. This underscores the urgent need to analyze the immune microenvironment of HCC. This review describes the immunosuppressive cell populations in the immune microenvironment of HCC, as well as the related clinical trials, aiming to provide insights for the next generation of precision immunotherapy.",
+                    "key": "hcc_method_4",
+                    "confidence": "high"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "status": "ready",
+        "message": ""
+      },
+      "relations": {
+        "types": {
+          "support": {
+            "name": "支持",
+            "color": "#61d6a6"
+          },
+          "improve": {
+            "name": "改进",
+            "color": "#63b3ff"
+          },
+          "conflict": {
+            "name": "冲突",
+            "color": "#ff7b7b"
+          },
+          "difference": {
+            "name": "差异",
+            "color": "#b58cff"
+          }
+        },
+        "edges": [
+          {
+            "s": "https://openalex.org/W4410553523",
+            "t": "https://openalex.org/W4407165094",
+            "s_ref": 1,
+            "t_ref": 2,
+            "type": "difference",
+            "reason": "两篇摘要使用不同方法与机制层级；这是离线证据约束下的差异判断。",
+            "evidence_ref": 1,
+            "quote": "Dysregulated metabolism of immune cells in the tumor microenvironment leads to immune evasion and tumor progression. As a major cell component in the tumor, the metabolic reprogramming of tumor-associated macrophages (TAMs) creates an immunosuppressive microenvironment in hepatocellular carcinoma (HCC). Our study found that sphingolipid (particularly, sphingosine-1-phosphate or S1P) levels are a clinical indicator for prognosis and immunotherapy response in patients with HCC. S1P primarily derived from TAMs, where NIMA-related kinase 2 (NEK2) plays a key role in controlling the activity of serine palmitoyl-CoA transferase, a rate-limiting enzyme in S1P biosynthesis. The S1P produced by NEK2 hi TAMs promotes hepatic tumor progression and confers immunotherapy resistance. Targeting S1P synthesis with a NEK2 inhibitor or S1P antagonist disrupted the immunosuppressive function of macrophages, shifted regulatory T cells (T regs ) to T H 17 cells, and increased the number and activity of tumor-infiltrating T effectors, thereby enhancing antitumor efficacy in synergy with immune checkpoint blockade therapy.",
+            "basis_ref": 2,
+            "basis_quote": "Durable responses to immune checkpoint blockade (ICB) in hepatocellular carcinoma (HCC) are limited to a minority of patients, yet reliable biomarkers are still lacking. Inflammatory cytokines such as interleukin-8 (IL-8) are associated with HCC progression, and IL-8 is known as the chemoattractant for immunosuppressive myeloid cells. Therefore, we aim to elucidate the ICB resistance mechanisms mediated by the activation of the IL-8/CXCR2 pathway. Single-cell RNA sequencing (scRNA-seq) was performed in advanced HCC patients with baseline and on-treatment biopsy after pembrolizumab in a phase 2 clinical trial cohort. Our data revealed that IL-8 and its receptor, CXCR2, mainly derived from immunosuppressive myeloid-derived suppressor cells (MDSCs). In particular, the high circulating IL-8 level was strongly associated with poor ICB response. This myeloid IL-8/CXCR2 pathway was further elucidated in our ICB-resistant orthotopic mouse model using AZD5069, a clinically available CXCR2 antagonist. Suppression of the IL-8/CXCR2 pathway significantly abrogated MDSC trafficking and immunosuppressive activity, which sensitized the anti-PD-L1 blockade to reduce tumor growth and prolong survival. The association between myeloid IL-8 and ICB therapeutic outcomes also extended to multiple cancer types. Collectively, our study not only suggests a potential non-invasive biomarker for patient stratification and monitoring of ICB response but it also provides a proof of concept for combinational immunotherapy to benefit patients who are non-responsive to ICB monotherapy.",
+            "confidence": "high",
+            "evidence": [
+              {
+                "role": "evidence",
+                "ref": 1,
+                "ref_no": 1,
+                "quote": "Dysregulated metabolism of immune cells in the tumor microenvironment leads to immune evasion and tumor progression. As a major cell component in the tumor, the metabolic reprogramming of tumor-associated macrophages (TAMs) creates an immunosuppressive microenvironment in hepatocellular carcinoma (HCC). Our study found that sphingolipid (particularly, sphingosine-1-phosphate or S1P) levels are a clinical indicator for prognosis and immunotherapy response in patients with HCC. S1P primarily derived from TAMs, where NIMA-related kinase 2 (NEK2) plays a key role in controlling the activity of serine palmitoyl-CoA transferase, a rate-limiting enzyme in S1P biosynthesis. The S1P produced by NEK2 hi TAMs promotes hepatic tumor progression and confers immunotherapy resistance. Targeting S1P synthesis with a NEK2 inhibitor or S1P antagonist disrupted the immunosuppressive function of macrophages, shifted regulatory T cells (T regs ) to T H 17 cells, and increased the number and activity of tumor-infiltrating T effectors, thereby enhancing antitumor efficacy in synergy with immune checkpoint blockade therapy."
+              },
+              {
+                "role": "basis",
+                "ref": 2,
+                "ref_no": 2,
+                "quote": "Durable responses to immune checkpoint blockade (ICB) in hepatocellular carcinoma (HCC) are limited to a minority of patients, yet reliable biomarkers are still lacking. Inflammatory cytokines such as interleukin-8 (IL-8) are associated with HCC progression, and IL-8 is known as the chemoattractant for immunosuppressive myeloid cells. Therefore, we aim to elucidate the ICB resistance mechanisms mediated by the activation of the IL-8/CXCR2 pathway. Single-cell RNA sequencing (scRNA-seq) was performed in advanced HCC patients with baseline and on-treatment biopsy after pembrolizumab in a phase 2 clinical trial cohort. Our data revealed that IL-8 and its receptor, CXCR2, mainly derived from immunosuppressive myeloid-derived suppressor cells (MDSCs). In particular, the high circulating IL-8 level was strongly associated with poor ICB response. This myeloid IL-8/CXCR2 pathway was further elucidated in our ICB-resistant orthotopic mouse model using AZD5069, a clinically available CXCR2 antagonist. Suppression of the IL-8/CXCR2 pathway significantly abrogated MDSC trafficking and immunosuppressive activity, which sensitized the anti-PD-L1 blockade to reduce tumor growth and prolong survival. The association between myeloid IL-8 and ICB therapeutic outcomes also extended to multiple cancer types. Collectively, our study not only suggests a potential non-invasive biomarker for patient stratification and monitoring of ICB response but it also provides a proof of concept for combinational immunotherapy to benefit patients who are non-responsive to ICB monotherapy."
+              }
+            ]
+          }
+        ],
+        "status": "ready",
+        "message": ""
+      },
+      "from_year": 2016
+    }
+  },
+  "artifact_count": 4
+}

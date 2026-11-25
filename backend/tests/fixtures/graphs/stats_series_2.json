@@ -1,0 +1,101 @@
+{
+  "queries": [
+    "hepatocellular carcinoma immunotherapy resistance"
+  ],
+  "from_year": null,
+  "group_by": "publication_year",
+  "topic_series": "https://openalex.org/T10073",
+  "total_hits": 955,
+  "groups": [
+    {
+      "key": "1996",
+      "name": "1996",
+      "count": 1
+    },
+    {
+      "key": "1999",
+      "name": "1999",
+      "count": 1
+    },
+    {
+      "key": "2008",
+      "name": "2008",
+      "count": 4
+    },
+    {
+      "key": "2010",
+      "name": "2010",
+      "count": 1
+    },
+    {
+      "key": "2011",
+      "name": "2011",
+      "count": 1
+    },
+    {
+      "key": "2013",
+      "name": "2013",
+      "count": 1
+    },
+    {
+      "key": "2015",
+      "name": "2015",
+      "count": 3
+    },
+    {
+      "key": "2016",
+      "name": "2016",
+      "count": 6
+    },
+    {
+      "key": "2017",
+      "name": "2017",
+      "count": 8
+    },
+    {
+      "key": "2018",
+      "name": "2018",
+      "count": 8
+    },
+    {
+      "key": "2019",
+      "name": "2019",
+      "count": 14
+    },
+    {
+      "key": "2020",
+      "name": "2020",
+      "count": 28
+    },
+    {
+      "key": "2021",
+      "name": "2021",
+      "count": 49
+    },
+    {
+      "key": "2022",
+      "name": "2022",
+      "count": 86
+    },
+    {
+      "key": "2023",
+      "name": "2023",
+      "count": 119
+    },
+    {
+      "key": "2024",
+      "name": "2024",
+      "count": 149
+    },
+    {
+      "key": "2025",
+      "name": "2025",
+      "count": 213
+    },
+    {
+      "key": "2026",
+      "name": "2026",
+      "count": 261
+    }
+  ]
+}

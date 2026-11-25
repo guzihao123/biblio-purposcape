@@ -1,0 +1,26 @@
+{
+  "downloads/527986ab-dbb6-4085-a949-ae2bd0667a9e/report.docx": {
+    "sha256": "f570f0fa67ecf73d5b840debc4af0a78d595ecf537476734776ed1c74495b5f4",
+    "bytes": 40872
+  },
+  "downloads/6cb1153c-8570-448d-98c4-3a3e871f3e7b/conformance.md": {
+    "sha256": "f63c287a5f50690859241e8f6613f3d6efa075bc278dfb3505af21ba18127a3e",
+    "bytes": 391
+  },
+  "downloads/6cb1153c-8570-448d-98c4-3a3e871f3e7b/report.docx": {
+    "sha256": "8ad5d9907b7122c265cd2ed758a3221a80721ab84c2895ba2f8866b7b63d4202",
+    "bytes": 41441
+  },
+  "downloads/6cb1153c-8570-448d-98c4-3a3e871f3e7b/verify_report.txt": {
+    "sha256": "153c0dd3ad525f1b2ec340a052260175ba473f778c816d3e928ffd62de4795e5",
+    "bytes": 2078
+  },
+  "downloads/c9d3f9ad-6a73-4f95-a04c-74f9ba5faecc/肝细胞癌免疫治疗耐药机制组会汇报.pptx": {
+    "sha256": "13312b96586eb03a29371ce6e648adeef5adf388cc870deb2634c0d8f7185b9e",
+    "bytes": 82506
+  },
+  "downloads/cc0241cc-8d31-4f55-9f19-c7214eb117a4/dialogue.json": {
+    "sha256": "a6497871910923fd94c00f3aa8ba207c14ac77fd160f905ae5a2de696f41a19d",
+    "bytes": 40796
+  }
+}

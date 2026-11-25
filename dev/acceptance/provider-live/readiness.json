@@ -1,0 +1,13 @@
+{
+  "connection_ok": true,
+  "read_only_check": true,
+  "transaction_isolation": "read committed",
+  "current_role_is_superuser": false,
+  "current_role_bypassrls": true,
+  "existing_public_table_count": 0,
+  "existing_sites_table_count": 0,
+  "server_version": "17.12",
+  "pooler_suspected": true,
+  "schema_changes_applied": false,
+  "independence_note": "Read-only check on the user-designated independent Supabase test project; no schema, role, policy, or data writes."
+}

@@ -1,0 +1,29 @@
+{
+  "service": "OpenAlex",
+  "result": "failed",
+  "logical_requests": [
+    {
+      "query_kind": "ordinary",
+      "requested_records": 4
+    },
+    {
+      "query_kind": "retracted",
+      "requested_records": 1
+    }
+  ],
+  "http_attempts": [
+    {
+      "endpoint": "api.openalex.org/works",
+      "status": 200,
+      "error_type": null
+    },
+    {
+      "endpoint": "api.openalex.org/works",
+      "status": 200,
+      "error_type": null
+    }
+  ],
+  "paper_count": 0,
+  "papers": [],
+  "error_type": "AssertionError"
+}
