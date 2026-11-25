@@ -48,6 +48,39 @@ class DeliveryTask:
     search_log: str = ''
 
 
+def _pending_confirmations(report):
+    notes = []
+    lines = report.splitlines()
+    for index, line in enumerate(lines):
+        if line.strip().startswith('④') and '待人工确认' in line:
+            for follow in lines[index + 1:]:
+                stripped = follow.strip()
+                if not stripped:
+                    if notes:
+                        break
+                    continue
+                if stripped.startswith('===') or stripped.startswith('总结论'):
+                    break
+                notes.append(stripped)
+            break
+    return notes
+
+
+def _reference_issues(report):
+    issues = []
+    current = None
+    for line in report.splitlines():
+        match = re.match(r'^##\s*\[([^\]]+)\]', line)
+        if match:
+            current = match.group(1)
+            continue
+        if any(marker in line for marker in ('维持需人工核对', '均未收录', '不一致', '需人工判定', '网络失败')):
+            text = line.strip().lstrip('- ').strip()
+            prefix = f'[ref {current}] ' if current else ''
+            issues.append(prefix + text)
+    return issues
+
+
 @dataclass
 class DeliveryResult:
     artifacts: dict
@@ -91,7 +124,15 @@ def _write_docx(task, body, path):
 
     document = Document()
     document.add_heading(task.direction, 0)
-    for raw in body.splitlines():
+    body_lines = body.splitlines()
+    for index, raw in enumerate(body_lines):
+        first = raw.strip()
+        if not first:
+            continue
+        if first.startswith('#') and task.direction in first:
+            body_lines = body_lines[index + 1:]
+        break
+    for raw in body_lines:
         line = raw.strip()
         if not line or line.startswith('|---'):
             continue
@@ -641,7 +682,7 @@ class DeliveryService:
         failures = [line.strip() for line in generated.splitlines() if line.startswith('[FAIL]')]
         if completed.returncode not in {0, 1} and not failures:
             failures = [f'verifier exited with {completed.returncode}']
-        warnings = [line.strip() for line in generated.splitlines() if line.startswith('  [') and '待人工' in generated]
+        warnings = _pending_confirmations(generated)
         return {
             'clean': completed.returncode == 0,
             'failures': failures,
@@ -667,9 +708,7 @@ class DeliveryService:
         issues = []
         if completed.returncode != 0:
             issues.append(f'著录核验执行失败（退出码 {completed.returncode}）')
-        for line in report.splitlines():
-            if any(marker in line for marker in ('维持需人工核对', '均未收录', '不一致', '需人工判定', '网络失败')):
-                issues.append(line.strip())
+        issues.extend(_reference_issues(report))
         return {'clean': not issues, 'issues': issues}
 
     def _renumber_citations(self, task, body_path):
@@ -825,6 +864,8 @@ class DeliveryService:
             )
         conformance.extend(['', '## 证据复核', ''])
         conformance.append('通过：预置复核未报告失败。' if verification.get('clean') else '未通过：' + '；'.join(verification.get('failures') or []))
+        if warnings:
+            conformance.append(f'另有 {len(warnings)} 项待人工确认（见下），不影响机器复核通过。')
         conformance.extend(['', '## 著录核验', ''])
         if reference_result.get('clean'):
             conformance.append('通过：著录核验未报告未解决项。')

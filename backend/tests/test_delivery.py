@@ -99,6 +99,61 @@ def service(tmp_path, verifier=None):
     )
 
 
+def test_pending_number_confirmation_is_parsed_from_the_verifier_report():
+    from app.delivery import _pending_confirmations, _reference_issues
+
+    report = (
+        '交付前脚本复核报告\n'
+        '[PASS] ①证据等级\n'
+        '④ 待人工确认（未绑定台账原句，须交付说明披露并人工判定）:\n'
+        '  20（句引[9]）未绑定台账原句——待人工确认是否结构性数字\n'
+        '============================================================\n'
+        '总结论: 全部 9 项无失败\n'
+    )
+    notes = _pending_confirmations(report)
+    assert notes == ['20（句引[9]）未绑定台账原句——待人工确认是否结构性数字']
+
+    reference_report = (
+        '## [13] Sample title\n'
+        '- DOI：10.1000/x｜核验通道：crossref\n'
+        '- 作者名不一致：Crossref「Pachan, Molly」vs 本地「Molly K. Pachan」\n'
+        '- 结论：**需人工核对**（见上）\n'
+    )
+    issues = _reference_issues(reference_report)
+    assert issues[0].startswith('[ref 13] 作者名不一致')
+
+
+def test_conformance_discloses_pending_number_confirmations(tmp_path):
+    def verifier(task, body_path, report_name):
+        (body_path.parent / report_name).write_text('复核通过\n', encoding='utf-8')
+        return {
+            'clean': True,
+            'failures': [],
+            'warnings': ['20（句引[9]）未绑定台账原句——待人工确认是否结构性数字'],
+            'report': '复核通过\n',
+        }
+
+    result = DeliveryService(
+        workspace_root=tmp_path,
+        verification_runner=verifier,
+        reference_checker=passing_reference_checker,
+    ).deliver(make_task())
+    conformance = result['conformance.md'].read_text(encoding='utf-8')
+
+    assert '另有 1 项待人工确认' in conformance
+    assert '20（句引[9]）' in conformance
+
+
+def test_docx_skips_duplicate_title_from_the_body(tmp_path):
+    body = '# 城市内涝与地下车库韧性｜模式 A 调研报告\n\n该领域分为损失评估与暴露调查两块 [1]。'
+    result = service(tmp_path).deliver(make_task(body=body))
+    from docx import Document
+
+    texts = [paragraph.text for paragraph in Document(result['综述初稿.docx']).paragraphs]
+    assert texts[0] == '城市内涝与地下车库韧性'
+    assert not any(text.startswith('城市内涝与地下车库韧性｜模式') for text in texts)
+
+
 def test_docx_and_pptx_are_real_openable_files(tmp_path):
     task = make_task()
     result = service(tmp_path).deliver(task)
