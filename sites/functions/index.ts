@@ -42,15 +42,16 @@ function apiOrigin() {
 }
 
 function routeSuffix(url: URL): string {
-  // The deployed gateway rewrites /functions/v1/app/* to /app/*; direct and
-  // test requests may still carry the full prefix.
-  for (const marker of ['/functions/v1/app', '/app']) {
-    const index = url.pathname.indexOf(marker);
-    if (index >= 0) {
-      const suffix = url.pathname.slice(index + marker.length) || '/';
-      if (suffix !== '/') return suffix;
-    }
+  // The gateway may prefix the function path once or twice with /app and some
+  // hosts keep /functions/v1/app; strip every known prefix before routing.
+  let path = url.pathname;
+  const marker = '/functions/v1/app';
+  const markerIndex = path.lastIndexOf(marker);
+  if (markerIndex >= 0) path = path.slice(markerIndex + marker.length) || '/';
+  while (path === '/app' || path.startsWith('/app/')) {
+    path = path.slice(4) || '/';
   }
+  if (path !== '/') return path;
   const action = url.searchParams.get('action') || 'health';
   if (action === 'session') return '/session';
   if (action === 'task') return `/tasks/${url.searchParams.get('id') || ''}`;
