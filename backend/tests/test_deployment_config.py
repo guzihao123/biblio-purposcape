@@ -187,6 +187,14 @@ def test_sites_storage_client_rejects_lookalike_local_http_origins():
         SitesStorageClient(origin='https://user:pass@site.example', shared_secret='x')
 
 
+def test_supabase_transaction_pooler_moves_to_session_mode():
+    from app.db import normalize_database_url
+
+    url = normalize_database_url('postgresql://user:pass@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres')
+    assert url.endswith(':5432/postgres')
+    assert normalize_database_url('postgresql://user:pass@db.example.com:6543/postgres').endswith(':6543/postgres')
+
+
 def test_postgres_engine_probes_and_recycles_pooled_connections():
     from app.db import engine_kwargs
 

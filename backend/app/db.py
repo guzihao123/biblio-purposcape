@@ -16,7 +16,16 @@ def normalize_database_url(url):
     if url.startswith('postgres://'):
         url = 'postgresql://' + url[len('postgres://'):]
     if url.startswith('postgresql://'):
-        return 'postgresql+psycopg://' + url[len('postgresql://'):]
+        url = 'postgresql+psycopg://' + url[len('postgresql://'):]
+    from urllib.parse import urlsplit, urlunsplit
+
+    parts = urlsplit(url)
+    host = (parts.hostname or '').lower()
+    if host.endswith('.pooler.supabase.com') and parts.port == 6543:
+        # Long-lived workers are more stable on Supavisor session mode (5432)
+        # than transaction mode (6543), which drops idle TLS connections.
+        netloc = parts.netloc.rsplit(':', 1)[0] + ':5432'
+        url = urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
     return url
 
 
