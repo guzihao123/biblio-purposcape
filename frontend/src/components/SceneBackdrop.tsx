@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 
+import cloudTexture from '../assets/cloud-texture.webp'
+import planetTexture from '../assets/planet-texture.webp'
 import { baselineLevel, shouldDowngrade, shouldRecover } from '../quality'
 import type { QualityLevel, QualityMode } from '../quality'
 
@@ -415,35 +417,14 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
   return (
     <div ref={sceneRef} className="scene-backdrop" aria-hidden="true">
       <div className="scene-backdrop__nebula" />
-      <svg className="scene-backdrop__clouds" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <filter id="dark-matter-cloud-noise" x="-20%" y="-20%" width="140%" height="140%">
-            <feTurbulence type="fractalNoise" baseFrequency=".004 .009" numOctaves="5" seed="27" />
-            <feColorMatrix values="0 0 0 0 .18  0 0 0 0 .36  0 0 0 0 .58  0 0 0 .7 -.18" />
-            <feGaussianBlur stdDeviation="9" />
-          </filter>
-          <radialGradient id="dark-matter-cloud-fade">
-            <stop offset="0" stopColor="white" stopOpacity=".85" />
-            <stop offset="1" stopColor="white" stopOpacity="0" />
-          </radialGradient>
-          <mask id="dark-matter-cloud-mask">
-            <ellipse cx="850" cy="460" rx="760" ry="480" fill="url(#dark-matter-cloud-fade)" />
-          </mask>
-        </defs>
-        <rect width="1600" height="1000" filter="url(#dark-matter-cloud-noise)" mask="url(#dark-matter-cloud-mask)" />
-      </svg>
+      <img className="scene-backdrop__clouds" src={cloudTexture} alt="" />
       <canvas ref={backCanvasRef} className="scene-backdrop__canvas scene-backdrop__canvas--back" />
       <div className="scene-backdrop__orbit" />
       <div ref={planetRef} className="scene-backdrop__planet">
-        <svg className="scene-backdrop__planet-texture" viewBox="0 0 850 850">
-          <defs>
-            <filter id="dark-matter-planet-noise">
-              <feTurbulence type="fractalNoise" baseFrequency=".018" numOctaves="5" seed="9" />
-              <feColorMatrix values="0 0 0 0 .44  0 0 0 0 .58  0 0 0 0 .7  0 0 0 .72 -.2" />
-            </filter>
-          </defs>
-          <rect width="850" height="850" filter="url(#dark-matter-planet-noise)" />
-        </svg>
+        <div
+          className="scene-backdrop__planet-texture"
+          style={{ backgroundImage: `url(${planetTexture})` }}
+        />
       </div>
       <canvas ref={frontCanvasRef} className="scene-backdrop__canvas scene-backdrop__canvas--front" />
       <div className="scene-backdrop__vignette" />
