@@ -4,7 +4,7 @@
   "results": {
     "backend_pytest": {
       "command": ".venv/bin/python -m pytest -q -p no:cacheprovider backend/tests",
-      "passed": 435,
+      "passed": 448,
       "failed": 0,
       "skipped": 4
     },
@@ -29,8 +29,11 @@
       "note": "Static declarations only; cloud verification remains unverified"
     },
     "docker_arm64": {
-      "image": "purpose-landscape-web-web:acceptance-20261125",
+      "image": "biblio-purposcape:deploy-check",
       "build": "passed",
+      "psycopg_import": "3.3.9",
+      "sqlalchemy_import": "2.1.9",
+      "app_routes": 21,
       "frontend_api_base": "/api",
       "sites_function_base_absent": true,
       "production_fail_fast": "passed",
@@ -41,6 +44,13 @@
         "unknown_api": 404,
         "no_redis_startup": "passed"
       }
+    },
+    "qwen_live_acceptance": {
+      "report": "dev/acceptance/model-failure-contract/live-qwen-result.json",
+      "normal_calls": "passed",
+      "wrong_key": "401 AuthenticationError without disclosure",
+      "wrong_url": "APIConnectionError without disclosure",
+      "note": "Model and endpoint are Tokenplan qwen3.7-plus; four expected behaviors observed"
     },
     "supabase_isolated_rls": {
       "policy_upgrade": "13 policies active; no data deleted",
