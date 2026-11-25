@@ -29,7 +29,8 @@ class ChatModel:
             raise RuntimeError('QWEN_BASE_URL is required for Qwen analysis')
         if OpenAI is None:
             raise RuntimeError('The openai package is required for live Qwen analysis')
-        self._client = OpenAI(api_key=api_key, base_url=base_url)
+        timeout = 300 if self.thinking else 90
+        self._client = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout, max_retries=0)
 
     def complete_json(self, system_prompt, payload):
         """Request one JSON object/array and decode it without accepting prose."""

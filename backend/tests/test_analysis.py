@@ -544,6 +544,8 @@ def test_chat_model_uses_qwen_environment_and_openai_json_mode(monkeypatch):
     assert constructor == {
         'api_key': 'test-only-key',
         'base_url': 'https://qwen.example.test/v1',
+        'timeout': 90,
+        'max_retries': 0,
     }
     request = client.chat.completions.calls[0]
     assert request['model'] == 'qwen-plus'
@@ -562,6 +564,24 @@ def test_chat_model_disables_thinking_for_structured_json_calls():
 
     request = client.chat.completions.calls[0]
     assert request.get('extra_body') == {'enable_thinking': False}
+
+
+def test_chat_model_uses_a_longer_timeout_for_thinking_writes(monkeypatch):
+    client = FakeOpenAIClient()
+    constructor = {}
+
+    def fake_openai(**kwargs):
+        constructor.update(kwargs)
+        return client
+
+    monkeypatch.setattr(qwen_module, 'OpenAI', fake_openai)
+    monkeypatch.setenv('QWEN_API_KEY', 'test-only-key')
+    monkeypatch.setenv('QWEN_BASE_URL', 'https://qwen.example.test/v1')
+
+    ChatModel(thinking=True)
+
+    assert constructor['timeout'] == 300
+    assert constructor['max_retries'] == 0
 
 
 def test_chat_model_requires_environment_credentials(monkeypatch):
