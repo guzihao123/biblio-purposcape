@@ -4,6 +4,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
 from datetime import datetime, timezone
@@ -429,29 +430,42 @@ class Orchestrator:
         import urllib.request
         from urllib.parse import quote
 
-        count = 0
-        for path in task_dir.iterdir():
+        def upload(path):
             if not path.is_file() or path.stat().st_size > 50_000_000:
-                continue
+                return 0
             url = '{}/api/internal/artifacts/{}/{}'.format(
                 origin,
                 quote(task_dir.name, safe=''),
                 quote(path.name, safe=''),
             )
-            request = urllib.request.Request(
-                url,
-                data=path.read_bytes(),
-                method='PUT',
-                headers={
-                    'X-Worker-Token': secret,
-                    'Content-Type': self._content_type(path),
-                },
-            )
-            with urllib.request.urlopen(request, timeout=120) as response:
-                if response.status not in (200, 201):
-                    raise RuntimeError('artifact upload failed with status {}'.format(response.status))
-            count += 1
-        return count
+            payload = path.read_bytes()
+            for attempt in range(3):
+                request = urllib.request.Request(
+                    url,
+                    data=payload,
+                    method='PUT',
+                    headers={
+                        'X-Worker-Token': secret,
+                        'Content-Type': self._content_type(path),
+                    },
+                )
+                try:
+                    with urllib.request.urlopen(request, timeout=30) as response:
+                        if response.status in (200, 201):
+                            return 1
+                        raise RuntimeError('artifact upload failed with status {}'.format(response.status))
+                except Exception:
+                    if attempt == 2:
+                        raise
+                    time.sleep(attempt + 1)
+            return 0
+
+        paths = sorted(path for path in task_dir.iterdir() if path.is_file())
+        if not paths:
+            return 0
+        workers = min(4, len(paths))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            return sum(pool.map(upload, paths))
 
     def _content_type(self, path):
         return {
@@ -587,7 +601,11 @@ class Orchestrator:
             user_results=c_material,
             c_info_route=c_info_route,
             target_journal=str(mode_answers.get('target_journal') or '').strip(),
-            team_context=answers.get('mode', {}).get('team_context', ''),
+            team_context=(
+                '未提供团队背景'
+                if mode == 'D' and not str(answers.get('mode', {}).get('team_context') or '').strip()
+                else str(answers.get('mode', {}).get('team_context') or '').strip()
+            ),
             materials=list(materials or []),
             custom_purpose=answers.get('mode', {}).get('custom', ''),
         )

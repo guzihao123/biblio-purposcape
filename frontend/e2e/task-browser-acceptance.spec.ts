@@ -85,7 +85,7 @@ test('02 匿名 A 主流程、检索状态、继续否决、报告下载与历�
 
   await answerDirection(page)
   await expect(page.getByRole('button', { name: 'B 撰写标书/立项依据', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'C 撰写论文引言与讨论', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'C 撰写论文引言与文献综述', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'D 组会或团队学习', exact: true })).toBeVisible()
   await screenshot(page, '02-purpose-card')
   await answerModeA(page)
@@ -279,7 +279,7 @@ test('05 C 的用途、C模式任务、本文信息三选一固定卡与 C1+C2 �
   await startResearch(page)
   await page.getByRole('textbox', { name: '研究方向或核心问题', exact: true }).fill('肝癌免疫治疗耐药机制的最新进展')
   await page.getByRole('button', { name: '确认选择', exact: true }).click()
-  await page.getByRole('button', { name: 'C 撰写论文引言与讨论', exact: true }).click()
+  await page.getByRole('button', { name: 'C 撰写论文引言与文献综述', exact: true }).click()
   await page.getByRole('button', { name: '确认选择', exact: true }).click()
   await expect(page.getByText('C模式任务', { exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: '本次最需要完成哪一项？', exact: true })).toBeVisible()

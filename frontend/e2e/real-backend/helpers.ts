@@ -69,7 +69,7 @@ export async function fillDirection(page: Page) {
 export async function chooseMode(page: Page, mode: 'A' | 'B' | 'C' | 'D', testInfo?: TestInfo) {
   const names = {
     A: 'A 选题立项前摸底', B: 'B 撰写标书/立项依据',
-    C: 'C 撰写论文引言与讨论', D: 'D 组会或团队学习',
+    C: 'C 撰写论文引言与文献综述', D: 'D 组会或团队学习',
   }
   await page.getByRole('button', { name: names[mode], exact: true }).click()
   if (mode === 'B') {

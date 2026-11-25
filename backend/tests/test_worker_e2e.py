@@ -468,7 +468,7 @@ def _acceptance_linkage_review(harness, record, scenario):
     [('c-pair-word', 'A'), ('c-pair-ppt', 'C')],
 )
 def test_c_pair_real_rq_worker_word_ppt_and_evidence(harness, scenario, form):
-    record = _complete_flow(harness, scenario, {'mode': 'C', 'c_route': 'C1+C2'}, form)
+    record = _complete_flow(harness, scenario, {'mode': 'C', 'c_route': 'C1+C2', 'c_info_route': 'skip'}, form)
     _assert_real_dashboard(harness, record)
     assert record['search_requests'] == [{
         'terms': ['urban flooding', 'underground garage'],

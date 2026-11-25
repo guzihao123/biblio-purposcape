@@ -12,7 +12,7 @@ test('page entry, buttons and selected cards expose full-power motion', async ({
   expect(transform).not.toBe('none')
 
   await startButton.click()
-  await page.getByRole('button', { name: '肝癌免疫治疗耐药机制的最新进展' }).click()
+  await page.getByRole('textbox', { name: '研究方向或核心问题' }).fill('肝癌免疫治疗耐药机制的最新进展')
   await page.getByRole('button', { name: '确认选择' }).click()
   const optionA = page.getByRole('button', { name: 'A 选题立项前摸底' })
   await optionA.click()
@@ -29,7 +29,7 @@ test('reduced-motion removes decorative animation without blocking the primary f
   const startButton = page.getByRole('button', { name: '开始研究' })
   await expect(startButton).toHaveCSS('animation-name', 'none')
   await startButton.click()
-  await page.getByRole('button', { name: '肝癌免疫治疗耐药机制的最新进展' }).click()
+  await page.getByRole('textbox', { name: '研究方向或核心问题' }).fill('肝癌免疫治疗耐药机制的最新进展')
   await page.getByRole('button', { name: '确认选择' }).click()
   const optionA = page.getByRole('button', { name: 'A 选题立项前摸底' })
   await optionA.click()

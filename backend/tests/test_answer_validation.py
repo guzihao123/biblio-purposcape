@@ -67,3 +67,32 @@ def test_mode_custom_purpose_has_a_length_limit():
         validate_answer_value('mode', mode_answer(custom='用' * 2_001))
     assert too_long.value.status_code == 422
     assert 'too long' in too_long.value.detail['message']
+
+
+def test_mode_b_requires_theme_and_project_name_goal():
+    with pytest.raises(HTTPException) as missing:
+        validate_answer_value('mode', {'mode': 'B'})
+    assert 'project theme' in missing.value.detail['message']
+
+    with pytest.raises(HTTPException):
+        validate_answer_value('mode', {'mode': 'B', 'theme': {'name': '主题'}})
+
+    with pytest.raises(HTTPException):
+        validate_answer_value('mode', {
+            'mode': 'B', 'theme': {'name': '主题'}, 'project': {'name': ' ', 'goal': '目标'},
+        })
+
+    validate_answer_value('mode', {
+        'mode': 'B', 'theme': {'name': '主题'}, 'project': {'name': '项目', 'goal': '目标'},
+    })
+
+
+def test_mode_c_requires_route_and_information_choice():
+    with pytest.raises(HTTPException) as missing:
+        validate_answer_value('mode', {'mode': 'C'})
+    assert 'C-mode task' in missing.value.detail['message']
+
+    with pytest.raises(HTTPException):
+        validate_answer_value('mode', {'mode': 'C', 'c_route': 'C2'})
+
+    validate_answer_value('mode', {'mode': 'C', 'c_route': 'C2', 'c_info_route': 'skip'})

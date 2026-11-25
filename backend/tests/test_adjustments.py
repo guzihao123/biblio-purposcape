@@ -265,7 +265,7 @@ def test_mode_revision_reloads_template_and_uses_existing_c_results(db, searchab
     revised = answer_card(
         searchable_task.id,
         CardId.MODE,
-        {'mode': 'C'},
+        {'mode': 'C', 'c_route': 'C1+C2', 'c_info_route': 'skip'},
         owner,
     )
 

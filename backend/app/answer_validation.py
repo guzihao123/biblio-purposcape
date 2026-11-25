@@ -142,6 +142,21 @@ def validate_answer_value(card_id, value):
             ):
                 if field in project:
                     _string(project[field], f'project.{field}', maximum)
+        if value['mode'] == 'B':
+            if 'theme' not in value:
+                _error(422, 'invalid_answer', 'mode B requires a selected project theme')
+            project = value.get('project')
+            if not isinstance(project, dict):
+                _error(422, 'invalid_answer', 'mode B requires project name and goal')
+            if not str(project.get('name') or '').strip():
+                _error(422, 'invalid_answer', 'mode B requires a nonblank project name')
+            if not str(project.get('goal') or '').strip():
+                _error(422, 'invalid_answer', 'mode B requires a nonblank project goal')
+        if value['mode'] == 'C':
+            if 'c_route' not in value:
+                _error(422, 'invalid_answer', 'mode C requires the C-mode task selection')
+            if 'c_info_route' not in value:
+                _error(422, 'invalid_answer', 'mode C requires the paper-information choice')
         return
 
     if card_id == 'terms':

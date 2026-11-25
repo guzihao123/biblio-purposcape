@@ -119,11 +119,24 @@ export function listTasks() {
   return request<{ tasks: TaskView[] }>(endpoint('/tasks'), {}, 2)
 }
 
-export function answerTask(taskId: string, cardId: string, value: TaskAnswer) {
-  return request<TaskView>(endpoint(`/tasks/${taskId}/answers/${cardId}`), {
-    method: 'POST',
-    body: JSON.stringify({ value }),
-  }, 2)
+export async function answerTask(taskId: string, cardId: string, value: TaskAnswer) {
+  try {
+    return await request<TaskView>(endpoint(`/tasks/${taskId}/answers/${cardId}`), {
+      method: 'POST',
+      body: JSON.stringify({ value }),
+    }, 2)
+  } catch (error) {
+    const retryable = !(error instanceof ApiError) || error.status >= 500
+    if (retryable) {
+      try {
+        const current = await getTask(taskId)
+        if (current.next_card !== cardId) return current
+      } catch {
+        // Keep the original answer error when the state read also fails.
+      }
+    }
+    throw error
+  }
 }
 
 export interface ProjectThemeCandidates {

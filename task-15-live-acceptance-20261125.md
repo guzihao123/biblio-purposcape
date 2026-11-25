@@ -67,3 +67,56 @@
 - 集成：`integration2` = 最新 main + B 卡简化 + 检索源路由 + 任务过期，后端 496 passed、站点函数 57 passed。
 - 最终验收任务 `ef805526` 正在生成 Word；另有旧任务 `ab4ddaaa` 仍占用旧 generation，不阻塞。
 - 待办：合并 integration2 → 推送部署 → B 模式线上验收 → 任务过期清理 → Skill v2（B 模板）；四个并行工地（C 收尾 / B [M] / D 原图 / 进度 UX）已给提示词。
+
+---
+
+## 2026-11-25 晚间进展
+
+> 本节只追加晚间收尾证据，不改写上文历史结论。会话起点为 `integration3@26bc850`；执行期间观察到其他主线并发前进到 `d6f6c0c`，其中包含 `e-b-theme` 合并及分析/写作耗时修复。本会话没有执行这些合并，也没有把它们冒充本会话产出。
+
+### 1. UI D visual polish 与公开入口
+
+| 项 | 状态 | 证据 |
+|---|---|---|
+| 本地 D visual polish 提交 | **已验证（提交层）** | `git show --no-patch --format='%H %s' d29203e d1fdf73 03e9646`：本地 `d29203eb201b28629e89c1282545c32160fcffec`（merge）、`d1fdf730bc7138c36ed46efe6622bef529ca6945`（部署补丁）；远端重复补丁为 `03e9646b9a81ab305db3f7044e51a5c50f591251` |
+| Render 首页 | **已验证（HTTP 层）** | `curl -L --max-time 90 ... https://biblio-purposcape.onrender.com/` → `200`，响应存 `/tmp/render-home-20261125.html` |
+| Render health | **已验证（HTTP/JSON 层）** | `curl ... https://biblio-purposcape.onrender.com/api/health` → `200`；`/tmp/render-health-20261125.json` 为 `{"status":"ok","database":"ok","worker":"ready"}` |
+| Qoder 首页 | **已验证（HTTP 层）** | `curl ... https://purpose-landscape-w28zuuplkjz.qoder.zone/` → `200`，HTML 存 `/tmp/qoder-home-20261125.html`；HTMLParser 提取到 `/assets/index-ByB3KEqp.js` |
+| Qoder 入口资源 `index-ByB3KEqp.js` | **未验证（资源不可取）** | 对首页提取出的精确地址 `https://purpose-landscape-w28zuuplkjz.qoder.zone/assets/index-ByB3KEqp.js` 执行 GET → `404`、`size_download=0`；空响应存 `/tmp/qoder-index-ByB3KEqp-20261125.js` |
+| UI D visual polish 线上视觉 | **历史资源 404，当前 Qoder 资源已复验 200** | 本地/远端部署补丁提交存在；归档时 Qoder 首页引用的 `index-ByB3KEqp.js` 返回 404，本会话未做浏览器视觉复验。2026-11-25 23:52 GMT+8 更正复验：Qoder 当前首页引用 `index-Bxn32REQ.js`，直接 GET 返回 200；Render 当前资源 `index-PUNMBFkc.js` 因 TLS 中断未取得现场成功响应，详见文末更正段 |
+
+### 2. 制品链路
+
+- **已验证（历史记录）**：上文 17:25 节已记录线上制品可下载；本会话不重新编造或复制计数。
+- **本会话未复验**：未重新列出线上制品、未重新下载、未重算签名校验和。后续复验应同时记录制品清单条目、每个下载响应的 HTTP 状态与 SHA-256，并将结果落到独立日志；不能用 17:25 的结论替代新一次复验。
+
+### 3. 测试与挂死修复
+
+| 范围 | 数字/结论 | 证据 |
+|---|---|---|
+| mainline 离线验收 | **448 passed / 4 skipped** | `dev/acceptance/mainline-20261125-result.json` |
+| integration3 合并 dfigure 前 | **599 passed / 5 skipped** | 任务说明提供的历史快照；本会话未找到对应独立日志，未重新跑旧基线全套件 |
+| Deno 历史快照 | **64 passed** | 任务说明提供的历史快照；当前分支因并发新增 B 主题候选路由测试，本轮实际为 65 passed |
+| Deno 本轮 | **65 passed / 0 failed** | `PATH="$HOME/.deno/bin:$PATH" deno test --allow-all --import-map=dev/import_map.json sites/functions/task_store.test.mjs sites/functions/routes.test.mjs sites/functions/forward.test.mjs sites/functions/artifact_contract.test.mjs`；日志 `/tmp/deno_full_20261125.log` |
+| Deno 类型检查 | **通过** | `deno check --import-map=dev/import_map.json sites/functions/index.ts sites/functions/task_store.ts`；日志 `/tmp/deno_check_20261125.log` |
+| dfigure 离线回归 | **4 passed in 0.81s** | `.venv/bin/python -m pytest backend/tests/test_ppt_figures.py -q -p no:cacheprovider`；日志 `/tmp/pytest_dfigure_20261125.log` |
+| 挂死复现 | **超时 exit=124** | 起点 `26bc850` 执行指定全量命令，日志 `/tmp/pytest_full.log`；最后完成到 `test_c2_real_offline_delivery_is_not_discussion`，下一项 D 离线交付未完成 |
+| 根因 | **D 离线回归漏传 figure loader，默认触发真实 OA 取图** | `dfigure` 后 `DeliveryService` 默认使用 `prepare_d_figures`；旧 `test_mode_delivery_regression.py` 未注入离线 loader。并发提交 `a101e5f` 已补 `offline_figure_loader` 及显式注入 |
+| 回归守卫 | **旧基线失败、当前通过** | 新守卫在 `26bc850` 临时归档上 `1 failed in 0.32s`（`/tmp/pytest_d_guard_red.log`）；当前分支 `1 passed in 0.50s`（`/tmp/pytest_d_guard_green.log`）；提交 `ec14abf` |
+| 最终全量 pytest | **622 passed / 5 skipped / 5 warnings in 21.44s，exit=0** | `timeout 420 .venv/bin/python -m pytest backend/tests -v -p no:cacheprovider`；日志 `/tmp/pytest_full_final_20261125.log` |
+
+> 最终 622 passed 是在并发合入 `e-b-theme` 和其他主线修复后的当前分支上取得，不能与 dfigure 合并前的 599 passed 直接当作同一基线比较。
+
+### 4. 会话安全边界
+
+- **本会话未推送、未部署、未改云配置。**
+- 未执行 B/C/D/E 线上任务验收；只对任务 2 明确要求的公开首页、health 和入口资源做只读 GET。
+- 未读取、打印或写入 token/cookie/密钥；未 force push，未使用 `--delete`，未删除用户数据。
+
+### 5. 历史/当前更正（2026-11-25 23:52 GMT+8）
+
+- 更正时间由 `date -Iseconds` 现场记录为 `2026-11-25T23:52:11+08:00`。
+- **历史**：归档时 Qoder 首页引用 `/assets/index-ByB3KEqp.js`，对该地址执行 GET 返回 `404`、`size_download=0`；原证据保留在上方表格及 `/tmp/qoder-index-ByB3KEqp-20261125.js`，不改写。
+- **当前 Qoder**：`curl -L --max-time 90 --retry 1 --retry-delay 5 -sS https://purpose-landscape-w28zuuplkjz.qoder.zone/` 返回 `200`，HTML 存 `/tmp/qoder-home-correction-20261125.html`；HTMLParser 提取到当前入口 `/assets/index-Bxn32REQ.js`。随后执行 `curl -L --max-time 90 --retry 1 --retry-delay 5 -sS https://purpose-landscape-w28zuuplkjz.qoder.zone/assets/index-Bxn32REQ.js`，返回 `http_code=200`、`size_download=260779`，资源存 `/tmp/qoder-index-Bxn32REQ-20261125.js`，SHA-256 为 `37f1d5fc16605fd06332a12b0413f44d625eab162c72e4595bedb40669f2cbea`。据此将 UI D visual polish 结论更正为：**历史资源 404，当前资源已复验 200**；按主线说明，UI 已随 `integration3` 发布。
+- **当前 Render**：主线说明当前入口资源为 `index-PUNMBFkc.js`。本次对 Render 首页重试两次、对 `https://biblio-purposcape.onrender.com/assets/index-PUNMBFkc.js` 直接 GET 一次，均在本机 TLS 握手阶段失败（`curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL`、`http_code=000`），因此 Render 当前资源本轮**未现场复验**，不以主线说明替代成功响应。
+- 本次更正只做公开资源只读复验与报告追加；未 push、未部署、未改产品代码，未修改 `push-state.json`，未读取临时 token。

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { answerTask, artifactUrl, getDashboard } from '../api'
+import { answerTask, artifactUrl, getDashboard, getProjectThemeCandidates } from '../api'
 import type { DashboardPayload, TaskView } from '../api'
 import { MotionTabs } from '../components/MotionTabs'
 import { TaskWizard } from '../components/TaskWizard'
@@ -39,6 +39,11 @@ export function DashboardPage({ task, onTask }: DashboardPageProps) {
     onTask(await answerTask(task.id, task.card.id, answer))
   }
 
+  const loadProjectThemes = useCallback(
+    async () => (await getProjectThemeCandidates(task.id)).options,
+    [task.id],
+  )
+
   return (
     <main className="full-power-site content-page">
       <section className="content-shell">
@@ -63,7 +68,7 @@ export function DashboardPage({ task, onTask }: DashboardPageProps) {
             />
           </section>
         )}
-        {task.card && <TaskWizard card={task.card} onSubmit={submit} />}
+        {task.card && <TaskWizard card={task.card} onSubmit={submit} loadProjectThemes={loadProjectThemes} />}
       </section>
     </main>
   )

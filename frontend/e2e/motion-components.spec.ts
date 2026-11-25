@@ -80,7 +80,7 @@ test('primary action remains reachable and keyboard operable', async ({ page }) 
   await page.keyboard.press('Space')
   await expect(page.getByRole('heading', { name: '研究方向或核心问题' })).toBeVisible()
 
-  const direction = page.getByRole('button', { name: '肝癌免疫治疗耐药机制的最新进展' })
+  const direction = page.getByRole('group', { name: '单选选项' }).getByRole('button').first()
   await direction.focus()
   await page.keyboard.press('Space')
   await expect(direction).toHaveAttribute('aria-pressed', 'true')

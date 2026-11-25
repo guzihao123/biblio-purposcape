@@ -355,7 +355,11 @@ def test_c2_real_offline_delivery_is_not_discussion(tmp_path):
     assert '## 完整引言' not in body
 
 
-def test_d_real_offline_delivery_and_ppt_reverification(tmp_path):
+def test_d_real_offline_delivery_and_ppt_reverification(tmp_path, monkeypatch):
+    def forbid_live_figure_loader(*args, **kwargs):
+        pytest.fail('offline D delivery must not invoke the live figure loader')
+
+    monkeypatch.setattr('app.ppt_figures.prepare_d_figures', forbid_live_figure_loader)
     task, output = produce_mode('D', tmp_path)
     result = deliver_mode('D', task, output, tmp_path)
     assert_common_delivery('D', output, result)
