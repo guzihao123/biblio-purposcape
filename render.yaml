@@ -33,6 +33,8 @@ services:
         value: /var/data/artifacts
       - key: SEED_BASE_SKILL
         value: "true"
+      - key: TASK_QUEUE_NAME
+        value: landscape-v2
 
   - type: worker
     name: landscape-worker
@@ -66,6 +68,8 @@ services:
         sync: false
       - key: ARTIFACT_ROOT
         value: /var/data/artifacts
+      - key: TASK_QUEUE_NAME
+        value: landscape-v2
       - key: WEB_API_ORIGIN
         value: https://biblio-purposcape.onrender.com
 

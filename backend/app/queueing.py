@@ -1,4 +1,5 @@
 import hashlib
+import os
 import json
 import re
 from datetime import datetime, timezone
@@ -29,7 +30,7 @@ from app.schemas import CardId, TaskState
 
 install_worker_log_redaction()
 
-QUEUE_NAME = 'landscape'
+QUEUE_NAME = os.environ.get('TASK_QUEUE_NAME', 'landscape')
 SAFE_FAILURE_MESSAGE = '任务执行失败，请稍后重试。'
 SAFE_ENQUEUE_MESSAGE = '任务暂时无法排队，请稍后重试。'
 
