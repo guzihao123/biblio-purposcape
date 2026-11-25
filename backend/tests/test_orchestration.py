@@ -339,6 +339,7 @@ def test_default_writing_factory_enables_thinking_on_a_separate_chat_model(tmp_p
     assert writing.model is not base
     assert writing.model.thinking is False
     assert writing.model.request_timeout == 300
+    assert writing.model.attempts == 1
     assert base.thinking is False
 
 

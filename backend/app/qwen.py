@@ -18,6 +18,7 @@ class ChatModel:
         self.model = model or os.environ.get('QWEN_MODEL') or 'qwen-plus'
         self.thinking = thinking
         self.request_timeout = request_timeout if request_timeout is not None else (600 if thinking else 90)
+        self.attempts = 1 if self.thinking else (1 if self.request_timeout >= 300 else 4)
         if client is not None:
             self._client = client
             return
@@ -51,7 +52,7 @@ class ChatModel:
                 extra_body={'enable_thinking': self.thinking},
                 timeout=self.request_timeout,
             ),
-            attempts=1 if self.thinking else 4,
+            attempts=self.attempts,
             base_delay=1.0,
             max_delay=8.0,
         )
