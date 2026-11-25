@@ -24,6 +24,28 @@ class RemoteArtifact:
     content_type: str
 
 
+def save_internal_artifact(task_id, filename, content, content_type, store=None):
+    import hashlib
+    from tempfile import NamedTemporaryFile
+
+    if len(content) > MAX_ARTIFACT_BYTES:
+        raise ValueError('artifact exceeds the 50 MB limit')
+    store = store or ArtifactStore()
+    directory = store.root / task_id
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / filename
+    with NamedTemporaryFile(dir=directory, delete=False) as handle:
+        handle.write(content)
+        temporary = Path(handle.name)
+    temporary.replace(path)
+    return {
+        'name': filename,
+        'size': len(content),
+        'sha256': hashlib.sha256(content).hexdigest(),
+        'content_type': content_type,
+    }
+
+
 class ArtifactStore:
     def __init__(self, root=None, remote_client=None):
         self.root = Path(root or get_settings().artifact_root)

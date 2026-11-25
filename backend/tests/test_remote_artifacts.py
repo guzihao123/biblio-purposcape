@@ -51,6 +51,19 @@ def make_store(tmp_path, monkeypatch, remote=None):
     return ArtifactStore(root=tmp_path, remote_client=remote)
 
 
+def test_internal_artifact_save_writes_a_real_file(tmp_path):
+    from app.artifacts import ArtifactStore, save_internal_artifact
+
+    store = ArtifactStore(root=tmp_path)
+    result = save_internal_artifact(
+        'task-1', 'report.docx', b'PK-bytes', 'application/octet-stream', store=store,
+    )
+
+    assert (tmp_path / 'task-1' / 'report.docx').read_bytes() == b'PK-bytes'
+    assert result['size'] == len(b'PK-bytes')
+    assert result['sha256']
+
+
 def sign(store, task_id='task-1', filename='report.docx', session_id='owner-1'):
     return store._serializer().dumps({
         'task_id': task_id,

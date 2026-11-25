@@ -15,7 +15,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.answer_validation import read_answer_body
-from app.artifacts import ArtifactStore, RemoteArtifact
+from app.artifacts import ArtifactStore, RemoteArtifact, save_internal_artifact
 from app.candidates import CandidateService
 from app.config import get_settings
 from app.db import SessionLocal, get_db, initialize_database
@@ -34,6 +34,7 @@ from app.skill_versions import SkillVersionError, SkillVersionService
 from app.task_flow import answer_card_with_decision
 from app.task_presenters import remote_task_payload, task_payload
 from app.writing import BODY_FILES
+from app.sites_store import MAX_ARTIFACT_BYTES, validate_filename, validate_task_id
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -43,6 +44,38 @@ queue_adapter = QueueAdapter()
 candidate_service = CandidateService()
 register_stage_services()
 app.add_api_route('/api/session', create_public_session, methods=['POST'], status_code=201)
+
+
+@app.put('/api/internal/artifacts/{task_id}/{filename}', status_code=201)
+async def put_internal_artifact(
+    task_id: str,
+    filename: str,
+    request: Request,
+    x_worker_token: str = Header(default=''),
+    db: Session = Depends(get_db),
+):
+    import hmac
+
+    secret = os.environ.get('WORKER_SHARED_SECRET') or ''
+    if not secret or not hmac.compare_digest(x_worker_token, secret):
+        raise HTTPException(status_code=403, detail='worker_unauthorized')
+    try:
+        validate_task_id(task_id)
+        validate_filename(filename)
+    except ValueError:
+        raise HTTPException(status_code=404, detail='Artifact not found') from None
+    if db.get(Task, task_id) is None:
+        raise HTTPException(status_code=404, detail='Artifact not found')
+    body = await request.body()
+    if len(body) > MAX_ARTIFACT_BYTES:
+        raise HTTPException(status_code=413, detail='Artifact too large')
+    result = save_internal_artifact(
+        task_id,
+        filename,
+        body,
+        request.headers.get('content-type') or 'application/octet-stream',
+    )
+    return {'ok': True, **result}
 
 
 @app.get('/api/health')

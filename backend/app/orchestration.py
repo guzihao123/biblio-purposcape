@@ -367,8 +367,11 @@ class Orchestrator:
         return version
 
     def _sync_artifacts(self, task_dir):
+        secret = os.environ.get('WORKER_SHARED_SECRET') or ''
+        web_origin = (os.environ.get('WEB_API_ORIGIN') or '').rstrip('/')
+        if web_origin and secret:
+            return self._upload_to_web(task_dir, web_origin, secret)
         origin = os.environ.get('QODER_SITES_ORIGIN')
-        secret = os.environ.get('WORKER_SHARED_SECRET')
         if not origin or not secret:
             return 0
         client = SitesStorageClient(origin=origin, shared_secret=secret)
@@ -382,6 +385,34 @@ class Orchestrator:
                 path.read_bytes(),
                 self._content_type(path),
             )
+            count += 1
+        return count
+
+    def _upload_to_web(self, task_dir, origin, secret):
+        import urllib.request
+        from urllib.parse import quote
+
+        count = 0
+        for path in task_dir.iterdir():
+            if not path.is_file() or path.stat().st_size > 50_000_000:
+                continue
+            url = '{}/api/internal/artifacts/{}/{}'.format(
+                origin,
+                quote(task_dir.name, safe=''),
+                quote(path.name, safe=''),
+            )
+            request = urllib.request.Request(
+                url,
+                data=path.read_bytes(),
+                method='PUT',
+                headers={
+                    'X-Worker-Token': secret,
+                    'Content-Type': self._content_type(path),
+                },
+            )
+            with urllib.request.urlopen(request, timeout=120) as response:
+                if response.status not in (200, 201):
+                    raise RuntimeError('artifact upload failed with status {}'.format(response.status))
             count += 1
         return count
 

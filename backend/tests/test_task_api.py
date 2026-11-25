@@ -86,6 +86,44 @@ def create_session(client):
     return response.json()['session_id']
 
 
+def test_internal_artifact_upload_requires_worker_token_and_valid_file(client, db, monkeypatch):
+    publish_base(db)
+    create_session(client)
+    created = client.post('/api/tasks', json={})
+    task_id = created.json()['id']
+    monkeypatch.setenv('WORKER_SHARED_SECRET', 'worker-test-secret')
+    captured = []
+    monkeypatch.setattr(
+        'app.main.save_internal_artifact',
+        lambda task, name, content, content_type: captured.append((task, name, content, content_type))
+        or {'name': name, 'size': len(content)},
+    )
+
+    denied = client.put(
+        f'/api/internal/artifacts/{task_id}/report.docx',
+        content=b'PK',
+        headers={'X-Worker-Token': 'wrong'},
+    )
+    assert denied.status_code == 403
+    assert captured == []
+
+    uploaded = client.put(
+        f'/api/internal/artifacts/{task_id}/report.docx',
+        content=b'PK',
+        headers={'X-Worker-Token': 'worker-test-secret', 'Content-Type': 'application/octet-stream'},
+    )
+    assert uploaded.status_code == 201
+    assert captured and captured[0][1] == 'report.docx'
+    assert captured[0][2] == b'PK'
+
+    traversal = client.put(
+        f'/api/internal/artifacts/{task_id}/..%2Fsecret',
+        content=b'x',
+        headers={'X-Worker-Token': 'worker-test-secret'},
+    )
+    assert traversal.status_code in {404, 405}
+
+
 def test_direction_card_uses_fixed_traffic_examples(client, db):
     publish_base(db)
     create_session(client)

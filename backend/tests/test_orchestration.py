@@ -287,3 +287,38 @@ def test_default_writing_factory_enables_thinking_on_a_separate_chat_model(tmp_p
     assert writing.model is not base
     assert writing.model.thinking is True
     assert base.thinking is False
+
+
+def test_sync_artifacts_uploads_to_web_origin(tmp_path, monkeypatch):
+    import urllib.request
+
+    from app.orchestration import Orchestrator
+
+    task_dir = tmp_path / 'task-1'
+    task_dir.mkdir()
+    (task_dir / 'report.md').write_text('body', encoding='utf-8')
+    monkeypatch.setenv('WORKER_SHARED_SECRET', 'worker-secret')
+    monkeypatch.setenv('WEB_API_ORIGIN', 'https://web.example')
+
+    captured = []
+
+    class Response:
+        status = 201
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setattr(
+        urllib.request,
+        'urlopen',
+        lambda request, timeout=0: captured.append(request) or Response(),
+    )
+
+    count = Orchestrator(artifact_root=tmp_path)._sync_artifacts(task_dir)
+
+    assert count == 1
+    assert captured[0].full_url == 'https://web.example/api/internal/artifacts/task-1/report.md'
+    assert captured[0].data == b'body'
