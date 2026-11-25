@@ -134,7 +134,9 @@ def test_frontend_supports_sites_function_entry_without_hardcoding_it():
     assert "'/functions/v1/app'" in vite_config
     assert "'/api'" in vite_config
     assert 'VITE_API_BASE_URL=/api' in read('.env.example')
-    assert "const marker = '/functions/v1/app'" in read('sites/functions/index.ts')
+    function_source = read('sites/functions/index.ts')
+    assert "'/functions/v1/app'" in function_source
+    assert "'/app'" in function_source
 
 
 def test_function_routes_complete_flow_and_preserves_binary_download_headers():
@@ -190,6 +192,7 @@ def test_sites_storage_client_uploads_fixed_worker_paths_only():
     assert calls[0][0] == 'https://site.example/functions/v1/app/internal/artifacts/task-1/report.docx'
     assert calls[0][1]['method'] == 'PUT'
     assert calls[0][1]['headers']['X-Worker-Token'] == 'worker-secret'
+    assert calls[0][1]['headers']['Origin'] == 'https://site.example'
     assert calls[0][1]['body'] == b'PK-test'
 
     with pytest.raises(ValueError, match='filename'):

@@ -80,6 +80,10 @@ class SitesStorageClient:
         return f'/functions/v1/app/internal/artifact-checksums/{quote(task_id, safe="")}/{quote(filename, safe="")}'
 
     def _call(self, url, options):
+        headers = dict(options.get('headers') or {})
+        # The site gateway rejects server-to-server calls without a site Origin.
+        headers.setdefault('Origin', self.origin)
+        options = {**options, 'headers': headers}
         try:
             result = self.transport(url, options)
             failed = (

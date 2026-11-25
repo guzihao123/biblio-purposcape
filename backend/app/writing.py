@@ -46,6 +46,69 @@ OUTLINE_HEADINGS = {
     'E': ['按用户用途定制的提纲'],
 }
 
+_EVIDENCE_SHAPE = 'EVIDENCE={"claim":"论断","refs":[论文 ref_no],"quotes":{"<ref_no>":"摘要逐字原句"}}'
+_COMPONENT_EVIDENCE_NOTE = '；evidence 必须是 EVIDENCE 列表，' + _EVIDENCE_SHAPE
+
+COMPONENT_SCHEMAS = {
+    'A': (
+        '{"landscape":[{"direction":"…","share":"篇数/占比","paper_refs":[1],"venues":"团队/期刊口径"}],'
+        '"gaps":[{"gap":"…","reason":"机制/数据/方法/需求型理由","evidence":[EVIDENCE]}],'
+        '"directions":[{"rank":1,"title":"…","core_question":"…","data_availability":"…",'
+        '"research_value":"…","feasibility":"…","innovation_potential":"…",'
+        '"implementation_difficulty":"…","risk":"…","first_reason":"第 1 推荐必填，其余可为空串",'
+        '"evidence":[EVIDENCE]}]}；gaps 3–5 行；directions 3–5 张且 rank 从 1 连续编号'
+        + _COMPONENT_EVIDENCE_NOTE
+    ),
+    'A_DIALOGUE': (
+        '{"landscape":[{"direction":"…","share":"篇数/占比","paper_refs":[1],"venues":"…"}],'
+        '"gaps":[{"gap":"…","reason":"…","evidence":[EVIDENCE]}],'
+        '"topic_groups":[{"category":"理论创新型选题","slots":[SLOT,SLOT]},'
+        '{"category":"方法创新型选题","slots":[SLOT,SLOT]},'
+        '{"category":"研究对象拓展型选题","slots":[SLOT,SLOT]},'
+        '{"category":"数据与实证创新型选题","slots":[SLOT,SLOT]},'
+        '{"category":"机制解释型选题","slots":[SLOT,SLOT]},'
+        '{"category":"前沿交叉型选题","slots":[SLOT,SLOT]},'
+        '{"category":"应用需求驱动型选题","slots":[SLOT,SLOT]}],'
+        '"overall_first":{"topic":"…","reason":"…","risk":"…","evidence":[EVIDENCE]}}；'
+        '主题七类必须按上述顺序出现且每类恰好 2 个槽位；'
+        'SLOT={"title":"…","core_question":"…","data_availability":"…","research_value":"…",'
+        '"feasibility":"…","innovation_potential":"…","implementation_difficulty":"…",'
+        '"rank":1,"opportunity":"…","risk":"…","evidence":[EVIDENCE]} 或 {"recommended":false,"reason":"…"}'
+        + _COMPONENT_EVIDENCE_NOTE
+    ),
+    'B': (
+        '{"demand":{"text":"…","evidence":[EVIDENCE]},'
+        '"assets":[{"name":"…","research_content":"研究内容（1）","evidence":[EVIDENCE]}],'
+        '"mappings":[{"limitation":"…","scientific_question":"…","research_content":"…","evidence":[EVIDENCE]}],'
+        '"chain":{"研究需求":{"text":"…","evidence":[EVIDENCE]},"已有进展":{"text":"…","evidence":[EVIDENCE]},'
+        '"现有不足":{"text":"…","evidence":[EVIDENCE]},"关键科学问题":{"text":"…","evidence":[EVIDENCE]},'
+        '"项目切入点":{"text":"…","evidence":[EVIDENCE]},"预期贡献":{"text":"…","evidence":[EVIDENCE]}},'
+        '"innovations":[{"innovation":"…","difference":"…","evidence":[EVIDENCE]}]}；chain 六个键必须原样齐全'
+        + _COMPONENT_EVIDENCE_NOTE
+    ),
+    'C1': (
+        '{"paragraph_cards":[{"function":"背景重要性","claim":"…","evidence":[EVIDENCE]}],'
+        '"gaps":[{"gap":"…","evidence":[EVIDENCE],"response":"本文如何回应"}]}；'
+        'paragraph_cards 4–6 张，function 依次覆盖背景重要性、研究进展、现有研究不足、研究思路与方法、研究贡献'
+        + _COMPONENT_EVIDENCE_NOTE
+    ),
+    'C2': (
+        '{"classification":["…"],"comparison":[{"literature":"[n] 作者 年","research_question":"…",'
+        '"data":"…","method":"…","findings":"…","limitation":"…"}],'
+        '"gaps":[{"direction":"…","progress":"…","limitation":"…","evidence_text":"[n] 摘要证据","future_question":"…"}]}'
+    ),
+    'D': (
+        '{"progress":[{"direction":"…","summary":"…"}],'
+        '"method_comparison":[{"family":"数据获取方法族","technique":"具体技术","data":"…",'
+        '"strength":"…","limitation":"…","refs":[1]}],'
+        '"reading_cards":[{"ref":1,"title":"…","reason":"…","research_question":"…","data":"…",'
+        '"method":"…","findings":"…","limitations":"…","team_relevance":"…","reading_depth":"仅摘要"}],'
+        '"ranking":[{"rank":1,"topic":"…","reason":"…","risk":"…"}],'
+        '"discussion_questions":["…"]}；reading_cards 3–5 张'
+    ),
+    'E': '{"markdown":"按用户用途组织的 Markdown 构件（含 [n] 引用与证据）"}',
+}
+
 
 class WritingInputError(ValueError):
     pass
@@ -206,7 +269,9 @@ def _render_dialogue_slot(slot, index):
 def _render_a_dialogue(data):
     lines = ['# 模式 A 仅对话构件', '', '## 领域格局速览表', '', '| 方向 | 池内篇数/占比 | 团队与期刊口径 |', '|---|---|---|']
     for row in data['landscape']:
-        lines.append(f"| {row['direction']} | {row['share']} {_refs(row.get('paper_refs', []))} | {row.get('venues', '未统计')} |")
+        refs = row.get('paper_refs', [])
+        ref_text = '（篇号 {}）'.format('、'.join(str(ref) for ref in refs)) if refs else ''
+        lines.append(f"| {row['direction']} | {row['share']} {ref_text} | {row.get('venues', '未统计')} |")
     lines.extend(['', '## 研究空白与要点', '', '| 研究空白 | 机制/数据/方法/需求理由 | 文献证据 |', '|---|---|---|'])
     for row in data['gaps']:
         lines.append(f"| {row['gap']} | {row['reason']} | {_evidence_refs(row['evidence'])} |")
@@ -227,7 +292,9 @@ def _render_a_dialogue(data):
 def _render_a(data):
     lines = ['# 模式 A 构件', '', '## 领域格局速览表', '', '| 方向 | 池内篇数/占比 | 团队与期刊口径 |', '|---|---|---|']
     for row in data['landscape']:
-        lines.append(f"| {row['direction']} | {row['share']} {_refs(row.get('paper_refs', []))} | {row.get('venues', '未统计')} |")
+        refs = row.get('paper_refs', [])
+        ref_text = '（篇号 {}）'.format('、'.join(str(ref) for ref in refs)) if refs else ''
+        lines.append(f"| {row['direction']} | {row['share']} {ref_text} | {row.get('venues', '未统计')} |")
     lines.extend(['', '## 空白证据表', '', '| 研究空白 | 机制/数据/方法/需求理由 | 文献证据 |', '|---|---|---|'])
     for row in data['gaps']:
         lines.append(f"| {row['gap']} | {row['reason']} | {_evidence_refs(row['evidence'])} |")
@@ -437,34 +504,40 @@ class WritingService:
         except OSError as error:
             raise WritingInputError(f'mode template is unavailable: {path.name}') from error
 
-    def _generate_components(self, task):
+    def _generate_components(self, task, strict=False):
         if self.model is None:
             raise WritingInputError('component data or a component model is required')
+        payload = {
+            'stage': 'components',
+            'mode': task.mode,
+            'mode_template': self._mode_template(task.mode.upper()),
+            'components_schema': COMPONENT_SCHEMAS.get(task.mode.upper(), ''),
+            'direction': task.direction,
+            'papers': task.papers,
+            'analysis': task.analysis,
+            'search_overview': task.search_overview,
+            'project': task.project,
+            'user_results': task.user_results,
+            'team_context': task.team_context,
+        }
+        if strict:
+            payload['schema_reminder'] = (
+                '上一次返回缺少必需键、数量不符、引用了没有 evidence 条目的编号，或 quote 不是摘要逐字原句；'
+                '这次必须严格按 components_schema 返回，每个 [n] 都要有 evidence 条目，'
+                'quote 从对应摘要中逐字复制一个连续片段（含原标点），拿不准就省略该论断。'
+            )
         response = self.model.complete_json(
-            '你是科研写作构件生成器。只使用输入摘要，所有文献事实必须附 refs 和逐字摘要 quotes；不得虚构研究空白、项目基础或用户结果。按指定模式返回 JSON 对象 {"components": ...}。',
-            {
-                'stage': 'components',
-                'mode': task.mode,
-                'mode_template': self._mode_template(task.mode.upper()),
-                'direction': task.direction,
-                'papers': task.papers,
-                'analysis': task.analysis,
-                'search_overview': task.search_overview,
-                'project': task.project,
-                'user_results': task.user_results,
-                'team_context': task.team_context,
-            },
+            '你是科研写作构件生成器。只使用输入摘要，所有文献事实必须附 refs 和逐字摘要 quotes；'
+            'quote 必须是该篇摘要中逐字复制的一个连续片段（含原标点与空格），不得改写、翻译、拼接或概括，'
+            '摘要中没有可直接复制的原句时不要输出该条证据或该论断；'
+            '不得虚构研究空白、项目基础或用户结果。严格按 components_schema 的键名、字段与数量范围返回 JSON 对象 {"components": ...}。',
+            payload,
         )
         if not isinstance(response, dict) or not isinstance(response.get('components'), dict):
             raise WritingInputError('component model must return a components object')
         return response['components']
 
-    def produce_components(self, task):
-        mode = task.mode.upper()
-        if mode not in OUTLINE_HEADINGS:
-            raise WritingInputError(f'unsupported writing mode: {task.mode}')
-        if task.component_data is None:
-            task.component_data = self._generate_components(task)
+    def _build_components(self, task, mode):
         _validate_component_shape(task, mode)
         auditor = EvidenceAuditor(task.papers)
         evidence = auditor.audit_data(task.component_data)
@@ -492,6 +565,22 @@ class WritingService:
             has_user_results=bool(str(task.user_results or '').strip()),
         )
 
+    def produce_components(self, task):
+        mode = task.mode.upper()
+        if mode not in OUTLINE_HEADINGS:
+            raise WritingInputError(f'unsupported writing mode: {task.mode}')
+        if task.component_data is not None:
+            return self._build_components(task, mode)
+        last_error = None
+        for attempt in range(2):
+            try:
+                task.component_data = self._generate_components(task, strict=attempt > 0)
+                return self._build_components(task, mode)
+            except (WritingInputError, ValueError) as error:
+                last_error = error
+                task.component_data = None
+        raise last_error
+
     def produce_outline_and_sample(self, task, components):
         headings = '\n'.join(f'{index}. {heading}' for index, heading in enumerate(OUTLINE_HEADINGS[components.mode], 1))
         outline = f"# {task.direction}｜模式 {components.mode} 提纲\n\n{headings}\n\n## 构件与证据索引\n\n{components.markdown}"
@@ -515,10 +604,13 @@ class WritingService:
         return OutlineSample(outline=outline, sample=sample)
 
     def write_body(self, task, components, outline_sample, body_writer):
-        if body_writer is None and self.model is not None:
+        model_backed = body_writer is None and self.model is not None
+        if model_backed:
             def body_writer(context):
                 response = self.model.complete_json(
-                    '你是科研正文写作器。先读已完成的构件、提纲和样章，再写连贯正文。每个文献事实必须在 evidence 中给出 refs 与逐字摘要 quotes；分析判断标明“分析”，不得虚构用户结果、全文细节或参考文献。',
+                    '你是科研正文写作器。先读已完成的构件、提纲和样章，再写连贯正文。每个文献事实必须在 evidence 中给出 refs 与逐字摘要 quotes；'
+                    'quote 必须是该篇摘要中逐字复制的一个连续片段（含原标点），不得改写、翻译或拼接；'
+                    '分析判断标明“分析”，不得虚构用户结果、全文细节或参考文献。',
                     {
                         'stage': 'body',
                         'mode': task.mode,
@@ -532,27 +624,44 @@ class WritingService:
                         'project': task.project,
                         'user_results': task.user_results,
                         'team_context': task.team_context,
+                        'response_schema': (
+                            '严格返回 {"body":"完整正文 Markdown（含全部章节）",'
+                            '"evidence":[{"claim":"论断","refs":[论文 ref_no],"quotes":{"<ref_no>":"摘要逐字原句"}}]}。'
+                        ),
                     },
                 )
-                if isinstance(response, dict) and isinstance(response.get('body'), str):
-                    return {'text': response['body'], 'evidence': response.get('evidence') or []}
+                if isinstance(response, dict):
+                    for key in ('body', 'text', 'markdown', 'document'):
+                        if isinstance(response.get(key), str):
+                            return {'text': response[key], 'evidence': response.get('evidence') or []}
                 return response
         if body_writer is None:
             raise WritingInputError('a body composer is required; no prose was fabricated')
-        result = body_writer({
+        context = {
             'task': task,
             'components': components,
             'outline': outline_sample.outline,
             'sample': outline_sample.sample,
-        })
-        if not isinstance(result, dict) or not isinstance(result.get('text'), str):
-            raise WritingInputError('body composer must return text and evidence')
-        auditor = EvidenceAuditor(task.papers)
-        evidence = auditor.audit_items(result.get('evidence') or [])
-        text = result['text']
-        _validate_citation_coverage(text, evidence)
-        text = _label_abstract_citations(text, evidence)
-        return BodyOutput(text=text, evidence=evidence)
+        }
+        last_error = None
+        for _ in range(2 if model_backed else 1):
+            try:
+                result = body_writer(context)
+            except ValueError as error:
+                last_error = WritingInputError(str(error))
+                continue
+            try:
+                if not isinstance(result, dict) or not isinstance(result.get('text'), str):
+                    raise WritingInputError('body composer must return text and evidence')
+                auditor = EvidenceAuditor(task.papers)
+                evidence = auditor.audit_items(result.get('evidence') or [])
+                text = result['text']
+                _validate_citation_coverage(text, evidence)
+                text = _label_abstract_citations(text, evidence)
+                return BodyOutput(text=text, evidence=evidence)
+            except WritingInputError as error:
+                last_error = error
+        raise last_error
 
     def produce(self, task, body_writer=None):
         components = self.produce_components(task)

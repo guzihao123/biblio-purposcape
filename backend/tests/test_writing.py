@@ -264,6 +264,18 @@ def test_components_outline_and_sample_precede_body(tmp_path):
     assert '第 1 推荐' in output.sample
 
 
+def test_landscape_pool_refs_are_not_treated_as_evidence_citations(tmp_path):
+    data = component_data('A')
+    data['landscape'][0]['paper_refs'] = [3]
+    service = WritingService(workspace_root=tmp_path)
+    task = make_task('A', tmp_path, component_data=data)
+
+    output = service.produce_components(task)
+
+    assert '篇号 3' in output.markdown
+    assert '[3]' not in output.markdown.split('空白证据表')[0]
+
+
 def test_a_components_include_ranked_direction_cards_and_real_evidence(tmp_path):
     service = WritingService(workspace_root=tmp_path)
     output = service.produce_components(make_task('A', tmp_path))
@@ -417,6 +429,112 @@ def test_model_can_generate_components_and_body_without_a_custom_writer(tmp_path
     assert all(payload['analysis'] == {'clusters': ['损失评估', '暴露调查']} for payload in model.payloads)
     assert output.body_path.exists()
     assert '（据摘要）' in output.body
+
+
+def test_components_with_uncited_reference_are_retried_once(tmp_path):
+    class RetryModel:
+        def __init__(self):
+            self.components_calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            self.components_calls += 1
+            data = component_data('A')
+            if self.components_calls == 1:
+                data['landscape'][0]['direction'] = '损失评估与暴露调查 [3]'
+            return {'components': data}
+
+    model = RetryModel()
+    task = make_task('A', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=model).produce(
+        task, body_writer=lambda context: successful_body('领域格局与方向卡正文 [1]。'),
+    )
+
+    assert model.components_calls == 2
+    assert '方向卡' in output.components.markdown
+
+
+def test_body_with_uncited_reference_is_retried_once(tmp_path):
+    class RetryModel:
+        def __init__(self):
+            self.body_calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            if payload['stage'] == 'components':
+                return {'components': component_data('A')}
+            self.body_calls += 1
+            if self.body_calls == 1:
+                return {'body': '领域格局引用未入账文献 [3]。', 'evidence': [EVIDENCE]}
+            return {'body': '领域格局与方向卡正文 [1]。', 'evidence': [EVIDENCE]}
+
+    model = RetryModel()
+    task = make_task('A', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=model).produce(task)
+
+    assert model.body_calls == 2
+    assert '[1]' in output.body
+
+
+def test_component_prompt_carries_machine_readable_schema(tmp_path):
+    class FakeModel:
+        def __init__(self):
+            self.payloads = []
+
+        def complete_json(self, system_prompt, payload):
+            self.payloads.append(payload)
+            return {'components': component_data('A')}
+
+    model = FakeModel()
+    task = make_task('A', tmp_path, component_data=None)
+    WritingService(workspace_root=tmp_path, model=model).produce_components(task)
+
+    schema = model.payloads[0]['components_schema']
+    assert 'directions' in schema
+    assert 'gaps' in schema
+    assert '3' in schema
+
+
+def test_invalid_generated_component_shape_is_retried_once(tmp_path):
+    class RetryModel:
+        def __init__(self):
+            self.components_calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            self.components_calls += 1
+            broken = component_data('A')
+            broken['directions'] = broken['directions'][:1]
+            if self.components_calls == 1:
+                return {'components': broken}
+            return {'components': component_data('A')}
+
+    model = RetryModel()
+    task = make_task('A', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=model).produce(
+        task, body_writer=lambda context: successful_body('领域格局与方向卡正文 [1]。'),
+    )
+
+    assert model.components_calls == 2
+    assert '方向卡' in output.components.markdown
+
+
+def test_generated_component_shape_failure_after_retry_is_reported(tmp_path):
+    class BadModel:
+        def __init__(self):
+            self.components_calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            self.components_calls += 1
+            broken = component_data('A')
+            broken['directions'] = broken['directions'][:1]
+            return {'components': broken}
+
+    model = BadModel()
+    task = make_task('A', tmp_path, component_data=None)
+
+    with pytest.raises(WritingInputError, match='3–5 direction cards'):
+        WritingService(workspace_root=tmp_path, model=model).produce(
+            task, body_writer=successful_body('正文 [1]。'),
+        )
+    assert model.components_calls == 2
 
 
 def test_template_override_is_used_for_both_model_calls(tmp_path):

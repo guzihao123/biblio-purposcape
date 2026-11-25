@@ -96,6 +96,27 @@ test('answer subroute forwards the exact answer JSON and session cookie', async 
   assert.equal(new TextDecoder().decode(upstream.init.body), JSON.stringify({ value: { mode: 'A' } }));
 });
 
+test('gateway-rewritten /app prefix reaches session, task and worker routes', async () => {
+  const health = await handler(new Request('https://site.example/app/health'));
+  assert.equal(health.status, 200);
+  assert.deepEqual(await health.json(), { status: 'ok', python_api_configured: true });
+
+  const answer = await handler(new Request(`https://site.example/app/tasks/${TASK_ID}/answers/mode`, {
+    method: 'POST',
+    headers: { cookie: 'invite_session=signed', 'content-type': 'application/json' },
+    body: JSON.stringify({ value: { mode: 'A' } }),
+  }));
+  assert.equal(answer.status, 200);
+  assert.deepEqual(await answer.json(), { next_card: 'terms' });
+
+  const denied = await handler(new Request(`https://site.example/app/internal/artifacts/${TASK_ID}/report.docx`, {
+    method: 'PUT',
+    headers: { 'x-worker-token': 'wrong' },
+    body: 'bad',
+  }));
+  assert.equal(denied.status, 403);
+});
+
 test('artifact subroute streams Word bytes and preserves approved download headers', async () => {
   const response = await handler(new Request(`https://site.example/functions/v1/app/tasks/${TASK_ID}/artifacts/report.docx?signature=signed`, {
     headers: { cookie: 'invite_session=signed' },

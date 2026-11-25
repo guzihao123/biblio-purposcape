@@ -270,3 +270,20 @@ def test_c1_c2_generates_separate_bodies_verifications_and_combined_delivery(tas
     assert result['checkpoint']['clean'] is True
     assert result['checkpoint']['combined_delivered'] is True
     assert result['checkpoint']['linkage']['gap_consistent'] is True
+
+
+def test_default_writing_factory_enables_thinking_on_a_separate_chat_model(tmp_path):
+    from types import SimpleNamespace
+
+    from app.qwen import ChatModel
+
+    base = ChatModel(client=object())
+    service = Orchestrator(artifact_root=tmp_path, model=base)
+    version = SimpleNamespace(content={})
+
+    writing = service._default_writing_factory(tmp_path, base, version)
+
+    assert isinstance(writing.model, ChatModel)
+    assert writing.model is not base
+    assert writing.model.thinking is True
+    assert base.thinking is False

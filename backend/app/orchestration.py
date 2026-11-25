@@ -276,6 +276,10 @@ class Orchestrator:
         return build_graph_artifacts(task_dir, topic or '文献研究', pools.get('limited', pools.get('unlimited', {})).get('count', 0))
 
     def _default_writing_factory(self, workspace_root, model, version):
+        from app.qwen import ChatModel
+
+        if isinstance(model, ChatModel):
+            model = ChatModel(client=model._client, model=model.model, thinking=True)
         return WritingService(
             workspace_root=workspace_root,
             model=model,

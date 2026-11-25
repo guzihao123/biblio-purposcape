@@ -14,8 +14,9 @@ except ImportError:  # Keep fake/offline analysis usable before production deps 
 class ChatModel:
     """Small synchronous Qwen adapter; credentials come only from the environment."""
 
-    def __init__(self, client=None, model=None):
+    def __init__(self, client=None, model=None, thinking=False):
         self.model = model or os.environ.get('QWEN_MODEL') or 'qwen-plus'
+        self.thinking = thinking
         if client is not None:
             self._client = client
             return
@@ -44,8 +45,8 @@ class ChatModel:
                     },
                 ],
                 response_format={'type': 'json_object'},
-                # Thinking mode costs ~9x latency on these strict JSON extraction calls.
-                extra_body={'enable_thinking': False},
+                # Thinking mode costs ~9x latency on strict JSON extraction; writing opts back in.
+                extra_body={'enable_thinking': self.thinking},
             ),
             attempts=3,
         )

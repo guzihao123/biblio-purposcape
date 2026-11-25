@@ -42,11 +42,14 @@ function apiOrigin() {
 }
 
 function routeSuffix(url: URL): string {
-  const marker = '/functions/v1/app';
-  const index = url.pathname.indexOf(marker);
-  if (index >= 0) {
-    const suffix = url.pathname.slice(index + marker.length) || '/';
-    if (suffix !== '/') return suffix;
+  // The deployed gateway rewrites /functions/v1/app/* to /app/*; direct and
+  // test requests may still carry the full prefix.
+  for (const marker of ['/functions/v1/app', '/app']) {
+    const index = url.pathname.indexOf(marker);
+    if (index >= 0) {
+      const suffix = url.pathname.slice(index + marker.length) || '/';
+      if (suffix !== '/') return suffix;
+    }
   }
   const action = url.searchParams.get('action') || 'health';
   if (action === 'session') return '/session';
