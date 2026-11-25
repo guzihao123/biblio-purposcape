@@ -514,20 +514,20 @@ def test_c_pair_real_rq_worker_word_ppt_and_evidence(harness, scenario, form):
     assert '完成衔接与重复检查' in conformance
 
     if form == 'A':
-        word = task_dir / 'report.docx'
+        word = task_dir / '综述初稿.docx'
         assert zipfile.is_zipfile(word)
         from docx import Document
         document = Document(word)
         assert len(document.paragraphs) > 20
         assert '城市内涝与地下车库韧性' in '\n'.join(p.text for p in document.paragraphs)
-        assert not (task_dir / 'slides.pptx').exists()
+        assert not list(task_dir.glob('*.pptx'))
         record['office_validation'] = {
             'format': 'docx',
             'zip_container': True,
             'paragraphs': len(document.paragraphs),
         }
     else:
-        ppt = task_dir / 'slides.pptx'
+        ppt = task_dir / '城市内涝与地下车库韧性组会汇报.pptx'
         assert zipfile.is_zipfile(ppt)
         from pptx import Presentation
         presentation = Presentation(ppt)
@@ -540,7 +540,7 @@ def test_c_pair_real_rq_worker_word_ppt_and_evidence(harness, scenario, form):
         )
         assert '城市内涝与地下车库韧性' in slide_text
         assert '参考文献' in slide_text
-        assert not (task_dir / 'report.docx').exists()
+        assert not list(task_dir.glob('*.docx'))
         record['office_validation'] = {
             'format': 'pptx',
             'zip_container': True,
@@ -605,8 +605,8 @@ def test_a_dialogue_real_rq_worker_has_seven_categories_and_two_slots(harness):
     assert body.count('选题 2｜') == 7
     assert '## 综合第 1 推荐' in body
     assert '推荐理由：' in body and '主要风险：' in body
-    assert not (task_dir / 'report.docx').exists()
-    assert not (task_dir / 'slides.pptx').exists()
+    assert not list(task_dir.glob('*.docx'))
+    assert not list(task_dir.glob('*.pptx'))
 
     record['artifacts'] = _artifact_manifest(harness.artifact_root)
     _save_record(scenario, record)

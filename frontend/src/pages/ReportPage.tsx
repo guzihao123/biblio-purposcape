@@ -4,8 +4,9 @@ import { artifactUrl, getReport } from '../api'
 import type { ReportPayload } from '../api'
 
 const downloadLabels: Record<string, string> = {
-  'report.docx': '下载 Word 报告',
-  'slides.pptx': '下载 PPT',
+  '综述初稿.docx': '下载 Word 报告',
+  '标书-文献综述分析.docx': '下载 Word 报告',
+  '调研报告.docx': '下载 Word 报告',
   'dialogue.json': '下载对话要点',
   'verify_report.txt': '查看证据复核',
   'conformance.md': '查看需求对账',

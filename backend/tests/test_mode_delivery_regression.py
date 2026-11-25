@@ -195,6 +195,10 @@ def cjk_count(text):
     return len(re.findall(r'[\u4e00-\u9fff]', text.split('## 参考文献')[0]))
 
 
+def word_path(result):
+    return next(path for path in result.artifacts.values() if path.suffix == '.docx')
+
+
 def ppt_path(result):
     if 'slides.pptx' in result:
         return result['slides.pptx']
@@ -235,7 +239,7 @@ def assert_common_delivery(mode, output, result):
     assert '③摘要通道' in report and '[PASS] ③摘要通道' in report
     assert '离线检查器' in result['references_check.md'].read_text(encoding='utf-8')
 
-    document = Document(result['report.docx'])
+    document = Document(word_path(result))
     assert len(document.paragraphs) > 10
     document_text = '\n'.join(paragraph.text for paragraph in document.paragraphs)
     assert DIRECTION in document_text
@@ -250,7 +254,7 @@ def assert_common_delivery(mode, output, result):
         if getattr(shape, 'has_text_frame', False)
     )
     assert '参考文献' in slide_text
-    assert result['report.docx'].read_bytes().startswith(b'PK')
+    assert word_path(result).read_bytes().startswith(b'PK')
     assert ppt_path(result).read_bytes().startswith(b'PK')
 
     papers = {
@@ -500,8 +504,8 @@ def test_c1_c2_have_separate_reports_and_real_combined_delivery(tmp_path, monkey
     assert '台账: 30条' in combined_report
     assert '30/30 条摘要原句逐字命中' in combined_report
     assert '[FAIL]' not in combined_report
-    assert len(Document(root / 'report.docx').paragraphs) > 20
-    assert len(Presentation(root / 'slides.pptx').slides) > 0
+    assert len(Document(next(root.glob('*.docx'))).paragraphs) > 20
+    assert len(Presentation(next(root.glob('*.pptx'))).slides) > 0
 
 
 def test_c_pair_gap_mismatch_blocks_combined_office_delivery(tmp_path, monkeypatch):
@@ -527,8 +531,8 @@ def test_c_pair_gap_mismatch_blocks_combined_office_delivery(tmp_path, monkeypat
         assert '台账: 15条' in report
         assert '[FAIL]' not in report
     assert not (root / '综述初稿.md').exists()
-    assert not (root / 'report.docx').exists()
-    assert not (root / 'slides.pptx').exists()
+    assert not list(root.glob('*.docx'))
+    assert not list(root.glob('*.pptx'))
 
 
 def test_c_pair_normalized_duplicate_is_redirected_then_reverified(tmp_path, monkeypatch):
@@ -583,5 +587,5 @@ def test_c_pair_normalized_duplicate_is_redirected_then_reverified(tmp_path, mon
     c2_report = (root / 'verify_report_C2.txt').read_text(encoding='utf-8')
     assert 'C1+C2 无重复段落（实得 0 段）' in c2_report
     assert '[FAIL]' not in c2_report
-    Document(root / 'report.docx')
-    Presentation(root / 'slides.pptx')
+    Document(next(root.glob('*.docx')))
+    Presentation(next(root.glob('*.pptx')))

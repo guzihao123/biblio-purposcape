@@ -11,6 +11,16 @@ from app.writing import BODY_FILES
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_ROOT = PROJECT_ROOT / 'skill_runtime' / 'scripts'
+WORD_FILENAMES = {
+    'A': '综述初稿.docx',
+    'A_DIALOGUE': '综述初稿.docx',
+    'B': '标书-文献综述分析.docx',
+    'C1': '综述初稿.docx',
+    'C2': '综述初稿.docx',
+    'D': '调研报告.docx',
+    'E': '综述初稿.docx',
+}
+
 WORD_RANGES = {
     'A': '1500-2500',
     'A_DIALOGUE': '1500-4000',
@@ -763,11 +773,12 @@ class DeliveryService:
         form = task.delivery_form.upper()
 
         if form in {'A', 'ALL'}:
-            report_path = task_dir / 'report.docx'
+            word_name = WORD_FILENAMES.get(task.mode, '综述初稿.docx')
+            report_path = task_dir / word_name
             _write_docx(task, body, report_path)
-            artifacts['report.docx'] = report_path
+            artifacts[word_name] = report_path
         if form in {'C', 'ALL'}:
-            slides_path = task_dir / (_ppt_filename(task.direction) if task.mode == 'D' else 'slides.pptx')
+            slides_path = task_dir / _ppt_filename(task.direction)
             ppt_result = _write_pptx(task, body, references, slides_path)
             artifacts[slides_path.name] = slides_path
             artifacts.update(ppt_result['artifacts'])

@@ -103,8 +103,8 @@ def test_docx_and_pptx_are_real_openable_files(tmp_path):
     task = make_task()
     result = service(tmp_path).deliver(task)
 
-    assert result['report.docx'].read_bytes().startswith(b'PK')
-    assert result['slides.pptx'].read_bytes().startswith(b'PK')
+    assert result['综述初稿.docx'].read_bytes().startswith(b'PK')
+    assert result['城市内涝与地下车库韧性组会汇报.pptx'].read_bytes().startswith(b'PK')
     assert result['verify_report.txt'].exists()
     assert result['references_check.md'].exists()
     assert result['conformance.md'].exists()
@@ -112,8 +112,8 @@ def test_docx_and_pptx_are_real_openable_files(tmp_path):
 
     from docx import Document
     from pptx import Presentation
-    document = Document(result['report.docx'])
-    presentation = Presentation(result['slides.pptx'])
+    document = Document(result['综述初稿.docx'])
+    presentation = Presentation(result['城市内涝与地下车库韧性组会汇报.pptx'])
     assert len(document.paragraphs) > 3
     assert 8 <= len(presentation.slides) <= 12
 
@@ -124,13 +124,13 @@ def test_pending_verification_is_highlighted_in_word_and_red_bold_in_ppt(tmp_pat
     from pptx import Presentation
     result = service(tmp_path).deliver(make_task())
 
-    document = Document(result['report.docx'])
+    document = Document(result['综述初稿.docx'])
     assert any(
         run.font.highlight_color == WD_COLOR_INDEX.YELLOW and '【待核实】' in run.text
         for paragraph in document.paragraphs
         for run in paragraph.runs
     )
-    presentation = Presentation(result['slides.pptx'])
+    presentation = Presentation(result['城市内涝与地下车库韧性组会汇报.pptx'])
     pending_runs = [
         run
         for slide in presentation.slides
@@ -148,8 +148,8 @@ def test_pending_verification_is_highlighted_in_word_and_red_bold_in_ppt(tmp_pat
 def test_dialogue_delivery_has_bounded_points_and_representative_references(tmp_path):
     result = service(tmp_path).deliver(make_task(form='B'))
 
-    assert 'report.docx' not in result
-    assert 'slides.pptx' not in result
+    assert '综述初稿.docx' not in result.artifacts
+    assert not any(name.endswith('.pptx') for name in result.artifacts)
     payload = result.dialogue
     assert 1 <= len(payload['key_points']) <= 8
     assert 1 <= len(payload['references']) <= 10
@@ -273,8 +273,8 @@ def test_hcc_fixture_generates_openable_office_files_and_passes_preset_verifier(
     assert result.clean is True
     from docx import Document
     from pptx import Presentation
-    assert len(Document(result['report.docx']).paragraphs) > 20
-    presentation = Presentation(result['slides.pptx'])
+    assert len(Document(result['综述初稿.docx']).paragraphs) > 20
+    presentation = Presentation(result['肝细胞癌免疫治疗耐药组会汇报.pptx'])
     assert 8 <= len(presentation.slides) <= 12
     slide_text = '\n'.join(
         shape.text
