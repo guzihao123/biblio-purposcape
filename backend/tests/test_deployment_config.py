@@ -16,7 +16,7 @@ def read(name):
 
 def test_render_has_separate_web_and_worker_services():
     config = read('render.yaml')
-    assert 'landscape-web' in config
+    assert 'name: biblio-purposcape' in config
     assert 'landscape-worker' in config
     assert 'type: web' in config
     assert 'type: worker' in config

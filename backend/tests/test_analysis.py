@@ -171,6 +171,19 @@ def test_classify_returns_topic_assignment_and_acquisition_family_method(fake_mo
     }]
 
 
+def test_classify_retries_malformed_json_shape_before_giving_up(fake_model, paper):
+    fake_model.queue_json({'unexpected': []})
+    fake_model.queue_json({
+        'clusters': [],
+        'methods': [valid_method(paper.ref_no, paper.abstract)],
+    })
+
+    result = AnalysisService(fake_model).classify([paper])
+
+    assert [method['key'] for method in result['methods']] == [VALID_METHOD['key']]
+    assert len(fake_model.calls) == 2
+
+
 def test_classify_accepts_domain_general_acquisition_families_and_techniques(fake_model):
     education_abstract = (
         'We administered a validated questionnaire to 1,200 students and used structural '
@@ -539,6 +552,16 @@ def test_chat_model_uses_qwen_environment_and_openai_json_mode(monkeypatch):
         'role': 'system', 'content': 'Return structured evidence.',
     }
     assert json.loads(request['messages'][1]['content']) == {'papers': [{'ref': 1}]}
+
+
+def test_chat_model_disables_thinking_for_structured_json_calls():
+    client = FakeOpenAIClient()
+
+    model = ChatModel(client=client)
+    model.complete_json('Return JSON.', {'papers': []})
+
+    request = client.chat.completions.calls[0]
+    assert request.get('extra_body') == {'enable_thinking': False}
 
 
 def test_chat_model_requires_environment_credentials(monkeypatch):

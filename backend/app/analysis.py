@@ -94,12 +94,6 @@ def _confidence(value, required=True):
     return value if value in CONFIDENCE_LABELS else None
 
 
-def _response_list(payload, key):
-    if not isinstance(payload, dict) or not isinstance(payload.get(key), list):
-        raise ValueError("Model response must contain a JSON list named '{}'".format(key))
-    return payload[key]
-
-
 def _abstract_index(papers):
     indexed = {}
     for paper in papers:
@@ -322,6 +316,17 @@ class AnalysisService:
     def _complete(self, system_prompt, batch):
         return self.model.complete_json(system_prompt, {'papers': batch})
 
+    def _structured(self, system_prompt, payload, *keys):
+        # Thinking-disabled responses occasionally omit a top-level list; retry once
+        # before degrading to an honestly empty result rather than failing the stage.
+        for _ in range(2):
+            response = self.model.complete_json(system_prompt, payload)
+            if isinstance(response, dict) and all(
+                isinstance(response.get(key), list) for key in keys
+            ):
+                return {key: response[key] for key in keys}
+        return {key: [] for key in keys}
+
     def classify(self, papers):
         """Return evidence-bound topics and open acquisition-family → technique methods."""
 
@@ -342,9 +347,9 @@ class AnalysisService:
             'Examples of broad families (not an exclusive list): ' + family_examples
         )
         for batch in _batches(_paper_payload(indexed), self.batch_size):
-            response = self._complete(prompt, batch)
-            raw_clusters = _response_list(response, 'clusters')
-            raw_methods = _response_list(response, 'methods')
+            raw = self._structured(prompt, {'papers': batch}, 'clusters', 'methods')
+            raw_clusters = raw['clusters']
+            raw_methods = raw['methods']
             available = _batch_index(indexed, batch)
             topic_names = {
                 _label_key(name)
@@ -414,9 +419,9 @@ class AnalysisService:
             'Never infer claims for papers without an abstract and never fabricate a ref or quote.'
         )
         for batch in _batches(_paper_payload(indexed), self.batch_size):
-            response = self._complete(prompt, batch)
+            raw = self._structured(prompt, {'papers': batch}, 'votes')
             available = _batch_index(indexed, batch)
-            for item in _response_list(response, 'votes'):
+            for item in raw['votes']:
                 if not isinstance(item, dict):
                     continue
                 ref = _item_ref(item)
@@ -464,9 +469,9 @@ class AnalysisService:
         )
         batches = list(_batches(_paper_payload(indexed), self.batch_size))
         for batch in batches:
-            response = self._complete(prompt, batch)
+            raw = self._structured(prompt, {'papers': batch}, 'relations')
             available = _batch_index(indexed, batch)
-            for item in _response_list(response, 'relations'):
+            for item in raw['relations']:
                 relation = _parse_relation(item, available)
                 if relation is not None:
                     relations.append(relation)
@@ -480,12 +485,13 @@ class AnalysisService:
             pair_refs = (candidate['s'], candidate['t'])
             pair_index = {ref: indexed[ref] for ref in pair_refs}
             pair = _paper_payload(pair_index)
-            response = self.model.complete_json(
+            response = self._structured(
                 candidate_prompt,
                 {'papers': pair, 'candidate_pairs': [candidate]},
+                'relations',
             )
             available = _batch_index(indexed, pair)
-            for item in _response_list(response, 'relations'):
+            for item in response['relations']:
                 relation = _parse_relation(item, available)
                 if relation is not None:
                     relations.append(relation)

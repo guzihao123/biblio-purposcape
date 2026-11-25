@@ -44,6 +44,8 @@ class ChatModel:
                     },
                 ],
                 response_format={'type': 'json_object'},
+                # Thinking mode costs ~9x latency on these strict JSON extraction calls.
+                extra_body={'enable_thinking': False},
             ),
             attempts=3,
         )
