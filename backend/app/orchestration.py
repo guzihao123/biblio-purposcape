@@ -484,7 +484,7 @@ class Orchestrator:
         }.get(path.suffix.lower(), 'application/octet-stream')
 
     def _paper_limit(self, mode):
-        defaults = {'A': 20, 'B': 30, 'C': 20, 'D': 20}
+        defaults = {'A': 12, 'B': 30, 'C': 20, 'D': 12}
         key = 'C' if str(mode).startswith('C') else str(mode).upper()
         return max(1, int(os.environ.get('PAPER_LIMIT_' + key, str(defaults.get(key, 20)))))
 
