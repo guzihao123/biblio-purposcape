@@ -175,6 +175,18 @@ def test_dev_import_map_resolves_storage_stub_without_creating_qoder_directory()
         assert method in stub
 
 
+def test_sites_storage_client_rejects_lookalike_local_http_origins():
+    for origin in ('http://localhost.evil.test', 'http://127.0.0.1.evil.test', 'http://site.example'):
+        with pytest.raises(ValueError, match='HTTPS'):
+            SitesStorageClient(origin=origin, shared_secret='x')
+
+    for origin in ('http://127.0.0.1:8000', 'http://localhost:8000'):
+        assert SitesStorageClient(origin=origin, shared_secret='x').origin == origin
+
+    with pytest.raises(ValueError, match='credentials'):
+        SitesStorageClient(origin='https://user:pass@site.example', shared_secret='x')
+
+
 def test_sites_storage_client_uploads_fixed_worker_paths_only():
     calls = []
 

@@ -4,7 +4,7 @@ import json
 import re
 import urllib.request
 from pathlib import Path
-from urllib.parse import quote, unquote
+from urllib.parse import quote, unquote, urlsplit
 
 
 MAX_ARTIFACT_BYTES = 50_000_000
@@ -48,8 +48,13 @@ def validate_filename(filename):
 class SitesStorageClient:
     def __init__(self, origin, shared_secret, transport=None):
         self.origin = origin.rstrip('/')
-        if not self.origin.startswith('https://') and not self.origin.startswith(('http://127.0.0.1', 'http://localhost')):
+        parsed = urlsplit(self.origin)
+        host = (parsed.hostname or '').lower()
+        local_http = parsed.scheme == 'http' and host in {'127.0.0.1', 'localhost', '::1'}
+        if parsed.scheme != 'https' and not local_http:
             raise ValueError('Qoder Sites origin must use HTTPS')
+        if parsed.username or parsed.password:
+            raise ValueError('Qoder Sites origin must not embed credentials')
         if not shared_secret:
             raise ValueError('worker shared secret is required')
         self.shared_secret = shared_secret
