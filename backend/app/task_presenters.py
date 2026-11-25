@@ -20,12 +20,12 @@ def _direction_card():
         'eyebrow': '方向确认',
         'title': '研究方向或核心问题',
         'description': '请用一句话写出你要摸底的方向，也可以直接选择示例。',
-        'custom': {'label': '研究方向或核心问题', 'placeholder': '例如：城市内涝对地下车库财产损失的影响评估'},
+        'custom': {'label': '研究方向或核心问题', 'placeholder': '例如：道路交通事故严重程度致因识别与风险评估研究'},
         'options': [
-            _option('肝癌免疫治疗耐药机制的最新进展', '肝癌免疫治疗耐药机制的最新进展', '医学·机制现状类', '也可直接输入自己的方向'),
-            _option('城市内涝对地下车库财产损失的影响评估', '城市内涝对地下车库财产损失的影响评估', '城建防灾·影响评估类', '也可直接输入自己的方向'),
-            _option('大语言模型在材料科学实验设计中的应用', '大语言模型在材料科学实验设计中的应用', 'AI×新领域·技术方向类', '也可直接输入自己的方向'),
-            _option('课后服务参与对中小学生学业成效的影响', '课后服务参与对中小学生学业成效的影响', '教育·干预效果类', '也可直接输入自己的方向'),
+            _option('道路交通事故严重程度致因识别与风险评估研究', '道路交通事故严重程度致因识别与风险评估研究', '交通安全·事故致因类', '也可直接输入自己的方向'),
+            _option('城市交叉口交通信号配时优化与拥堵治理研究', '城市交叉口交通信号配时优化与拥堵治理研究', '交通控制·运行管理类', '也可直接输入自己的方向'),
+            _option('车路协同环境下交通流预测与智能管控方法研究', '车路协同环境下交通流预测与智能管控方法研究', '智能交通·技术方向类', '也可直接输入自己的方向'),
+            _option('公共交通优先与城市停车需求管理策略研究', '公共交通优先与城市停车需求管理策略研究', '交通规划·需求管理类', '也可直接输入自己的方向'),
         ],
     }
 
@@ -106,10 +106,6 @@ def _years_card(mode):
     ]
     if mode == 'D':
         options = [options[3], options[0], options[1], options[2]]
-        options[0]['label'] += '（推荐）'
-    else:
-        recommended = {'A': 3, 'B': 3, 'C': 1}.get(mode, 3)
-        options[recommended]['label'] += '（推荐）'
     return {
         'id': 'years',
         'eyebrow': '年限确认',
@@ -136,15 +132,20 @@ def _adjustment_card():
 
 
 def _delivery_card(mode):
-    options = [
-        _option('A', 'A 正式调研报告（Word，含文献依据）', '带参考文献与复核边界的 Word 报告', 'Word'),
-        _option('B', 'B 仅对话中给要点和代表文献', '5–8 条要点与不超过 10 篇代表文献', '对话'),
-        _option('C', 'C 展示 PPT', '8–12 页；D 模式为 20–30 页组会汇报', 'PPT'),
-    ]
+    forms = {
+        'A': ('A 正式调研报告（Word，含文献依据）', '带参考文献与复核边界的 Word 报告', 'Word'),
+        'B': ('B 仅对话中给要点和代表文献', '5–8 条要点与不超过 10 篇代表文献', '对话'),
+        'C': ('C 展示 PPT', '8–12 页；D 模式为 20–30 页组会汇报', 'PPT'),
+    }
+    order = ['A', 'B', 'C']
     if mode == 'D':
-        options = [options[2], options[0], options[1]]
+        order = ['C', 'A', 'B']
     elif mode == 'A':
-        options = [options[1], options[0], options[2]]
+        order = ['B', 'A', 'C']
+    options = []
+    for index, form in enumerate(order):
+        label, description, preview = forms[form]
+        options.append(_option(form, f'{chr(65 + index)} {label[2:]}', description, preview))
     return {
         'id': 'delivery',
         'eyebrow': '交付形式确认',

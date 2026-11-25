@@ -86,6 +86,22 @@ def create_session(client):
     return response.json()['session_id']
 
 
+def test_direction_card_uses_fixed_traffic_examples(client, db):
+    publish_base(db)
+    create_session(client)
+
+    created = client.post('/api/tasks', json={})
+    card = created.json()['card']
+    labels = [option['label'] for option in card['options']]
+    assert labels == [
+        '道路交通事故严重程度致因识别与风险评估研究',
+        '城市交叉口交通信号配时优化与拥堵治理研究',
+        '车路协同环境下交通流预测与智能管控方法研究',
+        '公共交通优先与城市停车需求管理策略研究',
+    ]
+    assert '交通事故' in card['custom']['placeholder']
+
+
 def test_create_read_and_history_use_owner_and_pinned_version(client, db):
     version = publish_base(db)
     session_id = create_session(client)
