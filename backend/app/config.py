@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     session_secret: str = ''
     session_ttl_seconds: int = Field(default=604800, gt=0)
     admin_token: str = ''
+    seed_base_skill: bool = False
     model_config = SettingsConfigDict(env_file='.env', extra='ignore')
 
 

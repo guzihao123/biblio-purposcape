@@ -31,6 +31,8 @@ services:
         sync: false
       - key: ARTIFACT_ROOT
         value: /var/data/artifacts
+      - key: SEED_BASE_SKILL
+        value: "true"
 
   - type: worker
     name: landscape-worker

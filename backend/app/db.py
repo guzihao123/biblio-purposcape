@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta, timezone
 from typing import Generator
+from uuid import uuid4
 
 from sqlalchemy import DateTime, create_engine, inspect, text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import get_settings
@@ -28,6 +30,32 @@ else:
     connect_args = {}
 engine = create_engine(database_url, connect_args=connect_args)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+
+
+def seed_base_skill(bind=engine):
+    from app.models import SkillVersion
+    from app.skill_versions import _hash, load_base_config
+
+    with Session(bind=bind) as db:
+        if db.query(SkillVersion).count():
+            return
+        content = load_base_config()
+        now = datetime.now(timezone.utc)
+        db.add(SkillVersion(
+            id=str(uuid4()),
+            version=1,
+            parent_id=None,
+            state='published',
+            content=content,
+            content_hash=_hash(content),
+            regression_report={'passed': True, 'checks': {}, 'errors': []},
+            created_at=now,
+            published_at=now,
+        ))
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
 
 
 def initialize_database(bind=engine):
@@ -97,6 +125,8 @@ def initialize_database(bind=engine):
                 'ON tasks (session_id, idempotency_key)'
             )
         )
+    if get_settings().seed_base_skill:
+        seed_base_skill(bind)
 
 
 def get_db() -> Generator[Session, None, None]:
