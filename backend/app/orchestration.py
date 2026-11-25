@@ -489,7 +489,7 @@ class Orchestrator:
             first = not analysis_reported
             if first:
                 report_stage_phase('search', 'classify')
-            workers = max(1, int(os.environ.get('ANALYSIS_CONCURRENCY', '2')))
+            workers = max(1, int(os.environ.get('ANALYSIS_CONCURRENCY', '1')))
             with ThreadPoolExecutor(max_workers=workers) as pool:
                 classify_future = pool.submit(analyzer.classify, paper_pool)
                 votes_future = pool.submit(analyzer.extract_factor_votes, paper_pool)

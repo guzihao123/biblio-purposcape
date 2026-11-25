@@ -436,3 +436,12 @@ def test_worker_log_filter_drops_the_secret_before_any_handler_formats_it(monkey
     assert 'header api_key=' in rendered
     assert record.args == ()
     assert record.exc_info is None
+
+
+def test_provider_rate_limits_and_server_errors_are_retried():
+    from openai import InternalServerError, RateLimitError
+
+    from app.recovery import _OPENAI_TRANSIENT_ERRORS
+
+    assert RateLimitError in _OPENAI_TRANSIENT_ERRORS
+    assert InternalServerError in _OPENAI_TRANSIENT_ERRORS

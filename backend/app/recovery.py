@@ -11,11 +11,11 @@ from urllib.error import URLError
 import redis.exceptions
 
 try:
-    from openai import APIConnectionError, APITimeoutError
+    from openai import APIConnectionError, APITimeoutError, InternalServerError, RateLimitError
 except ImportError:
     _OPENAI_TRANSIENT_ERRORS = ()
 else:
-    _OPENAI_TRANSIENT_ERRORS = (APITimeoutError, APIConnectionError)
+    _OPENAI_TRANSIENT_ERRORS = (APITimeoutError, APIConnectionError, RateLimitError, InternalServerError)
 
 from app.db import SessionLocal
 from app.models import Task, TaskEvent, TaskJob, TaskProgress

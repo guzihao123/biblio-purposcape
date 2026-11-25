@@ -51,7 +51,9 @@ class ChatModel:
                 extra_body={'enable_thinking': self.thinking},
                 timeout=self.request_timeout,
             ),
-            attempts=1 if self.thinking else 3,
+            attempts=1 if self.thinking else 4,
+            base_delay=1.0,
+            max_delay=8.0,
         )
         try:
             content = response.choices[0].message.content
