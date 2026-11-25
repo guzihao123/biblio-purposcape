@@ -111,6 +111,7 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
     let levelChangedAt = performance.now()
     let lastEvaluation = performance.now()
     let lastFrameTime = 0
+    let lastInteraction = performance.now()
     let fpsSamples: number[] = []
     let drawSamples: number[] = []
 
@@ -124,6 +125,48 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
         : { stars: mobileQuery.matches ? 130 : 320, debris: mobileQuery.matches ? 28 : 88 }
     )
 
+    const glowSprite = (() => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 32
+      canvas.height = 32
+      const context = canvas.getContext('2d')
+      if (!context) return null
+      const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16)
+      gradient.addColorStop(0, 'rgba(101, 177, 221, 0.3)')
+      gradient.addColorStop(1, 'rgba(101, 177, 221, 0)')
+      context.fillStyle = gradient
+      context.fillRect(0, 0, 32, 32)
+      return canvas
+    })()
+
+    const buildDebrisSprites = (pieces: Debris[]) => pieces.map((piece) => {
+      const side = Math.ceil(piece.size * 3)
+      const canvas = document.createElement('canvas')
+      canvas.width = side * 2
+      canvas.height = side * 2
+      const context = canvas.getContext('2d')
+      if (!context) return null
+      context.scale(2, 2)
+      context.translate(side / 2, side / 2)
+      context.beginPath()
+      piece.shape.forEach((radius, index) => {
+        const vertexAngle = (index / piece.shape.length) * TAU
+        const vertexX = Math.cos(vertexAngle) * piece.size * 1.4 * radius
+        const vertexY = Math.sin(vertexAngle) * piece.size * radius
+        if (index === 0) context.moveTo(vertexX, vertexY)
+        else context.lineTo(vertexX, vertexY)
+      })
+      context.closePath()
+      const gradient = context.createLinearGradient(-piece.size, -piece.size, piece.size, piece.size)
+      gradient.addColorStop(0, 'rgba(101, 139, 164, 1)')
+      gradient.addColorStop(0.46, 'rgba(25, 46, 65, 1)')
+      gradient.addColorStop(1, 'rgba(3, 9, 17, 1)')
+      context.fillStyle = gradient
+      context.fill()
+      return canvas
+    })
+    let debrisSprites: (HTMLCanvasElement | null)[] = []
+
     const drawStar = (star: Star, time: number) => {
       const perspective = 1 / (0.78 + star.depth * 0.9)
       const drift = motionQuery.matches ? 0 : Math.sin(time * 0.00008 + star.phase) * 1.8
@@ -133,23 +176,30 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
       if (x < -5 || x > width + 5 || y < -5 || y > height + 5) return
       const twinkle = motionQuery.matches ? 0.72 : 0.65 + Math.sin(time * 0.00055 + star.phase) * 0.17
       const alpha = (0.12 + (1 - star.depth) * 0.46) * twinkle
+      const radius = Math.max(0.35, star.size * perspective)
+      if (level === 'full' && glowSprite && star.depth < 0.18) {
+        const glowRadius = radius * 8
+        back.globalAlpha = 1
+        back.drawImage(glowSprite, x - glowRadius, y - glowRadius, glowRadius * 2, glowRadius * 2)
+      }
       back.beginPath()
       back.fillStyle = star.mint
         ? `rgba(126, 224, 213, ${alpha * 0.8})`
         : `rgba(145, 190, 224, ${alpha})`
-      back.shadowColor = 'rgba(101, 177, 221, 0.28)'
-      back.shadowBlur = level === 'full' && star.depth < 0.18 ? 5 : 0
-      back.arc(x, y, Math.max(0.35, star.size * perspective), 0, TAU)
+      back.arc(x, y, radius, 0, TAU)
       back.fill()
     }
 
     const drawDebris = (
       piece: Debris,
+      index: number,
       time: number,
       isFront: boolean,
       planetX: number,
       planetY: number,
     ) => {
+      const sprite = debrisSprites[index]
+      if (!sprite) return
       const angle = piece.angle + (motionQuery.matches ? 0 : time * 0.000012 * piece.speed)
       const frontSide = Math.sin(angle) > 0
       if (frontSide !== isFront) return
@@ -165,25 +215,11 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
       const size = piece.size * depthScale * (mobileQuery.matches ? 0.72 : 1)
       if (x < -30 || x > width + 30 || y < -30 || y > height + 30) return
       const context = isFront ? front : back
-      const alpha = isFront ? 0.54 : 0.2
       context.save()
       context.translate(x, y)
       context.rotate(piece.spin + (motionQuery.matches ? 0 : time * 0.000025 * piece.speed))
-      context.beginPath()
-      piece.shape.forEach((radius, index) => {
-        const vertexAngle = (index / piece.shape.length) * TAU
-        const vertexX = Math.cos(vertexAngle) * size * 1.4 * radius
-        const vertexY = Math.sin(vertexAngle) * size * radius
-        if (index === 0) context.moveTo(vertexX, vertexY)
-        else context.lineTo(vertexX, vertexY)
-      })
-      context.closePath()
-      const gradient = context.createLinearGradient(-size, -size, size, size)
-      gradient.addColorStop(0, `rgba(101, 139, 164, ${alpha})`)
-      gradient.addColorStop(0.46, `rgba(25, 46, 65, ${alpha})`)
-      gradient.addColorStop(1, `rgba(3, 9, 17, ${alpha})`)
-      context.fillStyle = gradient
-      context.fill()
+      context.globalAlpha = isFront ? 0.54 : 0.2
+      context.drawImage(sprite, -size * 1.5, -size * 1.5, size * 3, size * 3)
       context.restore()
     }
 
@@ -201,10 +237,9 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
 
       back.globalCompositeOperation = 'lighter'
       stars.forEach((star) => drawStar(star, sceneTime))
-      back.shadowBlur = 0
       back.globalCompositeOperation = 'source-over'
-      debris.forEach((piece) => drawDebris(piece, sceneTime, false, planetX, planetY))
-      debris.forEach((piece) => drawDebris(piece, sceneTime, true, planetX, planetY))
+      debris.forEach((piece, index) => drawDebris(piece, index, sceneTime, false, planetX, planetY))
+      debris.forEach((piece, index) => drawDebris(piece, index, sceneTime, true, planetX, planetY))
 
       if (!motionQuery.matches) {
         const foregroundStars = level === 'lite' ? 6 : 14
@@ -259,7 +294,8 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
         if (fpsSamples.length > 90) fpsSamples.shift()
       }
       lastFrameTime = time
-      const frameInterval = level === 'lite' ? 66 : mobileQuery.matches ? 50 : 33
+      const idle = level === 'full' && time - lastInteraction > 3000
+      const frameInterval = level === 'lite' || idle ? 66 : mobileQuery.matches ? 50 : 33
       if (time - previousFrame >= frameInterval) {
         const startedAt = performance.now()
         draw(time)
@@ -290,6 +326,7 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
       lastFrameTime = 0
       lastEvaluation = performance.now()
       levelChangedAt = performance.now()
+      lastInteraction = performance.now()
       previousFrame = 0
       animationFrame = window.requestAnimationFrame(animate)
     }
@@ -297,7 +334,7 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
     const resize = () => {
       const pixelRatio = level === 'lite'
         ? 1
-        : Math.min(window.devicePixelRatio || 1, mobileQuery.matches ? 1.25 : 1.5)
+        : Math.min(window.devicePixelRatio || 1, mobileQuery.matches ? 1 : 1.25)
       width = window.innerWidth
       height = window.innerHeight
       for (const [canvas, context] of [[backCanvas, back], [frontCanvas, front]] as const) {
@@ -316,11 +353,14 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
       const counts = particleCounts()
       stars = createStars(counts.stars)
       debris = createDebris(counts.debris)
+      debrisSprites = buildDebrisSprites(debris)
       scene.dataset.quality = level
+      lastInteraction = performance.now()
       draw(performance.now())
     }
 
     const handlePointer = (event: PointerEvent) => {
+      lastInteraction = performance.now()
       if (event.pointerType !== 'mouse' || motionQuery.matches) return
       targetX = (event.clientX / Math.max(width, 1)) * 2 - 1
       targetY = (event.clientY / Math.max(height, 1)) * 2 - 1
@@ -330,8 +370,12 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
       targetY = 0
     }
     const handleScroll = () => {
+      lastInteraction = performance.now()
       if (motionQuery.matches) return
       targetScroll = Math.min(window.scrollY / Math.max(window.innerHeight, 1), 1)
+    }
+    const markInteraction = () => {
+      lastInteraction = performance.now()
     }
     const handleVisibility = () => {
       if (document.hidden) stop()
@@ -344,6 +388,9 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
     onQualityChangeRef.current?.(level)
     window.addEventListener('resize', resize)
     window.addEventListener('pointermove', handlePointer, { passive: true })
+    window.addEventListener('pointerdown', markInteraction, { passive: true })
+    window.addEventListener('wheel', markInteraction, { passive: true })
+    window.addEventListener('touchstart', markInteraction, { passive: true })
     window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('blur', resetPointer)
     document.addEventListener('visibilitychange', handleVisibility)
@@ -354,6 +401,9 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
       stop()
       window.removeEventListener('resize', resize)
       window.removeEventListener('pointermove', handlePointer)
+      window.removeEventListener('pointerdown', markInteraction)
+      window.removeEventListener('wheel', markInteraction)
+      window.removeEventListener('touchstart', markInteraction)
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('blur', resetPointer)
       document.removeEventListener('visibilitychange', handleVisibility)
