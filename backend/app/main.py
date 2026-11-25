@@ -96,15 +96,10 @@ def _sites_sync():
 
 
 def _sites_raise(error):
-    from app.task_store_sync import TaskStoreSyncError
+    """Translate a task-store failure without echoing upstream provider text."""
+    from app.sites_errors import sites_http_exception
 
-    code = getattr(error, 'code', 'task_store_unavailable')
-    retry_after = getattr(error, 'retry_after', None)
-    status = {'session_not_found': 401, 'skill_version_unavailable': 409, 'quota_exceeded': 429,
-              'revision_conflict': 409, 'answer_conflict': 409, 'task_not_found': 404,
-              'job_not_found': 404, 'invalid_provider_response': 503}.get(code, 503)
-    headers = {'Retry-After': str(retry_after)} if retry_after else {}
-    raise HTTPException(status_code=status, detail={'code': code, 'message': str(error)}, headers=headers)
+    raise sites_http_exception(error)
 
 
 def _remote_task(db, task, session):
@@ -334,6 +329,56 @@ def _prepare_term_candidates(db, task_id, request, session, limiter):
         )
     db.add(event)
     db.commit()
+
+
+def _task_direction_value(task_id, session, db):
+    sync = _sites_sync()
+    if sync is not None:
+        aggregate = sync.get_task_aggregate(session.id, task_id)
+        answers = aggregate.get('answers') or {}
+        direction = answers.get('direction') or ''
+        if isinstance(direction, dict):
+            direction = direction.get('direction', '')
+        return str(direction or '').strip()
+    answer = db.query(TaskAnswer).filter_by(task_id=task_id, card_id='direction').one_or_none()
+    value = answer.value if answer is not None else {}
+    return str((value or {}).get('direction') or '').strip()
+
+
+@app.post('/api/tasks/{task_id}/b-theme-candidates')
+def b_theme_candidates(
+    task_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+    session: InviteSession = Depends(require_session),
+    limiter: RateLimiter = Depends(get_rate_limiter),
+):
+    _owned_task(task_id, session, db)
+    direction = _task_direction_value(task_id, session, db)
+    if not direction:
+        raise HTTPException(
+            status_code=409,
+            detail={'code': 'direction_required', 'message': '请先确认研究方向。'},
+        )
+    digest = hashlib.sha256(direction.encode('utf-8')).hexdigest()[:16]
+    enforce_rate_limit(
+        limiter,
+        'model',
+        request,
+        session_id=session.id,
+        idempotency_key=f'{task_id}:b-themes:{digest}',
+    )
+    try:
+        options = candidate_service.generate_project_themes(direction)
+    except Exception:
+        options = []
+    if not options:
+        return {
+            'options': [],
+            'available': False,
+            'message': '项目主题候选暂不可用，可直接自定义项目主题。',
+        }
+    return {'options': options, 'available': True}
 
 
 @app.post('/api/tasks/{task_id}/answers/{card_id}')

@@ -103,6 +103,9 @@ def initialize_database(bind=engine):
         progress_columns = {column['name'] for column in inspect(bind).get_columns('task_progress')}
         if 'updated_at' not in progress_columns:
             connection.execute(text("ALTER TABLE task_progress ADD COLUMN updated_at DATETIME"))
+        if 'percent' not in progress_columns:
+            connection.execute(text("ALTER TABLE task_progress ADD COLUMN percent INTEGER DEFAULT 0"))
+        connection.execute(text("UPDATE task_progress SET percent = 0 WHERE percent IS NULL"))
         session_columns = {column['name'] for column in inspect(bind).get_columns('invite_sessions')}
         if 'client_ip' not in session_columns:
             connection.execute(

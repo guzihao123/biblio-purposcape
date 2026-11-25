@@ -1,8 +1,9 @@
-import type { TaskCard, TaskAnswer } from './components/TaskWizard'
+import type { ProjectThemeOption, TaskCard, TaskAnswer } from './components/TaskWizard'
 
 export interface TaskProgress {
   stage: string | null
   message: string
+  percent?: number | null
   checkpoint: Record<string, unknown> | null
 }
 
@@ -65,21 +66,41 @@ export class ApiError extends Error {
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 const endpoint = (path: string) => `${API_BASE}${path}`
+const RETRYABLE_STATUSES = new Set([502, 503, 504])
 
 export function artifactUrl(url: string) {
   return API_BASE === '/api' ? url : url.replace(/^\/api\//, `${API_BASE}/`)
 }
 
-async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
-  const response = await fetch(url, {
-    ...init,
-    credentials: 'include',
-    headers: init.body
-      ? { 'Content-Type': 'application/json', ...(init.headers ?? {}) }
-      : init.headers,
-  })
-  if (!response.ok) throw new ApiError(response.status)
-  return response.json() as Promise<T>
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+async function request<T>(url: string, init: RequestInit = {}, retries = 0): Promise<T> {
+  let attempt = 0
+  while (true) {
+    try {
+      const response = await fetch(url, {
+        ...init,
+        credentials: 'include',
+        headers: init.body
+          ? { 'Content-Type': 'application/json', ...(init.headers ?? {}) }
+          : init.headers,
+      })
+      if (!response.ok) {
+        if (RETRYABLE_STATUSES.has(response.status) && attempt < retries) {
+          attempt += 1
+          await sleep(500 * attempt)
+          continue
+        }
+        throw new ApiError(response.status)
+      }
+      return await response.json() as T
+    } catch (error) {
+      if (error instanceof ApiError) throw error
+      if (attempt >= retries) throw error
+      attempt += 1
+      await sleep(500 * attempt)
+    }
+  }
 }
 
 export function createTask(idempotencyKey: string) {
@@ -87,30 +108,43 @@ export function createTask(idempotencyKey: string) {
     method: 'POST',
     headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify({}),
-  })
+  }, 2)
 }
 
 export function getTask(taskId: string) {
-  return request<TaskView>(endpoint(`/tasks/${taskId}`))
+  return request<TaskView>(endpoint(`/tasks/${taskId}`), {}, 2)
 }
 
 export function listTasks() {
-  return request<{ tasks: TaskView[] }>(endpoint('/tasks'))
+  return request<{ tasks: TaskView[] }>(endpoint('/tasks'), {}, 2)
 }
 
 export function answerTask(taskId: string, cardId: string, value: TaskAnswer) {
   return request<TaskView>(endpoint(`/tasks/${taskId}/answers/${cardId}`), {
     method: 'POST',
     body: JSON.stringify({ value }),
+  }, 2)
+}
+
+export interface ProjectThemeCandidates {
+  options: ProjectThemeOption[]
+  available: boolean
+  message?: string
+}
+
+export function getProjectThemeCandidates(taskId: string) {
+  return request<ProjectThemeCandidates>(endpoint(`/tasks/${taskId}/b-theme-candidates`), {
+    method: 'POST',
+    body: JSON.stringify({}),
   })
 }
 
 export function getDashboard(taskId: string) {
-  return request<DashboardPayload>(endpoint(`/tasks/${taskId}/dashboard`))
+  return request<DashboardPayload>(endpoint(`/tasks/${taskId}/dashboard`), {}, 2)
 }
 
 export function getReport(taskId: string) {
-  return request<ReportPayload>(endpoint(`/tasks/${taskId}/report`))
+  return request<ReportPayload>(endpoint(`/tasks/${taskId}/report`), {}, 2)
 }
 
 function adminHeaders(token: string) {

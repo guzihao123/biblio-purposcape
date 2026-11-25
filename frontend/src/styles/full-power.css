@@ -709,6 +709,16 @@ input:focus-visible {
   text-transform: uppercase;
 }
 
+.full-power-option__preview.is-multiline {
+  color: var(--site-muted);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.65;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: pre-line;
+}
+
 .wizard-actions {
   display: flex;
   gap: 24px;

@@ -611,3 +611,50 @@ def test_chat_model_rejects_non_json_model_content():
 
     with pytest.raises(ValueError, match='valid JSON'):
         model.complete_json('Return JSON.', {})
+
+
+def test_analysis_batches_large_pool_and_groups_candidate_pairs(monkeypatch):
+    monkeypatch.delenv('ANALYSIS_BUDGET_SECONDS', raising=False)
+
+    class EmptyModel:
+        def __init__(self):
+            self.calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            self.calls += 1
+            return {'clusters': [], 'methods': [], 'votes': [], 'relations': []}
+
+    papers = [
+        {'ref_no': index, 'title': 'Shared outcome paper', 'abstract': 'Factor changes outcome in this cohort.'}
+        for index in range(1, 51)
+    ]
+    model = EmptyModel()
+    service = AnalysisService(model)
+
+    service.classify(papers)
+    assert model.calls == 5
+    model.calls = 0
+    service.extract_factor_votes(papers)
+    assert model.calls == 5
+    model.calls = 0
+    service.extract_relations(papers)
+    assert model.calls <= 10
+
+
+def test_analysis_deadline_stops_before_new_model_calls(monkeypatch):
+    import time as time_module
+
+    monkeypatch.delenv('ANALYSIS_BUDGET_SECONDS', raising=False)
+
+    class CountingModel:
+        def __init__(self):
+            self.calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            self.calls += 1
+            return {'clusters': [], 'methods': []}
+
+    model = CountingModel()
+    service = AnalysisService(model, deadline=time_module.monotonic() - 1)
+    assert service.classify([{'ref_no': 1, 'title': 'P', 'abstract': 'A.'}]) == {'clusters': [], 'methods': []}
+    assert model.calls == 0

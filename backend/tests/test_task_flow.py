@@ -162,6 +162,25 @@ def test_conflicting_late_answer_returns_409_with_zero_new_storage(db, task, ses
     assert db.query(TaskAnswer).filter_by(task_id=task.id, card_id='mode').count() == 1
 
 
+def test_c_mode_answer_writes_choices_and_material_to_the_requirement_ledger(db, task, session):
+    answer_card(task.id, CardId.DIRECTION, {'direction': 'urban resilience'}, session)
+    answer_card(task.id, CardId.MODE, {
+        'mode': 'C',
+        'c_route': 'C1+C2',
+        'c_info_route': 'oral',
+        'c_material': '研究问题：暴露约束下的联合校准\n方法：调查与校准模型',
+        'target_journal': 'Journal of Flood Risk Management',
+    }, session)
+
+    event = db.query(TaskEvent).filter_by(
+        task_id=task.id, event_type='user_requirements_recorded',
+    ).one()
+    assert event.payload['c_route'] == 'C1+C2'
+    assert event.payload['c_info_route'] == 'oral'
+    assert '调查与校准模型' in event.payload['c_material']
+    assert event.payload['target_journal'] == 'Journal of Flood Risk Management'
+
+
 def test_adjustment_is_the_gateway_to_delivery(db, task, session):
     set_state(db, task, TaskState.DASHBOARD_READY, CardId.ADJUSTMENT)
 

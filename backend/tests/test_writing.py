@@ -2,7 +2,14 @@ from pathlib import Path
 
 import pytest
 
-from app.writing import WritingInputError, WritingService, WritingTask
+from app.writing import (
+    B_PROJECT_GENERATION_RULE,
+    B_SYSTEM_GENERATED_PLACEHOLDER,
+    WritingInputError,
+    WritingService,
+    WritingTask,
+    _render_b,
+)
 
 
 PAPERS = [
@@ -43,6 +50,11 @@ SECOND_EVIDENCE = {
 
 
 def component_data(mode):
+    if mode == 'E':
+        return {
+            'markdown': '## 用途落实\n\n按自定义用途组织的构件 [1]（据摘要）。',
+            'evidence': [EVIDENCE],
+        }
     if mode == 'A_DIALOGUE':
         categories = ['理论创新型选题', '方法创新型选题', '研究对象拓展型选题', '数据与实证创新型选题', '机制解释型选题', '前沿交叉型选题', '应用需求驱动型选题']
         groups = []
@@ -326,6 +338,49 @@ def test_b_components_include_project_demand_mapping_and_six_link_chain(tmp_path
     assert '技术路线' not in sample or '对解表' in sample or '刚性需求' in sample
 
 
+def test_b_minimal_project_generates_components_and_body_without_key_error(tmp_path):
+    project = {
+        'name': '车库暴露约束下的损失联合校准',
+        'goal': '建立暴露、恢复与损失联合校准方法',
+        'funding': '未指定',
+    }
+    task = make_task('B', tmp_path, project=project)
+    service = WritingService(workspace_root=tmp_path)
+
+    output = service.produce(
+        task,
+        body_writer=lambda context: successful_body('本项目拟建立联合校准方法 [1]。'),
+    )
+
+    for section in ('研究内容与技术路线', '技术路线', '可行性', '预期成果'):
+        assert section in output.components.markdown
+    assert output.components.markdown.count(B_SYSTEM_GENERATED_PLACEHOLDER) == 4
+    assert output.body_path.exists()
+    assert '本项目拟建立联合校准方法 [1]' in output.body_path.read_text(encoding='utf-8')
+
+
+def test_b_render_uses_placeholder_for_missing_or_empty_project_fields(tmp_path):
+    task = make_task('B', tmp_path, project={'name': '项目甲', 'goal': '目标乙', 'funding': '未指定'})
+    markdown = _render_b(task, component_data('B'))
+    assert markdown.count(B_SYSTEM_GENERATED_PLACEHOLDER) == 4
+
+    task = make_task('B', tmp_path, project={
+        'name': '项目甲', 'goal': '目标乙', 'funding': '未指定',
+        'research_contents': [], 'technical_route': '', 'feasibility': '  ', 'expected_outcomes': '',
+    })
+    assert _render_b(task, component_data('B')).count(B_SYSTEM_GENERATED_PLACEHOLDER) == 4
+
+
+def test_b_full_project_still_renders_user_supplied_plan_fields(tmp_path):
+    output = WritingService(workspace_root=tmp_path).produce_components(make_task('B', tmp_path))
+
+    assert '研究内容（1）联合建模' in output.markdown
+    assert '技术路线：输入→联合建模→跨区验证→输出' in output.markdown
+    assert '可行性：数据公开性未确认' in output.markdown
+    assert '预期成果：联合校准方法、验证协议与论文。' in output.markdown
+    assert B_SYSTEM_GENERATED_PLACEHOLDER not in output.markdown
+
+
 def test_c1_has_five_paragraph_cards_and_research_gap(tmp_path):
     service = WritingService(workspace_root=tmp_path)
     output = service.produce_components(make_task('C1', tmp_path))
@@ -471,6 +526,29 @@ def test_body_prompt_carries_length_and_blank_row_rules(tmp_path):
     body_payload = [p for p in model.payloads if p['stage'] == 'body'][0]
     assert body_payload['length_target'] == '1500-2500'
     assert '空白1：' in body_payload['format_rules']
+
+
+def test_b_model_payloads_require_system_generated_plan_sections(tmp_path):
+    class FakeModel:
+        def __init__(self):
+            self.calls = []
+
+        def complete_json(self, system_prompt, payload):
+            self.calls.append((system_prompt, payload))
+            if payload['stage'] == 'components':
+                return {'components': component_data('B')}
+            return {'body': '本项目拟建立联合校准方法 [1]。', 'evidence': [EVIDENCE]}
+
+    model = FakeModel()
+    task = make_task('B', tmp_path, component_data=None, project={'name': '项目甲', 'goal': '目标乙'})
+    WritingService(workspace_root=tmp_path, model=model).produce(task)
+
+    assert [payload['stage'] for _, payload in model.calls] == ['components', 'body']
+    for system_prompt, payload in model.calls:
+        assert payload['project_generation_rules'] == B_PROJECT_GENERATION_RULE
+        assert '研究内容（3–4 项）' in payload['project_generation_rules']
+        assert '不得留空' in payload['project_generation_rules']
+        assert B_PROJECT_GENERATION_RULE in system_prompt
 
 
 def test_body_with_uncited_reference_is_retried_once(tmp_path):
@@ -634,3 +712,66 @@ def test_a_requires_three_to_five_evidence_backed_gaps(tmp_path):
 
     with pytest.raises(WritingInputError, match='3–5 gap'):
         WritingService(workspace_root=tmp_path).produce_components(task)
+
+
+def test_e_mode_uses_custom_purpose_markdown_component_and_body_file(tmp_path):
+    class EModel:
+        def __init__(self):
+            self.calls = []
+
+        def complete_json(self, system_prompt, payload):
+            self.calls.append((system_prompt, payload))
+            if payload['stage'] == 'components':
+                return {'components': {
+                    'markdown': '## 用途落实\n\n按政策简报用途组织证据 [1]（据摘要）。',
+                    'evidence': [EVIDENCE],
+                }}
+            return {'body': '政策简报用途下的综述正文 [1]（据摘要）。', 'evidence': [EVIDENCE]}
+
+    model = EModel()
+    task = make_task(
+        'E',
+        tmp_path,
+        component_data=None,
+        custom_purpose='为学院写一份面向政策制定的交通安全证据简报',
+    )
+    output = WritingService(workspace_root=tmp_path, model=model).produce(task)
+
+    assert [payload['stage'] for _, payload in model.calls] == ['components', 'body']
+    for system_prompt, payload in model.calls:
+        assert payload['custom_purpose'] == task.custom_purpose
+        assert payload['custom_purpose_rules']
+        assert 'E 模式是用户自定义用途' in system_prompt
+    assert '用途落实' in output.components.markdown
+    assert output.body_path.name == '综述初稿.md'
+    assert '按用户用途定制的提纲' in output.outline
+
+
+def test_b_project_theme_is_rendered_into_components(tmp_path):
+    theme = {
+        'name': '车库暴露约束下的损失联合校准',
+        'goal': '建立暴露、恢复与损失联合校准方法',
+        'object': '城市地下车库',
+        'method': '联合建模与情景比较',
+        'expected_output': '校准方法与验证协议',
+    }
+    task = make_task(
+        'B',
+        tmp_path,
+        project={
+            'name': '车库暴露约束下的损失联合校准',
+            'goal': '建立暴露、恢复与损失联合校准方法',
+            'funding': '未指定',
+            'theme': theme,
+        },
+    )
+    output = WritingService(workspace_root=tmp_path).produce(
+        task,
+        body_writer=lambda context: successful_body('本项目拟建立联合校准方法 [1]。'),
+    )
+
+    markdown = output.components.markdown
+    assert '## 项目主题（用户选定）' in markdown
+    assert '- 研究对象：城市地下车库' in markdown
+    assert '- 方法：联合建模与情景比较' in markdown
+    assert '- 预期产出：校准方法与验证协议' in markdown

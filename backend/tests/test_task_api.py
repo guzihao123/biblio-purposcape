@@ -53,6 +53,7 @@ def client(db, monkeypatch, tmp_path):
             progress = db.get(TaskProgress, task_id) or TaskProgress(task_id=task_id)
             progress.stage = stage
             progress.message = f'queued:{stage}'
+            progress.percent = 35
             db.add(progress)
             db.commit()
             return {'id': f'rq-{stage}'}
@@ -60,6 +61,21 @@ def client(db, monkeypatch, tmp_path):
     monkeypatch.setattr('app.main.queue_adapter', FakeQueue())
     monkeypatch.setattr('app.main.candidate_service', type('FakeCandidates', (), {
         'generate': lambda self, direction, mode: [],
+        'generate_project_themes': lambda self, direction: [
+            {
+                'value': 'theme-1',
+                'label': '项目主题甲',
+                'description': '目标甲',
+                'preview': '研究对象：对象甲\n方法：方法甲\n预期产出：产出甲',
+                'theme': {
+                    'name': '项目主题甲',
+                    'goal': '目标甲',
+                    'object': '对象甲',
+                    'method': '方法甲',
+                    'expected_output': '产出甲',
+                },
+            },
+        ],
     })())
 
     def override_db():
@@ -194,6 +210,7 @@ def test_answers_advance_real_cards_and_enqueue_search_once(client, db):
 
     current = client.get(f'/api/tasks/{task_id}')
     assert current.json()['progress']['stage'] == 'search'
+    assert current.json()['progress']['percent'] == 35
 
 
 def test_mode_answer_caches_real_candidate_options(client, db, monkeypatch):
@@ -437,3 +454,50 @@ def test_candidate_model_rate_limit_returns_429_before_paid_call(
     assert response.json()['detail']['code'] == 'rate_limited'
     assert 'traceback' not in response.text.lower()
     assert '/Users/' not in response.text
+
+
+def test_b_theme_candidates_require_direction_and_return_options(client, db):
+    publish_base(db)
+    create_session(client)
+    task_id = client.post('/api/tasks', json={}).json()['id']
+
+    missing = client.post(f'/api/tasks/{task_id}/b-theme-candidates', json={})
+    assert missing.status_code == 409
+    assert missing.json()['detail']['code'] == 'direction_required'
+
+    client.post(
+        f'/api/tasks/{task_id}/answers/direction',
+        json={'value': {'direction': '城市内涝与地下车库'}},
+    )
+    response = client.post(f'/api/tasks/{task_id}/b-theme-candidates', json={})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload['available'] is True
+    assert payload['options'][0]['label'] == '项目主题甲'
+    assert payload['options'][0]['theme']['object'] == '对象甲'
+
+
+def test_mode_e_requires_custom_purpose_and_then_moves_to_terms(client, db):
+    publish_base(db)
+    create_session(client)
+    task_id = client.post('/api/tasks', json={}).json()['id']
+    client.post(
+        f'/api/tasks/{task_id}/answers/direction',
+        json={'value': {'direction': '城市内涝与地下车库'}},
+    )
+
+    missing = client.post(
+        f'/api/tasks/{task_id}/answers/mode',
+        json={'value': {'mode': 'E'}},
+    )
+    assert missing.status_code == 422
+    assert missing.json()['detail']['code'] == 'invalid_answer'
+
+    accepted = client.post(
+        f'/api/tasks/{task_id}/answers/mode',
+        json={'value': {'mode': 'E', 'custom': '为学院写政策证据简报'}},
+    )
+    assert accepted.status_code == 200
+    assert accepted.json()['next_card'] == 'terms'
+    assert accepted.json()['card']['id'] == 'terms'

@@ -68,11 +68,17 @@ class SitesStorageClient:
             headers=options.get('headers') or {},
         )
         with urllib.request.urlopen(request, timeout=options.get('timeout', 60)) as response:
+            status = response.status
             body = response.read()
             content_type = response.headers.get('content-type', '')
+        # Carry the status into every result so non-2xx is classified in one
+        # place, even when the body happens to parse as JSON.
         if options.get('response_mode') != 'bytes' and 'application/json' in content_type:
-            return json.loads(body.decode('utf-8'))
-        return {'body': body, 'content_type': content_type}
+            payload = json.loads(body.decode('utf-8'))
+            if isinstance(payload, dict):
+                return {**payload, 'status': status}
+            return {'status': status, 'payload': payload}
+        return {'status': status, 'body': body, 'content_type': content_type}
 
     def _path(self, task_id, filename):
         validate_task_id(task_id)
@@ -91,11 +97,19 @@ class SitesStorageClient:
         options = {**options, 'headers': headers}
         try:
             result = self.transport(url, options)
+            expects_json = options.get('response_mode') != 'bytes'
             failed = (
                 not isinstance(result, dict)
                 or result.get('ok') is False
                 or result.get('error') is not None
-                or int(result.get('status', 200)) >= 400
+                or not 200 <= int(result.get('status', 200)) < 300
+                # A gateway interstitial (login page, HTML error page) arrives
+                # as a 2xx non-JSON body; never read that as a stored artifact.
+                or (
+                    expects_json
+                    and 'body' in result
+                    and 'content_type' in result
+                )
             )
         except Exception:
             raise StorageError('remote artifact request failed') from None

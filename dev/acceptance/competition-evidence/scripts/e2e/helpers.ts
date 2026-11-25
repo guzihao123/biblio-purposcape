@@ -111,8 +111,11 @@ export async function chooseMode(page: Page, mode: 'A' | 'B' | 'C' | 'D', testIn
     }
     await page.getByRole('button', { name: '从零写引言和文献综述（两个都选）', exact: true }).click()
     await confirm(page)
-    await expect(page.getByLabel('本文信息')).toBeVisible()
-    await page.getByLabel('本文信息').fill('比较三条耐药机制，采用分层机制验证，预期形成可追溯研究框架。')
+    await expect(page.getByRole('button', { name: /跳过，按通用口径写框架/ })).toBeVisible()
+    await page.getByRole('button', { name: /已有论文初稿，提供文件/ }).click()
+    await page.getByLabel('本文材料（粘贴题目、摘要、方法、结果、创新）').fill(
+      '题目：三条耐药机制比较\n方法：分层机制验证\n创新：可追溯研究框架',
+    )
     await page.getByLabel('目标期刊（可跳过）').fill('Hepatology')
     if (testInfo) {
       await auditLayout(page, testInfo, '390-c-info')

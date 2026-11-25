@@ -1,0 +1,56 @@
+{
+  "query": [
+    "课后服务"
+  ],
+  "source": "openalex",
+  "total_hits": 251,
+  "retrieved_at": "2026-11-25T15:02:54",
+  "papers": [
+    {
+      "source": "openalex",
+      "id": "https://openalex.org/W7170163320",
+      "title": "小学课后服务与收费问题研究",
+      "year": 2024,
+      "authors": [
+        "祥雨 李"
+      ],
+      "venue": "Zenodo (CERN European Organization for Nuclear Research)",
+      "cited_by_count": 0,
+      "doi": "https://doi.org/10.5281/zenodo.21503272",
+      "url": "https://doi.org/10.5281/zenodo.21503272",
+      "oa_url": "https://doi.org/10.5281/zenodo.21503272",
+      "pdf_url": null,
+      "abstract": "小学课后服务与收费问题研究 李祥雨 莱州市发展和改革局 261400 【摘 要】随着教育改革的深入,小学课后服务已成为支持学生全面发展的重要环节。然而,课后服务的收费问题也随之浮现,引发了社会各界的广 泛关注。课后服务需要资金支持以保证服务质量,收费标准和方式直接关系到教育公平和家庭负担。因此,研究小学课后服务的收费问题,对于优化教育 资源配置、提升服务质量、减轻家庭经济压力具有重要意义。 【关键词】小学;课后服务;收费",
+      "type": "dissertation",
+      "language": "cjy",
+      "institutions": [],
+      "countries": [],
+      "is_retracted": false,
+      "referenced_works": [],
+      "evidence_level": "A"
+    },
+    {
+      "source": "openalex",
+      "id": "https://openalex.org/W7215876970",
+      "title": "义务教育课后服务评价指标体系构建的探究",
+      "year": 2024,
+      "authors": [
+        "珂 薛"
+      ],
+      "venue": "教育研究",
+      "cited_by_count": 0,
+      "doi": "https://doi.org/10.12238/er.v7i11.5568",
+      "url": "https://doi.org/10.12238/er.v7i11.5568",
+      "oa_url": "https://www.educ-res.com/index.php/er/article/view/5568/5327",
+      "pdf_url": null,
+      "abstract": "课后服务是促进义务教育提质增效的重要环节，自从2021年“双减”政策实施以来，课后服务从初期的增长探索阶段，进入到中期的调整发展阶段，课后服务从原来的全覆盖、速度快、普及广，到现在多元化、个性化、高质量的发展要求，迫切需要构建一个系统完整的义务教育课后服务质量评价指标体系，及时发挥评价的诊断、导向、激励等功能，真正激发课后服务各参与者的内在动力，有针对性地发现和解决课后服务存在的问题和不足，从而促进课后服务高质量内涵式发展，做到真正解决家长难题的同时，促进学生健康成长。",
+      "type": "article",
+      "language": "zh",
+      "institutions": [],
+      "countries": [],
+      "is_retracted": false,
+      "referenced_works": [],
+      "evidence_level": "A"
+    }
+  ]
+}

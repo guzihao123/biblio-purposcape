@@ -55,3 +55,15 @@
 - 交付物仍有人为核对项：13 篇著录需人工核对、1 个数字待判定；本地最新生成 `clean=false`，不可当作“全绿”交付。
 - 清单中的 linux/amd64 构建、真实 Qoder Storage 上传下载、RQ 全量迁移、Skill 发布并发等仍属 `dev/acceptance/mainline-20261125-result.json` 列出的未验证项。
 - 本次只写文档；未执行 `git push`、Render 重新部署、Qoder 重发或云配置变更。
+
+---
+
+## 主线进展（2026-11-25 17:25 GMT+8）
+
+- 已用 GitHub API 推送 20 个提交（远端 `abf2b9e`），Render 重新部署；方向卡交通四题线上已验证。
+- Qoder 函数根因修复：网关路径为 `/app-<部署哈希>/`；health 200、session 201、制品路由 403 鉴权正常。
+- 制品链路：新增 web 受保护内部上传端点（`/api/internal/artifacts/...`），worker 直接上传到 web；线上检索 31–34 秒完成，22 个制品可下载。
+- 稳定性热修：Supabase 会话池（5432）、阶段收尾换连接重试、RQ 队列切到 `landscape-v2`、写作请求按次 600 秒超时（此前复用分析客户端 90 秒导致 thinking 必超时）。
+- 集成：`integration2` = 最新 main + B 卡简化 + 检索源路由 + 任务过期，后端 496 passed、站点函数 57 passed。
+- 最终验收任务 `ef805526` 正在生成 Word；另有旧任务 `ab4ddaaa` 仍占用旧 generation，不阻塞。
+- 待办：合并 integration2 → 推送部署 → B 模式线上验收 → 任务过期清理 → Skill v2（B 模板）；四个并行工地（C 收尾 / B [M] / D 原图 / 进度 UX）已给提示词。

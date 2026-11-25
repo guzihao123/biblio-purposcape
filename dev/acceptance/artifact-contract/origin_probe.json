@@ -1,0 +1,16 @@
+{
+  "origin_header_sent": "http://127.0.0.1:58634",
+  "all_headers": {
+    "Accept-Encoding": "identity",
+    "Content-Length": "5",
+    "Host": "127.0.0.1:58634",
+    "User-Agent": "Python-urllib/3.13",
+    "X-Worker-Token": "test-secret",
+    "Content-Type": "application/octet-stream",
+    "X-Artifact-Sha256": "ba9c736f19e7f60b7f6764adb0b7908c0a2b394e09b6c09863528c7f2bc86095",
+    "Origin": "http://127.0.0.1:58634",
+    "Connection": "close"
+  },
+  "caller_origin_preserved": "https://caller.example",
+  "function_accepts_spoofed_origin_status": 201
+}

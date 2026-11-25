@@ -1,0 +1,265 @@
+{
+  "origin": "http://127.0.0.1:8000",
+  "large_payload_tested": true,
+  "total": 32,
+  "passed": 32,
+  "failed": 0,
+  "checks": [
+    {
+      "group": "client-logic",
+      "check": "non-JSON gateway error page is not treated as success",
+      "ok": true,
+      "expected": "StorageError",
+      "actual": "StorageError",
+      "note": "stub transport, no network"
+    },
+    {
+      "group": "prefix",
+      "check": "PUT /functions/v1/app/... -> 201 + size",
+      "ok": true,
+      "expected": "201 {\"ok\":true,\"size\":44}",
+      "actual": "201 {'ok': True, 'name': 'report.docx', 'size': 44}",
+      "note": ""
+    },
+    {
+      "group": "prefix",
+      "check": "GET /app/... download bytes",
+      "ok": true,
+      "expected": "200 + identical bytes",
+      "actual": "200 44B",
+      "note": ""
+    },
+    {
+      "group": "prefix",
+      "check": "GET /app-<hash>/... download bytes",
+      "ok": true,
+      "expected": "200 + identical bytes",
+      "actual": "200 44B",
+      "note": ""
+    },
+    {
+      "group": "prefix",
+      "check": "GET /functions/v1/app/app-<hash>/... download bytes",
+      "ok": true,
+      "expected": "200 + identical bytes",
+      "actual": "200 44B",
+      "note": ""
+    },
+    {
+      "group": "prefix",
+      "check": "GET /app-<hash>/functions/v1/app/... download bytes",
+      "ok": true,
+      "expected": "200 + identical bytes",
+      "actual": "200 44B",
+      "note": ""
+    },
+    {
+      "group": "prefix",
+      "check": "GET /app-<hash>/internal/artifact-checksums/... ",
+      "ok": true,
+      "expected": "200 + sha256 hex",
+      "actual": "200 b'83746a299ff45bb96345'",
+      "note": ""
+    },
+    {
+      "group": "prefix",
+      "check": "GET /app/internal/artifacts/<task> list",
+      "ok": true,
+      "expected": "200 {\"artifacts\":[{\"name\":\"report.docx\",\"size\":N}]}",
+      "actual": "200 {'artifacts': [{'name': 'report.docx', 'size': 44}]}",
+      "note": ""
+    },
+    {
+      "group": "client",
+      "check": "SitesStorageClient.put_bytes",
+      "ok": true,
+      "expected": "{'ok': True, 'size': 44}",
+      "actual": "{'ok': True, 'name': 'client.bin', 'size': 44, 'status': 201}",
+      "note": ""
+    },
+    {
+      "group": "client",
+      "check": "SitesStorageClient.get_bytes (checksum verified)",
+      "ok": true,
+      "expected": "44B identical",
+      "actual": "44B",
+      "note": ""
+    },
+    {
+      "group": "client",
+      "check": "SitesStorageClient.list",
+      "ok": true,
+      "expected": "names contain client.bin + report.docx",
+      "actual": "['client.bin', 'report.docx']",
+      "note": ""
+    },
+    {
+      "group": "client",
+      "check": "non-ASCII filename roundtrip",
+      "ok": true,
+      "expected": "identical bytes for quoted UTF-8 name",
+      "actual": "identical",
+      "note": ""
+    },
+    {
+      "group": "client",
+      "check": "wrong shared secret rejected by client",
+      "ok": true,
+      "expected": "StorageError",
+      "actual": "StorageError",
+      "note": ""
+    },
+    {
+      "group": "client",
+      "check": "client-side >50MB guard (no network)",
+      "ok": true,
+      "expected": "ValueError",
+      "actual": "ValueError: artifact exceeds the 50 MB limit",
+      "note": ""
+    },
+    {
+      "group": "security",
+      "check": "wrong token GET artifact -> 403",
+      "ok": true,
+      "expected": "[403]",
+      "actual": "403",
+      "note": "{\"error\":\"worker_unauthorized\"}"
+    },
+    {
+      "group": "security",
+      "check": "missing token PUT artifact -> 403",
+      "ok": true,
+      "expected": "[403]",
+      "actual": "403",
+      "note": "{\"error\":\"worker_unauthorized\"}"
+    },
+    {
+      "group": "security",
+      "check": "traversal ..%2Fsecret -> 404",
+      "ok": true,
+      "expected": "[404]",
+      "actual": "404",
+      "note": "{\"error\":\"not_found\"}"
+    },
+    {
+      "group": "security",
+      "check": "traversal %2e%2e%2fsecret -> 404",
+      "ok": true,
+      "expected": "[404]",
+      "actual": "404",
+      "note": "{\"error\":\"not_found\"}"
+    },
+    {
+      "group": "security",
+      "check": "backslash name a%5Cb -> 404",
+      "ok": true,
+      "expected": "[404]",
+      "actual": "404",
+      "note": "{\"error\":\"not_found\"}"
+    },
+    {
+      "group": "security",
+      "check": "dot-dot filename -> 404",
+      "ok": true,
+      "expected": "[404]",
+      "actual": "404",
+      "note": "{\"error\":\"not_found\"}"
+    },
+    {
+      "group": "security",
+      "check": "over-long task id (65) -> 404",
+      "ok": true,
+      "expected": "[404]",
+      "actual": "404",
+      "note": "{\"error\":\"not_found\"}"
+    },
+    {
+      "group": "security",
+      "check": "POST internal artifact -> 405",
+      "ok": true,
+      "expected": "[405]",
+      "actual": "405",
+      "note": "{\"error\":\"method_not_allowed\"}"
+    },
+    {
+      "group": "security",
+      "check": "DELETE internal artifact -> 405",
+      "ok": true,
+      "expected": "[405]",
+      "actual": "405",
+      "note": "{\"error\":\"method_not_allowed\"}"
+    },
+    {
+      "group": "security",
+      "check": "PUT checksum endpoint -> 405",
+      "ok": true,
+      "expected": "[405]",
+      "actual": "405",
+      "note": "{\"error\":\"method_not_allowed\"}"
+    },
+    {
+      "group": "security",
+      "check": "POST collection -> 405",
+      "ok": true,
+      "expected": "[405]",
+      "actual": "405",
+      "note": "{\"error\":\"method_not_allowed\"}"
+    },
+    {
+      "group": "security",
+      "check": "checksum mismatch -> 422",
+      "ok": true,
+      "expected": "[422]",
+      "actual": "422",
+      "note": "{\"error\":\"artifact_checksum_mismatch\"}"
+    },
+    {
+      "group": "security",
+      "check": "missing artifact GET -> 404 expected",
+      "ok": true,
+      "expected": "[404]",
+      "actual": "404",
+      "note": "{\"error\":\"artifact_not_found\"}"
+    },
+    {
+      "group": "security",
+      "check": "missing checksum GET -> 404 expected",
+      "ok": true,
+      "expected": "[404]",
+      "actual": "404",
+      "note": "{\"error\":\"checksum_not_found\"}"
+    },
+    {
+      "group": "isolation",
+      "check": "list(task-1) excludes task-10 objects",
+      "ok": true,
+      "expected": "{'a.txt'}",
+      "actual": "['a.txt']",
+      "note": ""
+    },
+    {
+      "group": "web",
+      "check": "web route forwards to Python (dead origin -> 5xx, no local fallback)",
+      "ok": true,
+      "expected": "5xx",
+      "actual": "500",
+      "note": "PYTHON_API_ORIGIN points at a closed port"
+    },
+    {
+      "group": "web",
+      "check": "/api/... is not routable on the function (web must use /tasks/...)",
+      "ok": true,
+      "expected": "404",
+      "actual": "404",
+      "note": ""
+    },
+    {
+      "group": "security",
+      "check": "server-side >50MB guard -> 4xx",
+      "ok": true,
+      "expected": "4xx (413 preferred)",
+      "actual": "413",
+      "note": "{\"error\":\"request_too_large\"}"
+    }
+  ]
+}

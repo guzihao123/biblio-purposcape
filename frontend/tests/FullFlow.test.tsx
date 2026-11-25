@@ -117,7 +117,7 @@ describe('complete web flow', () => {
         return responseWith(200, {
           ...taskWith(null, 'searching', null),
           job_id: 'job-1',
-          progress: { stage: 'search', message: '正在检索与整理论文池', checkpoint: null },
+          progress: { stage: 'search', message: '正在检索与整理论文池', percent: 45, checkpoint: null },
         })
       }
       throw new Error(`Unexpected request: ${method} ${url}`)
@@ -137,6 +137,9 @@ describe('complete web flow', () => {
     await user.click(screen.getByRole('button', { name: '确认选择' }))
 
     expect(await screen.findByText('正在检索与整理论文池')).toBeVisible()
+    expect(screen.getByRole('progressbar', { name: '任务完成进度' })).toHaveAttribute('aria-valuenow', '45')
+    expect(screen.getByText('阶段：search')).toBeVisible()
+    expect(screen.getByText('45%')).toBeVisible()
     const bodies = fetchMock.mock.calls.map(([, init]) => init?.body).filter(Boolean)
     expect(bodies).toContain(JSON.stringify({ value: { direction: '城市内涝韧性' } }))
     expect(bodies).toContain(JSON.stringify({ value: { terms: ['urban flooding', 'underground garage'] } }))
@@ -167,7 +170,7 @@ describe('complete web flow', () => {
           body: '领域正文与第1推荐 [1]（据摘要）。\n\n## 参考文献\n\n[1] 真实文献',
           references: '[1] 真实文献',
           verification: { clean: true, report: '全部 9 项无失败', conformance: '通过' },
-          artifacts: [{ name: 'report.docx', url: '/signed/report.docx', size: 1000 }],
+          artifacts: [{ name: '综述初稿.docx', url: '/signed/draft.docx', size: 1000 }],
         })
       }
       throw new Error(`Unexpected request: ${method} ${url}`)
@@ -187,6 +190,6 @@ describe('complete web flow', () => {
     expect(await screen.findByText('方向卡·动态多组学耐药分型')).toBeVisible()
     expect(screen.getByText(/领域正文与第1推荐/)).toBeVisible()
     expect(screen.getByText('全部 9 项无失败')).toBeVisible()
-    expect(screen.getByRole('link', { name: '下载 Word 报告' })).toHaveAttribute('href', '/signed/report.docx')
+    expect(screen.getByRole('link', { name: '下载 Word 报告' })).toHaveAttribute('href', '/signed/draft.docx')
   })
 })

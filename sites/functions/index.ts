@@ -41,18 +41,27 @@ function apiOrigin() {
   return (Deno.env.get('PYTHON_API_ORIGIN') || '').replace(/\/+$/, '');
 }
 
+const ROUTE_PREFIXES = [
+  /^\/functions\/v1\/app(?=\/|$)/,
+  /^\/app(?:-[A-Za-z0-9]+)?(?=\/|$)/,
+];
+
 function routeSuffix(url: URL): string {
-  // The gateway may prefix the function path once or twice with /app and some
-  // hosts keep /functions/v1/app; strip every known prefix before routing.
+  // The gateway may mount the function at /app-<deployment suffix>/ and some
+  // hosts keep a /functions/v1/app segment. Only recognised mount prefixes at
+  // the *start* of the path are stripped: a marker that merely appears inside
+  // an arbitrary path must not open the internal routes.
   let path = url.pathname;
-  const marker = '/functions/v1/app';
-  const markerIndex = path.lastIndexOf(marker);
-  if (markerIndex >= 0) path = path.slice(markerIndex + marker.length) || '/';
-  // The gateway mounts the function at /app-<deployment suffix>/.
-  while (true) {
-    const prefix = path.match(/^\/app(?:-[A-Za-z0-9]+)?(?=\/|$)/);
-    if (!prefix) break;
-    path = path.slice(prefix[0].length) || '/';
+  let stripped = true;
+  while (stripped) {
+    stripped = false;
+    for (const pattern of ROUTE_PREFIXES) {
+      const match = path.match(pattern);
+      if (!match) continue;
+      path = path.slice(match[0].length) || '/';
+      stripped = true;
+      break;
+    }
   }
   if (path !== '/') return path;
   const action = url.searchParams.get('action') || 'health';
@@ -212,10 +221,14 @@ Deno.serve(async (request) => {
     const prefix = `artifacts/${collection[1]}`;
     const entries = await storage.list(prefix, { limit: 1000, offset: 0 });
     return json({
-      artifacts: entries.map((entry) => ({
-        name: entry.name.slice(prefix.length + 1),
-        size: entry.metadata?.size ?? entry.size ?? 0,
-      })),
+      // `list` is a prefix scan, so artifacts/task-1 also matches
+      // artifacts/task-10/... — keep only the exact task segment.
+      artifacts: entries
+        .filter((entry) => entry.name.startsWith(`${prefix}/`))
+        .map((entry) => ({
+          name: entry.name.slice(prefix.length + 1),
+          size: entry.metadata?.size ?? entry.size ?? 0,
+        })),
     });
   }
 
@@ -224,7 +237,15 @@ Deno.serve(async (request) => {
     if (!await workerAuthorized(request)) return json({ error: 'worker_unauthorized' }, 403);
     const storage = await storageDriver();
     if (method === 'PUT') {
-      const body = await requestBody(request);
+      let body: Uint8Array<ArrayBuffer>;
+      try {
+        body = await requestBody(request);
+      } catch (error) {
+        if (error instanceof RequestBodyTooLargeError) {
+          return json({ error: 'request_too_large' }, 413);
+        }
+        throw error;
+      }
       const checksum = await digest(body);
       const suppliedChecksum = request.headers.get('x-artifact-sha256');
       if (suppliedChecksum && suppliedChecksum !== checksum) {
@@ -242,7 +263,15 @@ Deno.serve(async (request) => {
       return json({ ok: true, name: internal.filename, size: body.byteLength }, 201);
     }
     if (method === 'GET') {
-      const file = await storage.download(internal.objectPath);
+      let file: Response;
+      try {
+        file = await storage.download(internal.objectPath);
+      } catch (error) {
+        // The storage driver has no typed not-found error; a missing object is
+        // the common case and must not surface as 500 to the worker.
+        console.error(`artifact download failed: ${internal.objectPath}`, error);
+        return json({ error: 'artifact_not_found' }, 404);
+      }
       return new Response(file.body, {
         headers: {
           'content-type': file.headers.get('content-type') || 'application/octet-stream',
@@ -258,7 +287,13 @@ Deno.serve(async (request) => {
     if (!await workerAuthorized(request)) return json({ error: 'worker_unauthorized' }, 403);
     if (method !== 'GET') return json({ error: 'method_not_allowed' }, 405);
     const storage = await storageDriver();
-    const file = await storage.download(checksumPath);
+    let file: Response;
+    try {
+      file = await storage.download(checksumPath);
+    } catch (error) {
+      console.error(`artifact checksum download failed: ${checksumPath}`, error);
+      return json({ error: 'checksum_not_found' }, 404);
+    }
     return new Response(file.body, {
       headers: {
         'content-type': 'text/plain; charset=utf-8',
@@ -278,6 +313,12 @@ Deno.serve(async (request) => {
   let match = path.match(/^\/tasks\/([0-9a-f-]{36})$/i);
   if (method === 'GET' && match) {
     return forward(`/api/tasks/${match[1]}`, forwardedInit(request, 'GET'));
+  }
+
+  match = path.match(/^\/tasks\/([0-9a-f-]{36})\/b-theme-candidates$/i);
+  if (method === 'POST' && match) {
+    const body = await requestBody(request, MAX_ANSWER_BODY_BYTES);
+    return forward(`/api/tasks/${match[1]}/b-theme-candidates`, forwardedInit(request, 'POST', body));
   }
 
   match = path.match(/^\/tasks\/([0-9a-f-]{36})\/answers\/(direction|mode|terms|years|adjustment|delivery)$/i);

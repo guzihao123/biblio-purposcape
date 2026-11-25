@@ -284,3 +284,155 @@ def test_uvicorn_access_and_exception_logs_redact_artifact_requests(caplog, capf
     assert '[REDACTED_PATH]' in rendered
     assert '[REDACTED]' in rendered
     assert 'GET /api/health HTTP/1.1' in access_stream.getvalue()
+
+
+def test_env_redaction_keeps_configuration_values_and_names_intact():
+    """Only credential-ish env values are replaced; diagnostics survive verbatim."""
+    from app.recovery import redact_sensitive_text
+
+    environ = {
+        'PAGER': 'cat',
+        'LOGNAME': 'root',
+        'SHLVL': '1',
+        'CODEBUDDY_API_KEY_HELPER_DISABLED': '1',
+        'MAX_TOKENS': '4096',
+        'GALILEO_ENABLE': 'true',
+        'BROWSER_USE_CHROMIUM_SANDBOX': 'false',
+        'WORKER_SHARED_SECRET': 'fake-worker-secret-4f21',
+    }
+    raw = (
+        '127.0.0.1:48213 - "GET /api/health HTTP/1.1" 200\n'
+        'catalog category root line 1522 max_tokens=4096 debug=true\n'
+        'WORKER_SHARED_SECRET=fake-worker-secret-4f21 PAGER=cat'
+    )
+
+    protected = redact_sensitive_text(raw, environ=environ)
+
+    assert '127.0.0.1' in protected
+    assert 'HTTP/1.1' in protected
+    assert 'line 1522' in protected
+    assert 'max_tokens=4096' in protected
+    assert 'catalog category root' in protected
+    assert 'WORKER_SHARED_SECRET=' in protected
+    assert 'PAGER=cat' in protected
+    assert 'fake-worker-secret-4f21' not in protected
+    assert '[REDACTED_ENV]' in protected
+
+
+def test_env_redaction_uses_value_shape_for_unlabelled_credentials():
+    from app.recovery import redact_sensitive_text
+
+    token = 'sk-live-3c9d7a1b4e5f60718293'
+    environ = {'SOME_PLAIN_SETTING': token}
+    message = f'upstream returned {token} after 2 retries'
+
+    protected = redact_sensitive_text(message, environ=environ)
+
+    assert token not in protected
+    assert '[REDACTED_ENV]' in protected
+    assert 'upstream returned' in protected
+    assert 'after 2 retries' in protected
+
+
+@pytest.mark.parametrize(
+    ('name', 'value'),
+    [
+        ('CODEBUDDY_API_KEY_HELPER_DISABLED', '1'),
+        ('SECRET_STORE_ENABLED', '0'),
+        ('MAX_TOKENS', '4096'),
+        ('TOKEN_BUDGET', '30000'),
+        ('GALILEO_ENABLE', 'true'),
+        ('BROWSER_USE_CHROMIUM_SANDBOX', 'false'),
+        ('PAGER', 'cat'),
+        ('LOGNAME', 'root'),
+        ('APP_ENV', 'development'),
+        ('PYTHONIOENCODING', 'utf-8'),
+    ],
+)
+def test_flag_numeric_and_short_word_values_are_never_redacted(name, value):
+    """Settings that merely live next to a secret-like name must survive verbatim."""
+    from app.recovery import redact_sensitive_text
+
+    raw = 'pid 12345 status {} pid 12345'.format(value)
+
+    protected = redact_sensitive_text(raw, environ={name: value})
+
+    assert protected == raw
+    assert '[REDACTED_ENV]' not in protected
+
+
+@pytest.mark.parametrize(
+    'token',
+    [
+        'sk-' + '3c9d7a1b4e5f60718293',
+        'sk_' + 'live_4eC39HqLyjWDarjtT1zdp7dc',
+        'ghp_' + '16C7e42F292c6912E7710c838347Ae178B4a',
+        'github_pat_' + '11ABCDEFG0abcdefghijkl_abcdefghijklmnopqrstuvwxyz0123456789AB',
+        'xoxb-' + '123456789012-abcdefghijklmnop',
+        'AKIA' + 'IOSFODNN7EXAMPLE',
+        'AIza' + 'SyD-1234567890abcdefghijklmnopqrstu',
+        'eyJ' + 'hbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U',
+    ],
+)
+def test_known_credential_shapes_are_redacted_under_an_innocuous_name(token):
+    """A value in a known key format is redacted even when the name says nothing."""
+    from app.recovery import redact_sensitive_text
+
+    raw = 'upstream rejected {} after 3 attempts'.format(token)
+
+    protected = redact_sensitive_text(raw, environ={'SOME_PLAIN_SETTING': token})
+
+    assert token not in protected
+    assert '[REDACTED_ENV]' in protected
+    assert protected.startswith('upstream rejected ')
+    assert protected.endswith(' after 3 attempts')
+
+
+@pytest.mark.parametrize(
+    ('name', 'value'),
+    [
+        ('QWEN_API_KEY', 'fake-qwen-key-7c1d'),
+        ('SESSION_SECRET', 'fake-session-secret-2b8e'),
+        ('ADMIN_TOKEN', 'fake-admin-token-93af'),
+        ('WORKER_SHARED_SECRET', 'fake-worker-secret-4f21'),
+        ('OPENAI_KEY', 'fakeOpenAiKey9f3aC7d21b'),
+    ],
+)
+def test_credential_named_variables_with_real_values_are_redacted(name, value):
+    from app.recovery import redact_sensitive_text
+
+    protected = redact_sensitive_text(
+        'boot with {}={}'.format(name, value),
+        environ={name: value},
+    )
+
+    assert value not in protected
+    assert name + '=' in protected
+
+
+def test_worker_log_filter_drops_the_secret_before_any_handler_formats_it(monkeypatch):
+    """The end-to-end guarantee: a formatted worker record never carries the key."""
+    from app.recovery import WorkerLogRedactionFilter
+
+    secret = 'fake-worker-shared-secret-5d18'
+    monkeypatch.setenv('WORKER_SHARED_SECRET', secret)
+    record = logging.LogRecord(
+        'rq.worker',
+        logging.ERROR,
+        __file__,
+        1522,
+        'stage failed: secret in env=%s and header api_key=%s',
+        (secret, 'sk-live-8f3a91c2d4b5e6071a2b'),
+        None,
+    )
+
+    assert WorkerLogRedactionFilter().filter(record) is True
+
+    rendered = record.getMessage()
+    assert secret not in rendered
+    assert 'sk-live-8f3a91c2d4b5e6071a2b' not in rendered
+    assert 'stage failed' in rendered
+    assert 'in env=' in rendered
+    assert 'header api_key=' in rendered
+    assert record.args == ()
+    assert record.exc_info is None

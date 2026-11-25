@@ -32,6 +32,11 @@ dev/acceptance/**/oa_pdfs/
 dev/acceptance/**/fulltext/
 dev/acceptance/**/figures/
 dev/acceptance/**/logs/
+dev/acceptance/dfigure/run/fulltext_ref*.xml
+dev/acceptance/dfigure/run/*.pptx
+
+# pdf_figures.py compiles this Swift helper on first use
+skill_runtime/scripts/pdf_render
 
 # Large local acceptance outputs
 dev/acceptance/ppt-legend-fix/

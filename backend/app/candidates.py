@@ -17,6 +17,57 @@ class CandidateService:
             self._model = ChatModel()
         return self._model
 
+    def generate_project_themes(self, direction):
+        """Return 1–3 concrete project themes for the B-mode entry step.
+
+        The model only proposes structure (name/goal/object/method/expected
+        output); no counts, papers, institutions, or results are invented here.
+        """
+        response = self.model.complete_json(
+            '你是科研项目选题助手。基于用户的研究方向，凝练 1–3 个彼此不同、可执行的具体项目主题。'
+            '严格返回 JSON {"themes": [...]}，最多 3 个。每项必须含：'
+            'name（项目名称，具体到研究对象与问题）、goal（一句话目标）、'
+            'object（研究对象/场景）、method（拟用方法或技术路线）、'
+            'expected_output（预期产出）。'
+            '不得编造论文、数据、团队基础、资助结论或命中数；信息不足时用概括表述，不得写空。',
+            {'direction': direction, 'max_themes': 3},
+        )
+        raw = response.get('themes', []) if isinstance(response, dict) else []
+        if not raw and isinstance(response, dict):
+            raw = response.get('candidates', [])
+        options = []
+        seen = set()
+        for item in raw:
+            if not isinstance(item, dict):
+                continue
+            name = str(item.get('name') or '').strip()
+            goal = str(item.get('goal') or '').strip()
+            if not name or not goal or name in seen:
+                continue
+            seen.add(name)
+            theme = {
+                'name': name,
+                'goal': goal,
+                'object': str(item.get('object') or '').strip(),
+                'method': str(item.get('method') or '').strip(),
+                'expected_output': str(item.get('expected_output') or '').strip(),
+            }
+            preview_lines = [
+                f"研究对象：{theme['object'] or '未提供'}",
+                f"方法：{theme['method'] or '未提供'}",
+                f"预期产出：{theme['expected_output'] or '未提供'}",
+            ]
+            options.append({
+                'value': f'theme-{len(options) + 1}',
+                'label': name,
+                'description': goal,
+                'preview': '\n'.join(preview_lines),
+                'theme': theme,
+            })
+            if len(options) == 3:
+                break
+        return options
+
     def _count(self, query):
         script = Path(__file__).resolve().parents[2] / 'skill_runtime' / 'scripts' / 'search_papers.py'
         completed = subprocess.run(

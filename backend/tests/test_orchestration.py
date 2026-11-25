@@ -52,10 +52,14 @@ def task(db):
     return task
 
 
-def stage_input(form='A', years=None, mode='A', c_route=None):
+def stage_input(form='A', years=None, mode='A', c_route=None, custom=None, theme=None):
     mode_value = {'mode': mode}
     if c_route is not None:
         mode_value['c_route'] = c_route
+    if custom is not None:
+        mode_value['custom'] = custom
+    if theme is not None:
+        mode_value['theme'] = theme
     return {
         'answers': [
             {'card_id': 'direction', 'value': {'direction': '城市内涝'}},
@@ -220,6 +224,8 @@ def test_c1_c2_generates_separate_bodies_verifications_and_combined_delivery(tas
                     '| 论断 | 引用序号 | 摘要原句摘录 | 证据等级 |\n|---|---|---|---|\n| 测试 | 1 | One abstract sentence. | B |\n',
                     encoding='utf-8',
                 )
+                if is_c1:
+                    (target / '写法参考卡.md').write_text('# 目标期刊写法参考卡\n', encoding='utf-8')
                 return SimpleNamespace(
                     body_path=body_path,
                     outline=f'{writing_task.mode} 提纲',
@@ -267,9 +273,55 @@ def test_c1_c2_generates_separate_bodies_verifications_and_combined_delivery(tas
     assert (tmp_path / task.id / 'verify_report_C1.txt').exists()
     assert (tmp_path / task.id / 'verify_report_C2.txt').exists()
     assert (tmp_path / task.id / 'linkage_check.md').exists()
+    assert (tmp_path / task.id / 'C1_写法参考卡.md').exists()
     assert result['checkpoint']['clean'] is True
     assert result['checkpoint']['combined_delivered'] is True
     assert result['checkpoint']['linkage']['gap_consistent'] is True
+
+
+def test_c_single_route_only_generates_the_selected_mode(task, tmp_path):
+    produced = []
+    delivered = []
+
+    def single_writing_factory(workspace_root, model, version):
+        class Writing:
+            def produce(self, writing_task, body_writer=None):
+                produced.append(writing_task.mode)
+                target = workspace_root / writing_task.id
+                target.mkdir(parents=True, exist_ok=True)
+                body_path = target / ('C1_引言.md' if writing_task.mode == 'C1' else 'C2_文献综述.md')
+                body_path.write_text(f'{writing_task.mode} 正文 [1]', encoding='utf-8')
+                (target / 'evidence_ledger.md').write_text('| 论断 |\n|---|\n| 测试 |\n', encoding='utf-8')
+                return SimpleNamespace(body_path=body_path)
+        return Writing()
+
+    def single_delivery_factory(workspace_root):
+        class Delivery:
+            def verification_runner(self, delivery_task, body_path, report_name):
+                return {'clean': True, 'failures': [], 'warnings': []}
+
+            def deliver(self, delivery_task):
+                delivered.append(delivery_task.mode)
+                return DeliveryResult(artifacts={}, clean=True, failures=[])
+        return Delivery()
+
+    service = Orchestrator(
+        artifact_root=tmp_path,
+        search_factory=FakeSearch,
+        analysis_factory=FakeAnalysis,
+        graph_builder=graph_builder,
+        writing_factory=single_writing_factory,
+        delivery_factory=single_delivery_factory,
+        stats_runner=lambda *args: {},
+        model=object(),
+    )
+    service.search_stage(task, stage_input(mode='C', c_route='C1'))
+    service.generate_stage(task, stage_input(form='A', mode='C', c_route='C1'))
+
+    assert produced == ['C1']
+    assert delivered == ['C1']
+    assert not (tmp_path / task.id / 'C2_文献综述.md').exists()
+    assert (tmp_path / task.id / '用户要求台账.md').exists()
 
 
 def test_default_writing_factory_enables_thinking_on_a_separate_chat_model(tmp_path):
@@ -338,3 +390,97 @@ def test_default_writing_factory_can_enable_thinking(monkeypatch, tmp_path):
 
     assert writing.model.thinking is True
     assert writing.model.request_timeout == 600
+
+
+def test_e_mode_passes_custom_purpose_to_writing_and_delivers_word(task, tmp_path):
+    captured = {}
+
+    def e_writing_factory(workspace_root, model, version):
+        class Writing:
+            def produce(self, writing_task, body_writer=None):
+                captured['writing_mode'] = writing_task.mode
+                captured['custom_purpose'] = writing_task.custom_purpose
+                captured['project'] = writing_task.project
+                target = workspace_root / writing_task.id
+                target.mkdir(parents=True, exist_ok=True)
+                body_path = target / '综述初稿.md'
+                body_path.write_text('按自定义用途组织的正文 [1]（据摘要）。', encoding='utf-8')
+                (target / 'evidence_ledger.md').write_text(
+                    '| 论断 | 引用序号 | 摘要原句摘录 | 证据等级 |\n|---|---|---|---|\n'
+                    '| 测试 | 1 | One abstract sentence. | B |\n',
+                    encoding='utf-8',
+                )
+                return SimpleNamespace(
+                    body_path=body_path,
+                    outline='按用户用途定制的提纲',
+                    sample='',
+                    components=SimpleNamespace(data={'markdown': '用途落实'}),
+                )
+        return Writing()
+
+    def e_delivery_factory(workspace_root):
+        class Delivery:
+            def deliver(self, delivery_task):
+                captured['delivery_mode'] = delivery_task.mode
+                captured['delivery_form'] = delivery_task.delivery_form
+                target = workspace_root / delivery_task.id
+                target.mkdir(parents=True, exist_ok=True)
+                word = target / '综述初稿.docx'
+                word.write_bytes(b'PK')
+                return DeliveryResult(artifacts={'综述初稿.docx': word}, clean=True, failures=[])
+        return Delivery()
+
+    service = Orchestrator(
+        artifact_root=tmp_path,
+        search_factory=FakeSearch,
+        analysis_factory=FakeAnalysis,
+        graph_builder=graph_builder,
+        writing_factory=e_writing_factory,
+        delivery_factory=e_delivery_factory,
+        stats_runner=lambda *args: {},
+        model=object(),
+    )
+    answers = stage_input(
+        form='A',
+        mode='E',
+        custom='为学院写一份面向政策制定的交通安全证据简报',
+    )
+    service.search_stage(task, answers)
+    result = service.generate_stage(task, answers)
+
+    assert captured['writing_mode'] == 'E'
+    assert captured['custom_purpose'] == '为学院写一份面向政策制定的交通安全证据简报'
+    assert captured['delivery_mode'] == 'E'
+    assert captured['delivery_form'] == 'A'
+    assert (tmp_path / task.id / '综述初稿.docx').read_bytes() == b'PK'
+    assert result['checkpoint']['clean'] is True
+
+
+def test_writing_task_carries_selected_b_theme_and_e_custom_purpose(task, tmp_path):
+    service = Orchestrator(artifact_root=tmp_path, model=object())
+    theme = {
+        'name': '项目主题甲',
+        'goal': '目标甲',
+        'object': '对象甲',
+        'method': '方法甲',
+        'expected_output': '产出甲',
+    }
+    b_task = service._writing_task(
+        task,
+        {'mode': {'mode': 'B', 'project': {'name': '项目主题甲', 'goal': '目标甲'}, 'theme': theme}},
+        'B',
+        [],
+        {},
+    )
+    assert b_task.project['theme'] == theme
+    assert b_task.custom_purpose == ''
+
+    e_task = service._writing_task(
+        task,
+        {'mode': {'mode': 'E', 'custom': '为政策制定写证据简报'}},
+        'E',
+        [],
+        {},
+    )
+    assert e_task.custom_purpose == '为政策制定写证据简报'
+    assert e_task.mode == 'E'

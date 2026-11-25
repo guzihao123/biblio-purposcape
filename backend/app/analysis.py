@@ -1,7 +1,9 @@
 """Structured literature analysis with mandatory abstract-evidence auditing."""
 
 import json
+import os
 import re
+import time
 import unicodedata
 from dataclasses import dataclass
 from typing import Optional
@@ -11,6 +13,7 @@ CONFIDENCE_LABELS = {'high', 'medium', 'low'}
 RELATION_LABELS = {'support', 'improve', 'conflict', 'difference'}
 POLARITY_LABELS = {'pos', 'neg'}
 MAX_CROSS_BATCH_PAIRS = 20
+CANDIDATE_PAIRS_PER_CALL = 5
 MIN_PAIR_SIMILARITY = 0.12
 
 # These are examples of broad acquisition families, not a closed list of methods.
@@ -307,11 +310,19 @@ def _parse_relation(item, available):
 class AnalysisService:
     """Run small-batch model calls and drop every unsupported model assertion."""
 
-    def __init__(self, model, batch_size=4):
+    def __init__(self, model, batch_size=10, deadline=None):
         if type(batch_size) is not int or not 1 <= batch_size <= 10:
             raise ValueError('batch_size must be an integer between 1 and 10')
         self.model = model
         self.batch_size = batch_size
+        if deadline is not None:
+            self.deadline = deadline
+        else:
+            budget = float(os.environ.get('ANALYSIS_BUDGET_SECONDS', '900'))
+            self.deadline = time.monotonic() + budget if budget > 0 else None
+
+    def _expired(self):
+        return self.deadline is not None and time.monotonic() >= self.deadline
 
     def _complete(self, system_prompt, batch):
         return self.model.complete_json(system_prompt, {'papers': batch})
@@ -320,6 +331,8 @@ class AnalysisService:
         # Thinking-disabled responses occasionally omit a top-level list; retry once
         # before degrading to an honestly empty result rather than failing the stage.
         for _ in range(2):
+            if self._expired():
+                break
             response = self.model.complete_json(system_prompt, payload)
             if isinstance(response, dict) and all(
                 isinstance(response.get(key), list) for key in keys
@@ -347,6 +360,8 @@ class AnalysisService:
             'Examples of broad families (not an exclusive list): ' + family_examples
         )
         for batch in _batches(_paper_payload(indexed), self.batch_size):
+            if self._expired():
+                break
             raw = self._structured(prompt, {'papers': batch}, 'clusters', 'methods')
             raw_clusters = raw['clusters']
             raw_methods = raw['methods']
@@ -419,6 +434,8 @@ class AnalysisService:
             'Never infer claims for papers without an abstract and never fabricate a ref or quote.'
         )
         for batch in _batches(_paper_payload(indexed), self.batch_size):
+            if self._expired():
+                break
             raw = self._structured(prompt, {'papers': batch}, 'votes')
             available = _batch_index(indexed, batch)
             for item in raw['votes']:
@@ -469,6 +486,8 @@ class AnalysisService:
         )
         batches = list(_batches(_paper_payload(indexed), self.batch_size))
         for batch in batches:
+            if self._expired():
+                break
             raw = self._structured(prompt, {'papers': batch}, 'relations')
             available = _batch_index(indexed, batch)
             for item in raw['relations']:
@@ -478,21 +497,28 @@ class AnalysisService:
 
         candidates = _cross_batch_candidates(indexed, batches)
         candidate_prompt = prompt + (
-            ' This call contains one candidate pair discovered across the original batches; '
-            'evaluate only that pair and do not invent additional pairs.'
-        )
-        for candidate in candidates:
-            pair_refs = (candidate['s'], candidate['t'])
-            pair_index = {ref: indexed[ref] for ref in pair_refs}
+            ' This call contains up to {} candidate pairs discovered across the original '
+            'batches; evaluate only the listed pairs and do not invent additional pairs.'
+        ).format(CANDIDATE_PAIRS_PER_CALL)
+        for start in range(0, len(candidates), CANDIDATE_PAIRS_PER_CALL):
+            if self._expired():
+                break
+            group = candidates[start:start + CANDIDATE_PAIRS_PER_CALL]
+            pair_refs = sorted({ref for candidate in group for ref in (candidate['s'], candidate['t'])})
+            pair_index = {ref: indexed[ref] for ref in pair_refs if ref in indexed}
             pair = _paper_payload(pair_index)
             response = self._structured(
                 candidate_prompt,
-                {'papers': pair, 'candidate_pairs': [candidate]},
+                {'papers': pair, 'candidate_pairs': group},
                 'relations',
             )
             available = _batch_index(indexed, pair)
+            allowed = set()
+            for candidate in group:
+                allowed.add((candidate['s'], candidate['t']))
+                allowed.add((candidate['t'], candidate['s']))
             for item in response['relations']:
                 relation = _parse_relation(item, available)
-                if relation is not None:
+                if relation is not None and (relation.s, relation.t) in allowed:
                     relations.append(relation)
         return relations

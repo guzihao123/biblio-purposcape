@@ -21,6 +21,7 @@ from app.db import SessionLocal
 from app.models import Task, TaskEvent, TaskJob, TaskProgress
 from app.rate_limit import get_rate_limiter
 from app.schemas import CardId, TaskState
+from app.task_expiry import expire_idle_collection_tasks
 
 
 _REDACTED = '[REDACTED]'
@@ -59,6 +60,28 @@ _UNIX_PATH_RE = re.compile(
 )
 _WINDOWS_PATH_RE = re.compile(
     r'(?i)(?<!\w)(?:[a-z]:[\\/]|\\\\)[^\s"\'<>|]*'
+)
+# Environment values are only replaced when the name or the value itself marks a
+# credential. Replacing every value (or every long value) also destroys ordinary
+# diagnostics such as IP addresses, "HTTP/1.1", or the word "cat" from PAGER.
+_ENV_SECRET_NAME_RE = re.compile(
+    r'api[_-]?key|access[_-]?key|secret|private[_-]?key|password|passwd|token|'
+    r'credential|auth[_-]?key|signing[_-]?key',
+    re.IGNORECASE,
+)
+_ENV_KEY_SUFFIX_RE = re.compile(r'(?:^|_)key$', re.IGNORECASE)
+_ENV_NON_SECRET_VALUE_RE = re.compile(
+    r'\A(?:\d+|true|false|yes|no|on|off|none|null|nil|auto|default|debug|info|'
+    r'warn|warning|error|critical|trace|fatal|[A-Za-z]{1,3})\Z',
+    re.IGNORECASE,
+)
+_CREDENTIAL_VALUE_RE = re.compile(
+    r'(?<![A-Za-z0-9])(?:'
+    r'sk-[A-Za-z0-9_-]{8,}|sk_(?:live|test)_[A-Za-z0-9]{8,}|'
+    r'(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{16,}|'
+    r'xox[abprs]-[A-Za-z0-9-]{8,}|(?:AKIA|ASIA)[0-9A-Z]{16}|'
+    r'AIza[0-9A-Za-z_-]{30,}|eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.'
+    r')'
 )
 
 
@@ -104,6 +127,27 @@ def _redact_provider_bodies(text):
     return ''.join(pieces)
 
 
+def _is_credential_env_value(name, value):
+    """Decide whether one environment value is a credential worth replacing."""
+    if not value:
+        return False
+    if _CREDENTIAL_VALUE_RE.search(value):
+        return True
+    if _ENV_SECRET_NAME_RE.search(name):
+        # Flag-style values (ENABLE_*_TOKEN=1, *_TOKEN_BUDGET=4096) are settings,
+        # not credentials; replacing them corrupts unrelated numbers in logs.
+        return len(value) >= 6 and not _ENV_NON_SECRET_VALUE_RE.match(value)
+    if _ENV_KEY_SUFFIX_RE.search(name):
+        return (
+            len(value) >= 16
+            and not re.search(r'\s', value)
+            and re.search(r'[A-Za-z]', value) is not None
+            and re.search(r'\d', value) is not None
+            and not _ENV_NON_SECRET_VALUE_RE.match(value)
+        )
+    return False
+
+
 def redact_sensitive_text(value, environ=None):
     """Redact secrets while retaining safe exception types and test markers."""
     if value is None:
@@ -127,14 +171,7 @@ def redact_sensitive_text(value, environ=None):
     values = {
         item
         for name, item in (os.environ if environ is None else environ).items()
-        if item and (
-            len(item) >= 4
-            or re.search(
-                r'token|secret|password|passwd|api[_-]?key|access[_-]?key|credential',
-                name,
-                re.IGNORECASE,
-            )
-        )
+        if _is_credential_env_value(name, item)
     }
     for item in sorted(values, key=len, reverse=True):
         text = text.replace(item, '[REDACTED_ENV]')
@@ -311,12 +348,14 @@ def recover_interrupted_tasks(
                     task.next_card = None
                 job.status = 'completed'
                 progress.message = '已从检查点恢复，未重复执行检索或模型调用'
+                progress.percent = 100
                 action = 'settled_checkpoint'
                 event_type = 'recovered'
             else:
                 task.state = TaskState.ERROR.value
                 job.status = 'interrupted'
                 progress.message = '执行中断，外部服务结果未确认，请人工复核后重试'
+                progress.percent = 0
                 action = 'manual_review'
                 event_type = 'recovery_manual_required'
             db.add(TaskEvent(
@@ -384,6 +423,7 @@ def schedule_due_retries(
             task.state = TaskState.SEARCHING.value if job.kind == 'search' else TaskState.GENERATING.value
             task.next_card = None
             progress.message = '等待延迟重试' if delay else '准备重试'
+            progress.percent = 0
             db.add(TaskEvent(
                 task_id=job.task_id,
                 event_type='retry_scheduled',
@@ -396,16 +436,27 @@ def schedule_due_retries(
     return results
 
 
-def run_recovery_cycle(now=None, enqueue=None):
+def run_recovery_cycle(now=None, enqueue=None, session_factory=SessionLocal):
     from app.config import get_settings
 
+    expired = expire_idle_collection_tasks(
+        now=now,
+        session_factory=session_factory,
+    )
     if get_settings().task_store_authority == 'sites':
         from app.remote_recovery import run_remote_recovery_cycle
 
-        return run_remote_recovery_cycle(now=now)
+        result = run_remote_recovery_cycle(now=now)
+        result['expired'] = expired
+        return result
     return {
-        'recovered': recover_interrupted_tasks(now=now, enqueue=enqueue),
-        'requeued': schedule_due_retries(now=now, enqueue=enqueue),
+        'recovered': recover_interrupted_tasks(
+            now=now, enqueue=enqueue, session_factory=session_factory,
+        ),
+        'requeued': schedule_due_retries(
+            now=now, enqueue=enqueue, session_factory=session_factory,
+        ),
+        'expired': expired,
     }
 
 

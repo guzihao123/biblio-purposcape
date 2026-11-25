@@ -164,7 +164,16 @@ def offline_reference_checker(papers_path, output_path):
     return {'clean': not issues, 'issues': issues}
 
 
-def deliver_mode(mode, task, output, workspace, form='ALL'):
+def offline_figure_loader(*args, **kwargs):
+    """Test-only loader: fixture papers carry real OA URLs, but tests must stay offline."""
+    from app.ppt_figures import FigureBundle
+
+    return FigureBundle(assets=[], attempts=[])
+
+
+def deliver_mode(mode, task, output, workspace, form='ALL', figure_loader=None):
+    if figure_loader is None:
+        figure_loader = offline_figure_loader
     task_dir = workspace / task.id
     delivery_task = DeliveryTask(
         id=task.id,
@@ -187,6 +196,7 @@ def deliver_mode(mode, task, output, workspace, form='ALL'):
     result = DeliveryService(
         workspace_root=workspace,
         reference_checker=offline_reference_checker,
+        figure_loader=figure_loader,
     ).deliver(delivery_task)
     return result
 

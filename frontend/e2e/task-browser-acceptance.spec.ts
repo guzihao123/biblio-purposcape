@@ -220,13 +220,20 @@ test('03 满血/轻量切换及结点、因素、方法、语义关系真实点�
   await screenshot(page, '03-mobile-embedded', false)
 })
 
-test('04 B 项目字段只收名称/目标/资助，其余系统生成', async ({ page }) => {
+test('04 B 项目主题候选、名称/目标/资助与系统生成字段', async ({ page }) => {
   await startResearch(page)
   await answerDirection(page)
   await page.getByRole('button', { name: 'B 撰写标书/立项依据', exact: true }).click()
-  await expect(page.getByRole('button', { name: '确认选择', exact: true })).toBeDisabled()
-  await page.getByLabel('项目名称', { exact: true }).fill('肝癌免疫治疗耐药机制及动态分型研究')
-  await page.getByLabel('一句话目标', { exact: true }).fill('识别可干预的耐药机制并建立动态分型。')
+  await expect(page.getByLabel('项目名称', { exact: true })).toHaveCount(0)
+  await page.getByRole('button', { name: '确认选择', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '请选择一个项目主题候选', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: '肝癌免疫治疗耐药的髓系代谢机制与分层验证', exact: true })).toBeVisible()
+  await screenshot(page, '04-b-theme-candidates')
+  await page.getByRole('button', { name: '肝癌免疫治疗耐药的髓系代谢机制与分层验证', exact: true }).click()
+  await page.getByRole('button', { name: '确认选择', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '确认项目名称、目标与资助类别', exact: true })).toBeVisible()
+  await expect(page.getByLabel('项目名称', { exact: true })).toHaveValue('肝癌免疫治疗耐药的髓系代谢机制与分层验证')
+  await expect(page.getByLabel('一句话目标', { exact: true })).toHaveValue('识别可干预的髓系代谢机制并形成分层验证方案。')
   await page.getByLabel('资助类别/学科属性（可跳过）', { exact: true }).fill('国家自然科学基金·医学部')
   await expect(page.getByLabel('研究内容（3–4 项）', { exact: true })).toHaveCount(0)
   await expect(page.getByLabel('技术路线（输入→方法→验证→输出）', { exact: true })).toHaveCount(0)
@@ -238,11 +245,33 @@ test('04 B 项目字段只收名称/目标/资助，其余系统生成', async (
   const request = await waiting
   const value = request.postDataJSON().value
   expect(value.mode).toBe('B')
-  expect(value.project.name).toContain('动态分型')
+  expect(value.project.name).toContain('髓系代谢')
   expect(value.project.goal).toContain('可干预')
   expect(value.project.funding).toContain('国家自然科学基金')
+  expect(value.theme.object).toContain('患者队列')
+  expect(value.theme.method).toContain('空间转录组')
+  expect(value.theme.expected_output).toContain('验证方案')
   expect(value.project.research_contents).toBeUndefined()
   expect(value.project.technical_route).toBeUndefined()
+  await expect(page.getByRole('heading', { name: '以下候选学术术语，选 1 个或多个用于检索。', exact: true })).toBeVisible()
+})
+
+
+test('04B E 其他用途自定义输入进入术语卡', async ({ page }) => {
+  await startResearch(page)
+  await answerDirection(page)
+  await page.getByRole('button', { name: 'E 其他用途（自定义）', exact: true }).click()
+  await expect(page.getByLabel('自定义用途', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: '确认选择', exact: true })).toBeDisabled()
+  await page.getByLabel('自定义用途', { exact: true }).fill('为学院写一份面向政策制定的交通安全证据简报，重点关注事故致因与可干预措施。')
+  const waiting = page.waitForRequest((request) => request.url().includes('/answers/mode') && request.method() === 'POST')
+  await screenshot(page, '04b-e-custom')
+  await expectNoHorizontalOverflow(page, 'E 自定义用途')
+  await page.getByRole('button', { name: '确认选择', exact: true }).click()
+  const request = await waiting
+  const value = request.postDataJSON().value
+  expect(value.mode).toBe('E')
+  expect(value.custom).toContain('政策制定')
   await expect(page.getByRole('heading', { name: '以下候选学术术语，选 1 个或多个用于检索。', exact: true })).toBeVisible()
 })
 
@@ -297,7 +326,7 @@ test('06 D 团队背景提交与不限年限推荐', async ({ page }) => {
   await page.getByRole('button', { name: '肝细胞癌（命中 1280）', exact: true }).click()
   await page.getByRole('button', { name: '确认选择', exact: true }).click()
   await expect(page.getByRole('heading', { name: '重点关注的时间范围', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'D 不限，覆盖经典与最新（推荐）', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'D 不限，覆盖经典与最新', exact: true })).toBeVisible()
 })
 
 test('07 窄屏完整流程、轻量图谱、报告及主要页面横向溢出', async ({ page }) => {
@@ -337,7 +366,7 @@ test('08 reduced-motion 与键盘完成入口、方向和用途操作', async ({
   await expect(start).toHaveCSS('animation-name', 'none')
   await page.keyboard.press('Space')
   await expect(page.getByRole('heading', { name: '研究方向或核心问题', exact: true })).toBeVisible()
-  const direction = page.getByRole('button', { name: '肝癌免疫治疗耐药机制的最新进展', exact: true })
+const direction = page.getByRole('group', { name: '单选选项' }).getByRole('button').first()
   await direction.focus()
   await page.keyboard.press('Space')
   await expect(direction).toHaveAttribute('aria-pressed', 'true')

@@ -168,3 +168,41 @@ def test_sites_quota_error_maps_to_429(sites_client):
     assert response.status_code == 429
     assert response.headers['retry-after'] == '30'
     assert response.json()['detail']['code'] == 'quota_exceeded'
+
+def test_sites_upstream_error_text_is_redacted_but_still_diagnosable(sites_client):
+    client, sync, _ = sites_client
+    api_key = 'sk-live-8f3a91c2d4b5e6071a2b'
+    db_password = 'fake-db-password-91c4'
+    sync.failure = RuntimeError(
+        'upstream 502 while calling https://sites.internal/api/v1/tasks '
+        f'(api_key={api_key}, password={db_password})'
+    )
+
+    response = client.post('/api/tasks', headers={'Idempotency-Key': 'key-secret'})
+
+    assert response.status_code == 503
+    detail = response.json()['detail']
+    assert detail['code'] == 'task_store_unavailable'
+    message = detail['message']
+    assert api_key not in message
+    assert db_password not in message
+    assert '[REDACTED]' in message
+    assert 'RuntimeError' in message
+    assert 'upstream 502' in message
+    assert len(message) <= 300
+
+
+def test_sites_error_code_outside_the_allow_list_is_not_echoed(sites_client):
+    client, sync, _ = sites_client
+
+    class UnsafeStoreError(RuntimeError):
+        code = 'sk-live-code-should-never-surface'
+
+    sync.failure = UnsafeStoreError('provider rejected the request')
+
+    response = client.post('/api/tasks', headers={'Idempotency-Key': 'key-code'})
+
+    assert response.status_code == 503
+    detail = response.json()['detail']
+    assert detail['code'] == 'task_store_unavailable'
+    assert 'sk-live-code-should-never-surface' not in response.text

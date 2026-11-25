@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from app.graphs import _network
-from app.search import SearchRequest, SearchService, merge_records
+from app.search import SearchRequest, SearchService, merge_records, plan_sources
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -28,6 +28,50 @@ EXTENSIONS = [
     'liver cancer immunotherapy resistance',
     'hepatocellular carcinoma immune evasion',
 ]
+
+
+def test_plan_sources_keeps_domain_only_english_topics_on_openalex():
+    plan = plan_sources(
+        direction='medical education research',
+        terms=['clinical teaching outcomes'],
+        extensions=['student assessment'],
+    )
+
+    assert plan.sources == ('openalex',)
+    assert plan.chinese is False
+    assert plan.technical is False
+    assert any('domain-only' in reason for reason in plan.reasons)
+
+
+def test_plan_sources_adds_arxiv_for_technical_and_ai_topics():
+    ai = plan_sources(direction='AI-assisted diagnosis', terms=['deep learning'])
+    engineering = plan_sources(direction='机器人控制', terms=['控制算法'])
+
+    assert ai.sources == ('openalex', 'arxiv')
+    assert engineering.sources == ('openalex', 'arxiv', 'crossref')
+    assert ai.chinese is False and ai.technical is True
+    assert engineering.chinese is True and engineering.technical is True
+
+
+def test_plan_sources_adds_crossref_only_for_chinese_terms():
+    chinese = plan_sources(direction='教育研究', terms=['课后服务'])
+    english = plan_sources(direction='education research', terms=['after-school care'])
+
+    translated = plan_sources(direction='教育研究', terms=['after-school care'])
+    assert chinese.sources == ('openalex', 'crossref')
+    assert english.sources == ('openalex',)
+    assert translated.sources == ('openalex',)
+    assert chinese.chinese is True and chinese.technical is False
+
+
+def test_plan_sources_semantic_scholar_stays_opt_in():
+    assert plan_sources(direction='AI', terms=['machine learning']).sources == (
+        'openalex', 'arxiv',
+    )
+    plan = plan_sources(
+        direction='AI', terms=['machine learning'], semantic_scholar=True
+    )
+    assert plan.sources == ('openalex', 'arxiv', 'semantic_scholar')
 
 
 def load_sample(name):
@@ -635,3 +679,264 @@ def test_live_openalex_smoke_returns_five_real_records(tmp_path):
     assert all(paper['id'] and paper['title'] for paper in papers)
     assert all(paper['type'] in {'article', 'review', 'preprint'} for paper in papers)
     assert [paper['ref_no'] for paper in papers] == [1, 2, 3, 4, 5]
+
+
+ROUTING_FAKE_RETRIEVER = r'''
+import argparse
+import json
+import os
+import sys
+from copy import deepcopy
+from pathlib import Path
+
+parser = argparse.ArgumentParser()
+parser.add_argument('source')
+parser.add_argument('--query', action='append', required=True)
+parser.add_argument('--from-year', type=int)
+parser.add_argument('--limit', type=int, required=True)
+parser.add_argument('--sort', required=True)
+parser.add_argument('--out', required=True)
+args = parser.parse_args()
+
+with open(os.environ['SEARCH_TEST_ARGV_LOG'], 'a', encoding='utf-8') as stream:
+    stream.write(json.dumps(sys.argv[1:]) + '\n')
+
+if args.source != 'openalex' and os.environ.get('SEARCH_TEST_FAIL_SECONDARY') == '1':
+    print('fixture secondary source unavailable')
+    sys.exit(4)
+
+query = ' '.join(args.query)
+sample = json.loads(Path(os.environ['SEARCH_TEST_SAMPLE_ROOT'], 'openalex_lim_t1.json').read_text(encoding='utf-8'))
+if args.source == 'openalex':
+    papers = deepcopy(sample['papers'])
+else:
+    papers = []
+    duplicate = deepcopy(sample['papers'][0])
+    duplicate.update(id=args.source + ':duplicate-doi', title=query + ' duplicate DOI', source=args.source)
+    unique = deepcopy(sample['papers'][1])
+    unique.update(
+        id=args.source + ':unique', doi=None, url=None,
+        title=query + ' unique ' + args.source + ' record',
+        abstract=query + ' abstract from ' + args.source,
+        type='preprint' if args.source == 'arxiv' else 'journal-article',
+        source=args.source,
+    )
+    papers = [duplicate, unique]
+    if args.source == 'crossref':
+        for paper in papers:
+            paper['doi'] = 'https://doi.org/10.1000/' + paper['id'].replace(':', '-')
+            paper['url'] = paper['doi']
+            paper['abstract'] = None
+payload = {
+    'query': args.query,
+    'source': args.source,
+    'total_hits': len(papers) + 1,
+    'papers': papers[:args.limit],
+}
+Path(args.out).write_text(json.dumps(payload, ensure_ascii=False), encoding='utf-8')
+print('offline routing fixture; not a network result')
+'''
+
+
+def run_routing_service(
+    tmp_path, monkeypatch, *, terms, direction='', extensions=(),
+    fail_secondary=False, limit=5,
+):
+    script = tmp_path / 'routing_fake_retriever.py'
+    script.write_text(ROUTING_FAKE_RETRIEVER, encoding='utf-8')
+    argv_log = tmp_path / 'routing_argv.jsonl'
+    monkeypatch.setenv('SEARCH_TEST_ARGV_LOG', str(argv_log))
+    monkeypatch.setenv('SEARCH_TEST_SAMPLE_ROOT', str(SAMPLE_ROOT))
+    monkeypatch.setenv(
+        'SEARCH_TEST_FAIL_SECONDARY', '1' if fail_secondary else '0'
+    )
+    output_dir = tmp_path / 'run'
+    request = SearchRequest(
+        terms=terms, from_year=None, mode='A',
+        extensions=extensions, direction=direction,
+    )
+    service = SearchService(output_dir=output_dir, script_path=script, limit=limit)
+    result = service.run(request)
+    commands = [json.loads(line) for line in argv_log.read_text(encoding='utf-8').splitlines()]
+    return result, commands, output_dir
+
+
+def command_source(command):
+    return command[0]
+
+
+def logged_retrieval_sources(log_text, scope):
+    section = next(
+        section for section in log_text.split('\n## ')
+        if section.splitlines()[0].endswith('| {} | retrieval_sources'.format(scope))
+    )
+    line = next(
+        line for line in section.splitlines()
+        if line.startswith('- retrieval_sources: ')
+    )
+    return json.loads(line.split(': ', 1)[1])
+
+
+def test_retrieval_sources_field_matches_between_search_log_and_pools(
+    tmp_path, monkeypatch,
+):
+    result, _, output_dir = run_routing_service(
+        tmp_path, monkeypatch,
+        terms=[SELECTED_TERM], direction='AI-assisted diagnosis',
+    )
+    log_text = (output_dir / 'search_log.md').read_text(encoding='utf-8')
+
+    assert '- retrieval_sources: ["openalex"]' in log_text
+    assert '- retrieval_sources: ["arxiv"]' in log_text
+    for scope, filename in (
+        ('limited', 'papers.json'), ('unlimited', 'papers_all.json'),
+    ):
+        pool = json.loads((output_dir / filename).read_text(encoding='utf-8'))
+        assert logged_retrieval_sources(log_text, scope) == [
+            {
+                'ref_no': paper['ref_no'],
+                'retrieval_sources': paper['retrieval_sources'],
+                'doi': paper['doi'],
+                'title': paper['title'],
+            }
+            for paper in pool['papers']
+        ]
+        assert [paper['ref_no'] for paper in pool['papers']] == list(
+            range(1, pool['count'] + 1)
+        )
+
+
+def test_routing_fake_adds_arxiv_labels_and_dedups_shared_doi(tmp_path, monkeypatch):
+    result, commands, output_dir = run_routing_service(
+        tmp_path, monkeypatch,
+        terms=[SELECTED_TERM], direction='AI-assisted diagnosis',
+    )
+
+    assert {command_source(command) for command in commands} == {'openalex', 'arxiv'}
+    assert (output_dir / 'arxiv_limited_selected.json').exists()
+    assert (output_dir / 'arxiv_unlimited_selected.json').exists()
+    assert all('crossref' not in command for command in commands)
+    assert result['source_plan']['sources'] == ['openalex', 'arxiv']
+
+    for pool in (result['limited'], result['unlimited']):
+        assert 0 < pool['count'] <= 5
+        assert pool['count'] == len(pool['papers'])
+        assert [paper['ref_no'] for paper in pool['papers']] == list(
+            range(1, pool['count'] + 1)
+        )
+        by_id = {paper['id']: paper for paper in pool['papers']}
+        assert 'arxiv:duplicate-doi' not in by_id
+        unique = next(
+            paper for paper in pool['papers'] if paper['id'] == 'arxiv:unique'
+        )
+        assert unique['source'] == 'arxiv'
+        assert unique['retrieval_sources'] == ['arxiv']
+        assert any(
+            paper['source'] == 'openalex'
+            and 'arxiv' in paper['retrieval_sources']
+            and paper['_duplicate_count'] >= 2
+            for paper in pool['papers']
+        )
+        keys = [
+            paper['doi'] or paper['title'].casefold() for paper in pool['papers']
+        ]
+        assert len(keys) == len(set(keys))
+
+
+def test_routing_fake_adds_crossref_for_chinese_terms_and_keeps_source_tags(
+    tmp_path, monkeypatch,
+):
+    result, commands, output_dir = run_routing_service(
+        tmp_path, monkeypatch, terms=['课后服务 学业'], direction='教育研究',
+    )
+
+    assert {command_source(command) for command in commands} == {'openalex', 'crossref'}
+    assert not (output_dir / 'arxiv_limited_selected.json').exists()
+    assert (output_dir / 'crossref_limited_selected.json').exists()
+    assert result['source_plan']['sources'] == ['openalex', 'crossref']
+
+    pool = result['limited']
+    crossref = next(
+        paper for paper in pool['papers'] if paper['id'] == 'crossref:unique'
+    )
+    assert crossref['source'] == 'crossref'
+    assert crossref['retrieval_sources'] == ['crossref']
+    assert crossref['title'].startswith('课后服务 学业')
+    assert all(paper['ref_no'] == index for index, paper in enumerate(pool['papers'], 1))
+    assert len(pool['papers']) <= 5
+    assert len({
+        (paper['doi'] or '').casefold() or paper['title'].casefold()
+        for paper in pool['papers']
+    }) == len(pool['papers'])
+
+
+def test_secondary_source_failure_degrades_without_blocking_openalex(
+    tmp_path, monkeypatch,
+):
+    result, commands, output_dir = run_routing_service(
+        tmp_path, monkeypatch,
+        terms=[SELECTED_TERM], direction='computer science',
+        fail_secondary=True,
+    )
+
+    assert {command_source(command) for command in commands} == {'openalex', 'arxiv'}
+    assert len(result['degraded_sources']) == 2
+    assert all(item['source'] == 'arxiv' for item in result['degraded_sources'])
+    assert {item['scope'] for item in result['degraded_sources']} == {
+        'limited', 'unlimited',
+    }
+    assert result['limited']['count'] > 0
+    assert all(paper['source'] == 'openalex' for paper in result['limited']['papers'])
+    assert result['limited']['degraded_sources'] == result['degraded_sources'][:1]
+
+    log = (output_dir / 'search_log.md').read_text(encoding='utf-8')
+    assert log.count('- Command:') == 4
+    assert log.count('- Status: degraded') == 2
+    assert log.count('- Reason:') == 2
+    assert '- Source: arxiv' in log
+    assert '- Returned count: 0' in log
+
+
+@pytest.mark.skipif(
+    os.environ.get('RUN_LIVE_SEARCH_ROUTING_SMOKE') != '1',
+    reason='Live multi-source smoke is opt-in; offline tests never access the network.',
+)
+def test_live_multi_source_routing_smoke(tmp_path):
+    request = SearchRequest(
+        terms=['课后服务'], from_year=2023, mode='A',
+        direction='教育研究',
+    )
+    result = SearchService(output_dir=tmp_path, limit=2).run(request)
+
+    assert result['source_plan']['sources'] == ['openalex', 'crossref']
+    for source in result['source_plan']['sources']:
+        raw = json.loads(
+            (tmp_path / '{}_limited_selected.json'.format(source)).read_text(encoding='utf-8')
+        )
+        assert raw['source'] == source
+        assert all(paper['source'] == source for paper in raw['papers'])
+
+    for scope in ('limited', 'unlimited'):
+        pool = result[scope]
+        assert 0 < pool['count'] <= 2
+        assert [paper['ref_no'] for paper in pool['papers']] == list(
+            range(1, pool['count'] + 1)
+        )
+        assert all(paper['retrieval_sources'] for paper in pool['papers'])
+        keys = [
+            (paper['doi'] or '').casefold() or paper['title'].casefold()
+            for paper in pool['papers']
+        ]
+        assert len(keys) == len(set(keys))
+
+
+def test_mode_e_is_supported_for_search_request_and_pool_merging():
+    request = SearchRequest(terms=['urban flooding'], from_year=None, mode='e')
+    assert request.mode == 'E'
+
+    merged = merge_records([], mode='E')
+    assert merged['mode'] == 'E'
+    assert merged['count'] == 0
+
+    with pytest.raises(ValueError):
+        SearchRequest(terms=['urban flooding'], from_year=None, mode='F')

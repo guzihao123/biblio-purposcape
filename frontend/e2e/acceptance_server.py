@@ -135,13 +135,13 @@ def prepare_report_template():
     document.add_heading('肝癌免疫治疗耐药机制调研报告', 0)
     document.add_paragraph('真实浏览器验收生成文件。')
     document.add_paragraph('复核边界：本地确定性夹具，不用于临床或正式研究结论。')
-    document.save(REPORT_TEMPLATE / 'report.docx')
+    document.save(REPORT_TEMPLATE / '综述初稿.docx')
 
     presentation = Presentation()
     slide = presentation.slides.add_slide(presentation.slide_layouts[0])
     slide.shapes.title.text = '肝癌免疫治疗耐药机制'
     slide.placeholders[1].text = '真实浏览器验收 · 图谱与证据回溯'
-    presentation.save(REPORT_TEMPLATE / 'slides.pptx')
+    presentation.save(REPORT_TEMPLATE / '肝癌免疫治疗耐药机制组会汇报.pptx')
 
 
 class FixtureCandidates:
@@ -164,6 +164,36 @@ class FixtureCandidates:
                 'label': '肿瘤免疫微环境（命中 702）',
                 'description': '微环境主题',
                 'preview': 'tumor microenvironment',
+            },
+        ]
+
+    def generate_project_themes(self, direction):
+        return [
+            {
+                'value': 'theme-1',
+                'label': '肝癌免疫治疗耐药的髓系代谢机制与分层验证',
+                'description': '识别可干预的髓系代谢机制并形成分层验证方案。',
+                'preview': '研究对象：肝癌免疫治疗耐药患者队列\n方法：单细胞与空间转录组\n预期产出：机制分层框架与验证方案',
+                'theme': {
+                    'name': '肝癌免疫治疗耐药的髓系代谢机制与分层验证',
+                    'goal': '识别可干预的髓系代谢机制并形成分层验证方案。',
+                    'object': '肝癌免疫治疗耐药患者队列',
+                    'method': '单细胞与空间转录组',
+                    'expected_output': '机制分层框架与验证方案',
+                },
+            },
+            {
+                'value': 'theme-2',
+                'label': 'IL-8/CXCR2 通路动态监测与联合干预评价',
+                'description': '建立 IL-8/CXCR2 动态监测指标并评价联合干预。',
+                'preview': '研究对象：免疫治疗应答与不应答患者\n方法：纵向队列与通路阻断实验\n预期产出：动态监测指标与干预评价报告',
+                'theme': {
+                    'name': 'IL-8/CXCR2 通路动态监测与联合干预评价',
+                    'goal': '建立 IL-8/CXCR2 动态监测指标并评价联合干预。',
+                    'object': '免疫治疗应答与不应答患者',
+                    'method': '纵向队列与通路阻断实验',
+                    'expected_output': '动态监测指标与干预评价报告',
+                },
             },
         ]
 

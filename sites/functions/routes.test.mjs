@@ -35,6 +35,12 @@ globalThis.fetch = async (url, init = {}) => {
       headers: { 'content-type': 'application/json' },
     });
   }
+  if (url === `https://python.example/api/tasks/${TASK_ID}/b-theme-candidates`) {
+    return new Response(JSON.stringify({ options: [], available: false }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
   if (url === `https://python.example/api/tasks/${TASK_ID}/artifacts/report.docx?signature=signed`) {
     return new Response(new Uint8Array([80, 75, 3, 4]), {
       status: 200,
@@ -328,4 +334,18 @@ test('unsafe session paths and non-POST methods are rejected before forwarding',
   assert.equal(getResponse.status, 404);
   assert.deepEqual(await getResponse.json(), { error: 'not_found' });
   assert.equal(upstreamCalls.length, before);
+});
+
+test('B theme candidate subroute forwards the JSON body and session cookie', async () => {
+  const body = JSON.stringify({});
+  const response = await handler(new Request(`https://site.example/functions/v1/app/tasks/${TASK_ID}/b-theme-candidates`, {
+    method: 'POST',
+    headers: { cookie: 'invite_session=signed', 'content-type': 'application/json' },
+    body,
+  }));
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { options: [], available: false });
+  const upstream = upstreamCalls.at(-1);
+  assert.equal(upstream.init.headers.cookie, 'invite_session=signed');
+  assert.equal(new TextDecoder().decode(upstream.init.body), body);
 });

@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from fastapi import Depends, HTTPException, Request, Response
+from fastapi import Depends, Request, Response
 from itsdangerous import URLSafeSerializer
 from sqlalchemy.orm import Session
 
@@ -23,13 +23,10 @@ def _sites_sync():
 
 
 def _sites_raise(error):
-    code = getattr(error, 'code', 'task_store_unavailable')
-    retry_after = getattr(error, 'retry_after', None)
-    status = {'session_not_found': 401, 'skill_version_unavailable': 409, 'quota_exceeded': 429,
-              'revision_conflict': 409, 'answer_conflict': 409, 'task_not_found': 404,
-              'job_not_found': 404, 'invalid_provider_response': 503}.get(code, 503)
-    headers = {'Retry-After': str(retry_after)} if retry_after else {}
-    raise HTTPException(status_code=status, detail={'code': code, 'message': str(error)}, headers=headers)
+    """Translate a task-store failure without echoing upstream provider text."""
+    from app.sites_errors import sites_http_exception
+
+    raise sites_http_exception(error)
 
 
 def create_public_session(

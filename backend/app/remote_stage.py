@@ -157,7 +157,12 @@ def run_remote_stage(task_id, stage, session_id=None, job_id=None, input_hash=No
         if service is None:
             raise LookupError('No execution service is registered for this stage')
         task = SimpleNamespace(**aggregate)
-        result = service(task, stage_input) or {}
+        # The provider store has no incremental progress action yet, so phase
+        # reporting is a no-op here; lifecycle messages stay authoritative.
+        from app.progress_reporter import NullReporter, stage_reporting
+
+        with stage_reporting(NullReporter()):
+            result = service(task, stage_input) or {}
         message = result.get('message') or _message(stage, 'completed')
         result_state = TaskState(result['state']).value if result.get('state') is not None else None
         next_card = CardId(result['next_card']).value if result.get('next_card') is not None else None

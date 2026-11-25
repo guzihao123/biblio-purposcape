@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Index, String, Text, UniqueConstraint, text
+from sqlalchemy import JSON, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, synonym
 
 
@@ -175,6 +175,7 @@ class TaskProgress(Base):
     )
     stage: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     message: Mapped[str] = mapped_column(String(500), default='', nullable=False)
+    percent: Mapped[int] = mapped_column(Integer, default=0, server_default='0', nullable=False)
     input_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     checkpoint: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     traceback: Mapped[Optional[str]] = mapped_column('protected_traceback', Text, nullable=True)

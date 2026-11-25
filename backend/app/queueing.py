@@ -299,6 +299,7 @@ def _write_finalization(db, task_id, stage, input_hash, result):
     progress.stage = stage
     progress.input_hash = input_hash
     progress.message = message
+    progress.percent = 100
     progress.checkpoint = checkpoint
     progress.traceback = None
     if result_state is not None:
@@ -367,6 +368,7 @@ def run_stage(task_id, stage, session_id=None, job_id=None, input_hash=None):
             progress.stage = stage
             progress.input_hash = input_hash
             progress.message = _message(stage, 'started')
+            progress.percent = 0
             progress.checkpoint = None
             progress.traceback = None
             _set_job_status(db, task_id, stage, 'started')
@@ -377,7 +379,15 @@ def run_stage(task_id, stage, session_id=None, job_id=None, input_hash=None):
             if service is None:
                 raise LookupError('No execution service is registered for this stage')
             _consume_stage_quotas(db, task, stage, input_hash)
-            result = service(task, stage_input) or {}
+            # Fine-grained phases are reported through an injected reporter;
+            # stage services keep their two-argument signature.
+            from app.progress_reporter import TaskProgressReporter, stage_reporting
+
+            reporter = TaskProgressReporter(
+                task_id, stage, session_factory=SessionLocal
+            )
+            with stage_reporting(reporter):
+                result = service(task, stage_input) or {}
             # Checkpoint and completion use a fresh session so a pooled TLS
             # connection that died during the stage can be replaced and retried.
             return _finalize_success_with_retry(task_id, stage, input_hash, result, session=db)
@@ -457,6 +467,7 @@ class QueueAdapter:
             progress.stage = stage
             progress.input_hash = input_hash
             progress.message = _message(stage, 'queued')
+            progress.percent = 0
             progress.checkpoint = None
             progress.traceback = None
             _set_job_status(db, task_id, stage, 'queued')

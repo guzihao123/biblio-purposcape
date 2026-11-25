@@ -273,6 +273,12 @@ Deno.serve(async (request) => {
     return forward(`/api/tasks/${match[1]}`, forwardedInit(request, 'GET'));
   }
 
+  match = path.match(/^\/tasks\/([0-9a-f-]{36})\/b-theme-candidates$/i);
+  if (method === 'POST' && match) {
+    const body = await requestBody(request, MAX_ANSWER_BODY_BYTES);
+    return forward(`/api/tasks/${match[1]}/b-theme-candidates`, forwardedInit(request, 'POST', body));
+  }
+
   match = path.match(/^\/tasks\/([0-9a-f-]{36})\/answers\/(direction|mode|terms|years|adjustment|delivery)$/i);
   if (method === 'POST' && match) {
     let body: Uint8Array<ArrayBuffer>;

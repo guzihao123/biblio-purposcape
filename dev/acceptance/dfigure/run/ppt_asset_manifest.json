@@ -1,0 +1,273 @@
+{
+  "summary_pages": [
+    23,
+    24
+  ],
+  "visuals": [
+    {
+      "page": 6,
+      "kind": "chart",
+      "name": "年度趋势（真实聚合）",
+      "expected_text": [
+        "年度趋势（真实聚合）"
+      ]
+    },
+    {
+      "page": 7,
+      "kind": "chart",
+      "name": "主题分布（真实聚合）",
+      "expected_text": [
+        "主题分布（真实聚合）"
+      ]
+    },
+    {
+      "page": 3,
+      "kind": "diagram",
+      "name": "研究背景与科学问题",
+      "expected_text": [
+        "研究对象",
+        "作用链条"
+      ],
+      "min_shapes": 4
+    },
+    {
+      "page": 12,
+      "kind": "diagram",
+      "name": "核心方法与技术路线",
+      "expected_text": [
+        "核心方法"
+      ],
+      "min_shapes": 4
+    },
+    {
+      "page": 22,
+      "kind": "diagram",
+      "name": "发展趋势｜不足→潜在突破",
+      "expected_text": [
+        "不足",
+        "突破"
+      ],
+      "min_shapes": 4
+    },
+    {
+      "page": 3,
+      "kind": "image",
+      "name": "[4] Fig.1，原文 p3，正式版 OA 版本",
+      "source": "figures/ref4_fig1_概念框架.png",
+      "oa_url": "https://doi.org/10.7554/elife.95009",
+      "ref_no": 4,
+      "figure_no": "Fig.1",
+      "original_page": "3",
+      "version": "正式版",
+      "acquisition": "本地 OA PDF 渲染裁切（pdf_figures.py crop）",
+      "caption": "Figure 1. Overview of immunosupressive cells in the hepatocellular carcinoma (HCC) immune microenvironment. Key cell types and cellular component implicated in immune surveillance are indicated in this figure. TAM, tumor-associated macrophage; MDSC, myeloid-derived suppressor cells; CD4+ Treg, regulatory CD4+ T cells; CD8+ Tex, exhausted CD8+ T cells; CAF, cancer-associated fibroblast; DCs, dendritic cells; TCR, T-cell receptor; IDO,",
+      "description": "原文 p3 图区渲染裁切（页顶至图注上沿）。",
+      "slot": "concept"
+    },
+    {
+      "page": 8,
+      "kind": "image",
+      "name": "[4] Fig.2，原文 p11，正式版 OA 版本",
+      "source": "figures/ref4_fig2_临床比较.png",
+      "oa_url": "https://doi.org/10.7554/elife.95009",
+      "ref_no": 4,
+      "figure_no": "Fig.2",
+      "original_page": "11",
+      "version": "正式版",
+      "acquisition": "本地 OA PDF 渲染裁切（pdf_figures.py crop）",
+      "caption": "Figure 2. Barcelona Clinic Liver Cancer (BCLC) and immune checkpoint inhibitors (ICIs) clinical trials by BCLC staging. BCLC staging are based on tumor number and size, vascular invasion or metastases, preserved liver function and performance status. Presented on the right side of the figure are the clinical trials carried out for patients with liver cancer, categorized according to the BCLC staging system, alongside the primary therapeutic",
+      "description": "原文 p11 图区渲染裁切（页顶至图注上沿）。",
+      "slot": "comparison"
+    },
+    {
+      "page": 11,
+      "kind": "image",
+      "name": "[3] Fig.3，原文 p【待核实】，正式版 OA 版本",
+      "source": "figures/ref3_fig3_机制模型.png",
+      "oa_url": "https://doi.org/10.1136/jitc-2025-012230",
+      "ref_no": 3,
+      "figure_no": "Fig.3",
+      "original_page": "【待核实】",
+      "version": "正式版",
+      "acquisition": "Europe PMC JATS XML + supplementaryFiles 图像包（PDF 直链被反爬拦截）",
+      "caption": "MVP is a downstream effector of histone lactylation. (A) Global lactylation and H3K18la levels were detected in Hep G2 (left) and MHCC97-H (right) cells after cultured in different concentrations of LDHi for 48 hours. (B) KEGG analysis of Hep G2 treated with LDHi. (C) KEGG analysis of lactylation-rich peaks after ChIP. (D) Workflow of selecting lactylation-regulated genes. (E) Volcano plot showed differentially-expressed genes after treatment with LDHi. Blue arrowhead indicated MVP. (F, H) Relative MVP expression in HCC tissues and normal liver tissues in LIHC (F) and Cohort 1 (H). (G, I) Overall survival of patients with HCC with low and high MVP expression was analyzed by Kaplan-Meier plots in LIHC (G) and Cohort 1 (I). (J) Relative MVP expression in 28 patients with HCC treated with anti-PD-1/PD-L1. (K) Percentage of patients with HCC with PR or SD/PD after anti-PD-1/PD-L1 treatment in the low-MVP or high-MVP expression groups. *p<0.05, **p<0.01, ***p<0.001. p<0.05 was considered statistically significant. ChIP-seq, chromatin immunoprecipitation followed by sequencing; FDR, false discovery rate; HCC, hepatocellular carcinoma; ICIs, immune checkpoint inhibitors; KEGG, kyoto encyclopedia of genes and genomes; LDHi, lactate dehydrogenase inhibitor; LIHC,Liver hepatocellular carcinoma; MVP, major vault protein; PD, progressive disease; PD-1, programmed cell death protein-1; PD-L1, programmed cell death-ligand 1; PR, partial response; RNA-seq, RNA sequencing; SD, stable disease.",
+      "description": "Europe PMC JATS 图像包 jitc-13-9-g003.jpg（原始图像文件，非 PDF 裁切）。",
+      "slot": "architecture",
+      "asset_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12458742/supplementaryFiles#jitc-13-9-g003.jpg"
+    },
+    {
+      "page": 13,
+      "kind": "image",
+      "name": "[2] Fig.1，原文 p【待核实】，正式版 OA 版本",
+      "source": "figures/ref2_fig1_研究设计.png",
+      "oa_url": "https://doi.org/10.1016/j.ymthe.2025.02.002",
+      "ref_no": 2,
+      "figure_no": "Fig.1",
+      "original_page": "【待核实】",
+      "version": "正式版",
+      "acquisition": "Europe PMC JATS XML + supplementaryFiles 图像包（PDF 直链被反爬拦截）",
+      "caption": "Plasma IL-8 strongly associated with ICB clinical outcome in our HCC cohort(A) Study design from a patient cohort with HBV-related advanced HCC treated with pembrolizumab. (B) Clinical characteristics and plasma IL-8 level of individual HCC patient in the cohort. BCLC, Barcelona Clinic Liver Cancer; HBsAg, hepatitis B surface antigen; HBV, hepatitis B virus; HCV, hepatitis C virus. (C) OS of patients with high plasma IL-8 level versus that of low IL-8 level with a median cutoff (hazard ratio [HR], 2.899; 95% confidence interval [CI], 1.112–7.558; ∗p = 0.0294). (D) The percentage change of plasma IL-8 level after pembrolizumab treatment correlated with clinical response status. (E) ROC curve for predictive value of plasma IL-8 change in HCC patients (AUC, 0.9348; 95% CI, 0.83–1.04). AUC, area under the curve; ROC, receiver operating characteristic. (F) Patients with an increase exceeding 30% (IL-8 increase), stability within ±30% (IL-8 stable), and a decrease of more than 30% (IL-8 decrease) in plasma IL-8 exhibited variations in tumor size change, reflected by the percentage change in the sum of diameters of target lesions. (G and H) Plasma IL-8 level and tumor size change along the duration of pembrolizumab treatment in the responders PW007 and PW029. (I) Representative computed tomography (CT) images of PW007 and PW029, with the tumor location denoted by red arrows. ∗p < 0.05; ∗∗p < 0.01; ∗∗∗p < 0.001; ∗∗∗∗p < 0.0001.",
+      "description": "Europe PMC JATS 图像包 gr1.jpg（原始图像文件，非 PDF 裁切）。",
+      "slot": "method",
+      "asset_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11997504/supplementaryFiles#gr1.jpg"
+    },
+    {
+      "page": 14,
+      "kind": "image",
+      "name": "[1] Fig.1，原文 p【待核实】，正式版 OA 版本",
+      "source": "figures/ref1_fig1_结果图.png",
+      "oa_url": "https://doi.org/10.1126/sciadv.adv0558",
+      "ref_no": 1,
+      "figure_no": "Fig.1",
+      "original_page": "【待核实】",
+      "version": "正式版",
+      "acquisition": "Europe PMC JATS XML + supplementaryFiles 图像包（PDF 直链被反爬拦截）",
+      "caption": "S1P metabolism is elevated in the αPD-1 resistance group and contributes to HCC progression in an immune-dependent manner.(A) Represent images of responder (PR) and nonresponder (PD) in a clinical trial. (B) KEGG by LC-MS metabonomics of serum in the responder group (n = 20)/nonresponder group (n = 10). TCA, tricarboxylic acid; cAMP, cyclic adenosine 3′,5′-monophosphate. (C) S1P, sphinganine, and SM levels in serum from patients with CR, PR, SD, and PD treated with sintilimab. (D) S1P level in serum from patients before and after sintilimab treatment. (E) ROC evaluating of S1P as a predictive biomarker for immunotherapy response. AUC, area under the curve. (F) Schematic of model establishment, sample collection, and analysis. (G) Tumor volume changes in huHSC-NCG mice treated with sintilimab (responder versus nonresponder). (H and I) KEGG and heatmap analysis of tumor tissues in responder (R)/nonresponder (NR) groups by LC-MS metabonomics. GPI, glycosylphosphatidylinositol; PE, phosphatidylethanolamine; PI, phosphatidylinositol; PA, phosphatidic acid; PS, phosphatidylserine; PC, phosphatidylcholine; PG, phosphatidylglycerol. (J and K) S1P level in serum and tissue lysates from HCC, benign, stage I to II, and stage III to IV patients. (L) Relapse-free survival (RFS) and overall survival (OS) of patients with HCC between low and high serum S1P. (M) Correlation of CD206+ TAMs, FOXP3+ Tregs, CD8+ T cells, and tissue S1P levels in HCC. (N and O) Representative images, statistics, and survival curve of immunocompetent mice treated with vehicle/S1P in orthotopic and HTVi models. (P) Flow cytometry of tumor tissues in orthotopic model (vehicle versus S1P). (Q) Immunofluorescence of tumor tissues in HTVi model (vehicle versus S1P). (R and S) Representative images, statistics, and survival curve of immunodeficient mice treated with vehicle/S1P in orthotopic/HTVi model. *P < 0.05, **P < 0.01, and ****P < 0.0001. ns, not significant. Using a two-tailed, unpaired Student’s t test [(I), (J), (M), (O), (P), and (Q)], nonparametric test, post hoc comparison is Dunn’s test [S1P in (C)], one-way analysis of variance (ANOVA) test post hoc comparison is Tukey test [sphinganine/SM in (C)], Pearson correlation test (L), or log-rank test [(K), (N), and (R)]. Data are from ≥3 independent experiments (means ± SD).",
+      "description": "Europe PMC JATS 图像包 sciadv.adv0558-f1.jpg（原始图像文件，非 PDF 裁切）。",
+      "slot": "reading",
+      "asset_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12094245/supplementaryFiles#sciadv.adv0558-f1.jpg"
+    },
+    {
+      "page": 15,
+      "kind": "image",
+      "name": "[1] Fig.2，原文 p【待核实】，正式版 OA 版本",
+      "source": "figures/ref1_fig2_机制模型.png",
+      "oa_url": "https://doi.org/10.1126/sciadv.adv0558",
+      "ref_no": 1,
+      "figure_no": "Fig.2",
+      "original_page": "【待核实】",
+      "version": "正式版",
+      "acquisition": "Europe PMC JATS XML + supplementaryFiles 图像包（PDF 直链被反爬拦截）",
+      "caption": "S1P metabolism mediates an immunosuppressive phenotype and reprograms immunometabolism.(A) Flow cytometric analysis of TAMs with vehicle and S1P. (B) Expression of genes encoding M2 and M1 phenotype in macrophages with vehicle and S1P (20 μM) by reverse transcription polymerase chain reaction (RT-PCR). (C) MitoTracker Green of TAMs with vehicle and S1P (20 μM). (D) Representative images and statistical results of mitochondrial (red arrowheads) of TAMs with vehicle and S1P by TEM. (E and F) ATP determination and Seahorse analysis in TAMs with vehicle and S1P. 2-DG, 2-deoxyglucose. (G) Proliferation measured by CFSE in CD8+ T cells with vehicle and S1P (20 μM). (H) Expression of genes encoding function of CD8+ T effector cells (Teff) and CD8+ T exhausted cells (Tex) with vehicle and S1P (20 μM) by RT-PCR. (I) Statistical results of GZMB and tumor necrosis factor–α (TNFα) in CD8+ T cells with vehicle and S1P (20 μM). (J) OT-1 T cell–meditated tumor cell killing assay in Hep-53.4 OVA treated with vehicle and S1P. (K) Ex vivo suppression of CFSE-labeled WT naïve CD8+ T cell proliferation by Tregs with vehicle and S1P (10 μM). (L) Expression of genes encoding function of Tregs and TH17 cells with vehicle and S1P (10 μM) by RT-PCR. (M) Statistical results of FoxP3 and IL-17A in CD4+ T with vehicle and S1P. (N to P) MitoTracker Green, Seahorse analysis and ATP determination of CD8+ T cells with vehicle and S1P (20 μM). (Q to S) MitoTracker Green, Seahorse analysis, and ATP determination of Tregs with vehicle and S1P (10 μM). *P < 0.05, **P < 0.01, ***P < 0.001, and ****P < 0.0001. Using a two-tailed, unpaired Student’s t test [(A), (C), (D), (E), (F), (G), (I), (J), (K), and (M) to (S)]. Data are from ≥3 independent experiments (means ± SD).",
+      "description": "Europe PMC JATS 图像包 sciadv.adv0558-f2.jpg（原始图像文件，非 PDF 裁切）。",
+      "slot": "architecture",
+      "asset_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12094245/supplementaryFiles#sciadv.adv0558-f2.jpg"
+    },
+    {
+      "page": 16,
+      "kind": "image",
+      "name": "[2] Fig.2，原文 p【待核实】，正式版 OA 版本",
+      "source": "figures/ref2_fig2_结果图.png",
+      "oa_url": "https://doi.org/10.1016/j.ymthe.2025.02.002",
+      "ref_no": 2,
+      "figure_no": "Fig.2",
+      "original_page": "【待核实】",
+      "version": "正式版",
+      "acquisition": "Europe PMC JATS XML + supplementaryFiles 图像包（PDF 直链被反爬拦截）",
+      "caption": "scRNA-seq profile of IL8 ansd CXCR2 in HCC tumor biopsies(A) UMAP plot of the tumor biopsy samples, with color codes denoting five major clusters, namely cancer-associated fibroblasts (CAFs), endothelial cells (Endo), lymphoid, myeloid, and tumor cells. (B) UMAP plot of the tumor biopsy samples, with color codes denoting immune subclusters. (C) UMAP plot showing IL8 gene expression across clusters in the tumor biopsies. (D) IL8 gene expression among immune cell clusters in patients stratified by PD, SD, and PR response toward pembrolizumab treatment. (E) Bar chart showing the distribution of IL8 expression in pre- and on-treatment tumor biopsies. (F) The association between intratumoral immune subcluster proportions and baseline plasma IL-8 level, which was denoted by Pearson’s correlation coefficients. (G and H) Progression-free survival and OS of the patients with high IL8 expression in PMN-MDSC-like cells versus that of low IL8 expression (HR, 2.327, 95% CI, 0.867–6.248; ∗p = 0.0352 and HR, 1.767, 95% CI, 0.658–4.745, p = 0.1499, respectively). (I) UMAP plot of the tumor biopsy samples displaying CXCR2 gene expression. (J) UMAP plot showing CXCR2 gene expression among immune cell clusters in patients stratified by PD, SD, and PR response toward pembrolizumab treatment. UMAP, uniform manifold approximation and projection. ∗p < 0.05; ∗∗p < 0.01; ∗∗∗p < 0.001; ∗∗∗∗p < 0.0001.",
+      "description": "Europe PMC JATS 图像包 gr2.jpg（原始图像文件，非 PDF 裁切）。",
+      "slot": "reading",
+      "asset_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11997504/supplementaryFiles#gr2.jpg"
+    },
+    {
+      "page": 17,
+      "kind": "image",
+      "name": "[2] Fig.3，原文 p【待核实】，正式版 OA 版本",
+      "source": "figures/ref2_fig3_机制模型.png",
+      "oa_url": "https://doi.org/10.1016/j.ymthe.2025.02.002",
+      "ref_no": 2,
+      "figure_no": "Fig.3",
+      "original_page": "【待核实】",
+      "version": "正式版",
+      "acquisition": "Europe PMC JATS XML + supplementaryFiles 图像包（PDF 直链被反爬拦截）",
+      "caption": "Activation of myeloid CXCR2 signaling pathway associated with ICB resistance in vivo(A) The fold change of plasma CXCL1 level after anti-PD-L1 treatment over control group in ICB-sensitive (RIL-175 PDL1S) and ICB-resistant (RIL-175 PDL1R) mouse models. (B) Flow cytometry analysis of CXCL1 and CXCR2 positivity in CD45− tumor cells and subtypes of immune cells in RIL-175 PDL1S and RIL-175 PDL1R tumors. (C) Basal proportion of PMN-MDSCs among CD45+ leukocytes in RIL-175 PDL1S and RIL-175 PDL1R tumors. (D and E) Basal proportion of CXCL1- and CXCR2-expressing PMN-MDSCs in overall CD45+ leukocytes within tumors. (F) Fold change of the CXCL1 frequency in intratumoral PMN-MDSCs upon anti-PD-L1 treatment in the two in vivo models. (G) Representative flow cytometry diagrams showing elevated CXCL1 expression of PMN-MDSCs in PDL1R mice treated with anti-PD-L1. ∗p < 0.05; ∗∗p < 0.01; ∗∗∗p < 0.001; ∗∗∗∗p < 0.0001.",
+      "description": "Europe PMC JATS 图像包 gr3.jpg（原始图像文件，非 PDF 裁切）。",
+      "slot": "architecture",
+      "asset_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11997504/supplementaryFiles#gr3.jpg"
+    },
+    {
+      "page": 18,
+      "kind": "image",
+      "name": "[3] Fig.1，原文 p【待核实】，正式版 OA 版本",
+      "source": "figures/ref3_fig1_临床比较.png",
+      "oa_url": "https://doi.org/10.1136/jitc-2025-012230",
+      "ref_no": 3,
+      "figure_no": "Fig.1",
+      "original_page": "【待核实】",
+      "version": "正式版",
+      "acquisition": "Europe PMC JATS XML + supplementaryFiles 图像包（PDF 直链被反爬拦截）",
+      "caption": "Elevated lactylation levels are associated with poor survival and ICIs resistance in patients with HCC. (A) Representative IHC images showing the levels of lactylation in HCC and paracarcinoma liver tissues (scale bar: 50 µm). (B) Statistical analysis of relative lactylation levels in 79 paired HCC and paracarcinoma liver tissues. (C–E) Relative lactylation levels in 79 HCC tissues classified according to the clinical stage (C), tumor number (D), and tumor size (E). (F) Representative IHC images showing different levels of lactylation in six patients with HCC treated with anti-PD-1/PD-L1 (scale bar: 50 µm). (G) Statistical analysis of relative lactylation levels in 28 patients with HCC treated with anti-PD-1/PD-L1. (H) Percentage of patients with HCC with PR or SD/PD after anti-PD-1/PD-L1 treatment in the low-lactylation or high-lactylation groups. (I) Two representative IHC images showing different levels of lactylation in human HCC tissues (scale bar: 50 µm). (J) Overall survival in patients with HCC with low or high lactylation levels was analyzed by Kaplan-Meier plots. *p<0.05, **p<0.01, ***p<0.001, ****p<0.0001. p<0.05 was considered statistically significant. HCC, hepatocellular carcinoma; ICIs, immune checkpoint inhibitors; PD, progressive disease; PD-1, programmed cell death protein-1; PD-L1, programmed cell death-ligand 1; PR, partial response; SD, stable disease.",
+      "description": "Europe PMC JATS 图像包 jitc-13-9-g001.jpg（原始图像文件，非 PDF 裁切）。",
+      "slot": "comparison",
+      "asset_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12458742/supplementaryFiles#jitc-13-9-g001.jpg"
+    },
+    {
+      "page": 19,
+      "kind": "image",
+      "name": "[3] Fig.2，原文 p【待核实】，正式版 OA 版本",
+      "source": "figures/ref3_fig2_治疗验证.png",
+      "oa_url": "https://doi.org/10.1136/jitc-2025-012230",
+      "ref_no": 3,
+      "figure_no": "Fig.2",
+      "original_page": "【待核实】",
+      "version": "正式版",
+      "acquisition": "Europe PMC JATS XML + supplementaryFiles 图像包（PDF 直链被反爬拦截）",
+      "caption": "Inhibition of lactylation leads to increased infiltration of CD8+ T cells with enhanced antitumor activity. (A) Schematic diagram of animal experiments. (B) Representative fluorescence images of orthotopic HCC models in control and LDHi-treated group. (C) Relative radiance units in control and LDHi-treated group (n=5). (D) Weight of tumors was measured at the endpoint (n=5). (E) Lactate concentrations in TME of three groups of mice. (F–G) Subpopulations of immune cells in the TME were identified through flow cytometric analysis. (H) T-cell subclusters were analyzed throughflow cytometry. (I) Percentage of effector CD8+ T cells was evaluated through flow cytometry. (J) Expression of immune checkpoint molecules on CD8+ T cell was analyzed through flow cytometry. (K–L) Representative IHC images of lactylation (K) and tumor-infiltrating CD8+ lymphocytes (L) in the three groups (scale bar: 100 µm). *p<0.05, **p<0.01, ***p<0.001. p<0.05 was considered statistically significant. CTLA-4, cytotoxic T lymphocyte-associated protein 4; GzmB, granzyme B; HCC, hepatocellular carcinoma; IFN, interferon; IHC, immunohistochemistry; i.p.,intraperitoneal injection; LAG-3, lymphocyte activation gene-3; LDHi, lactate dehydrogenase inhibitor; MDSCs, myeloid-derived suppressor cells; NK, natural killer; PD-1, programmed cell death protein-1; TIGIT, T cell immunoreceptor with immunoglobulin and tyrosine-based inhibitory motif (ITIM) domain; TIM-3, T cell immunoglobulin and mucin-domain-containing-3; TME, tumor microenvironment; TNF, tumor necrosis factor; t-SNE,t-distributed stochastic neighbor embedding.",
+      "description": "Europe PMC JATS 图像包 jitc-13-9-g002.jpg（原始图像文件，非 PDF 裁切）。",
+      "slot": "breakthrough",
+      "asset_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12458742/supplementaryFiles#jitc-13-9-g002.jpg"
+    },
+    {
+      "page": 22,
+      "kind": "image",
+      "name": "[3] Fig.8，原文 p【待核实】，正式版 OA 版本",
+      "source": "figures/ref3_fig8_治疗验证.png",
+      "oa_url": "https://doi.org/10.1136/jitc-2025-012230",
+      "ref_no": 3,
+      "figure_no": "Fig.8",
+      "original_page": "【待核实】",
+      "version": "正式版",
+      "acquisition": "Europe PMC JATS XML + supplementaryFiles 图像包（PDF 直链被反爬拦截）",
+      "caption": "Inhibition of lactylation enhances the antitumor effects of anti-PD-1 immunotherapy in HCC. (A) Schematic diagram of animal experiments. (B) Representative fluorescence images of orthotopic HCC models in each group. (C) Representative images of tumors after dissection (scale bars: 5 mm). (D) Weight of orthotopic tumor in each group (n=5). (E) Survival of mice in each group assessed by Kaplan-Meier survival curves using the log-rank test (n=5). (F) Body weight of mice among the groups (n=5). (G–H) Intratumor CD8+ T cells were analyzed by IHC staining (G) and flow cytometry (H) (n=5). (I) Flow cytometric analysis of the IFN-γ+, TNF-α+, GzmB+ and perforin+ CD8+ TILs in the orthotopic tumor in each group (n=5). (J) Representative IHC staining images of CD8, granzyme B, and PD-L1 from the four groups (scale bars: 100 µm). *p<0.05, **p<0.01, ***p<0.001, ****p<0.0001. p<0.05 was considered statistically significant. FACS, fluorescence-activated cell sorting; GzmB, granzyme B; HCC, hepatocellular carcinoma; IFN, interferon; IHC, immunohistochemistry; i.p., intraperitoneal injection; LDHi, lactate dehydrogenase inhibitor; mAb, monoclonal antibody; NC, negative control; PD-1, programmed cell death protein-1; PD-L1, programmed cell death-ligand 1; TNF, tumor necrosis factor.",
+      "description": "Europe PMC JATS 图像包 jitc-13-9-g008.jpg（原始图像文件，非 PDF 裁切）。",
+      "slot": "breakthrough",
+      "asset_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12458742/supplementaryFiles#jitc-13-9-g008.jpg"
+    }
+  ],
+  "figure_acquisition": [
+    {
+      "ref_no": 1,
+      "title": "Sphingolipid synthesis in tumor-associated macrophages confers immunotherapy resistance in hepatocellular carcinoma",
+      "oa_url": "https://doi.org/10.1126/sciadv.adv0558",
+      "source_url": "https://doi.org/10.1126/sciadv.adv0558",
+      "version": "正式版",
+      "reading_depth": "已读全文",
+      "status": "已取得 8 张原图",
+      "figure_count": 8,
+      "failures": []
+    },
+    {
+      "ref_no": 2,
+      "title": "Overcoming immunotherapy resistance in hepatocellular carcinoma by targeting myeloid IL-8/CXCR2 signaling",
+      "oa_url": "https://doi.org/10.1016/j.ymthe.2025.02.002",
+      "source_url": "https://doi.org/10.1016/j.ymthe.2025.02.002",
+      "version": "正式版",
+      "reading_depth": "已读全文",
+      "status": "已取得 6 张原图",
+      "figure_count": 6,
+      "failures": []
+    },
+    {
+      "ref_no": 3,
+      "title": "Lactylation-driven MVP upregulation boosts immunotherapy resistance by inhibiting PD-L1 degradation in hepatocellular carcinoma",
+      "oa_url": "https://doi.org/10.1136/jitc-2025-012230",
+      "source_url": "https://doi.org/10.1136/jitc-2025-012230",
+      "version": "正式版",
+      "reading_depth": "已读全文",
+      "status": "已取得 8 张原图",
+      "figure_count": 8,
+      "failures": []
+    },
+    {
+      "ref_no": 4,
+      "title": "Exploring the role of the immune microenvironment in hepatocellular carcinoma: Implications for immunotherapy and drug resistance",
+      "oa_url": "https://doi.org/10.7554/elife.95009",
+      "source_url": "https://doi.org/10.7554/elife.95009",
+      "version": "正式版",
+      "reading_depth": "已读全文",
+      "status": "已取得 2 张原图",
+      "figure_count": 2,
+      "failures": []
+    }
+  ]
+}

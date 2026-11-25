@@ -4,6 +4,7 @@ import re
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,17 +14,45 @@ from app.config import get_settings
 from app.db import SessionLocal
 from app.delivery import DeliveryService, DeliveryTask
 from app.models import SkillVersion
+from app.policy_search import collect_b_materials
+from app.progress_reporter import report_stage_phase
 from app.qwen import ChatModel
 from app.schemas import CardId, TaskState
 from app.search import SearchRequest, SearchService
 from app.sites_store import SitesStorageClient
-from app.writing import WritingService, WritingTask
+from app.writing import STYLE_REFERENCE_FILE, WritingService, WritingTask
 
 
 _GAP_COLUMNS = {
     'C1': ('研究方向', '已有进展', '现有不足', '文献证据', '与本文研究问题的联系'),
     'C2': ('研究方向', '已有进展', '现有不足', '文献证据', '可深入研究的问题'),
 }
+REQUIREMENTS_LEDGER_FILE = '用户要求台账.md'
+
+
+def _requirements_ledger_text(answers):
+    mode_answers = answers.get('mode', {})
+    if mode_answers.get('mode') != 'C':
+        return None
+    info_route = str(mode_answers.get('c_info_route') or '')
+    material = str(mode_answers.get('c_material') or mode_answers.get('user_results') or '')
+    if not info_route:
+        info_route = 'upload' if material else 'skip'
+    if info_route == 'skip':
+        material = ''
+    route_labels = {
+        'skip': '跳过，按通用口径写框架',
+        'upload': '已有论文初稿，提供文件',
+        'oral': '现场口述研究问题与方法',
+    }
+    return '\n'.join([
+        '# 用户要求台账', '',
+        f"- C 模式任务：{mode_answers.get('c_route', '未记录')}",
+        f"- 本文信息选择：{route_labels.get(info_route, info_route)}（{info_route}）",
+        f"- 目标期刊：{str(mode_answers.get('target_journal') or '').strip() or '未提供'}",
+        '', '## 本文材料', '', '```text',
+        material or '（跳过，未提供本文材料）', '```', '',
+    ])
 
 
 def _normalized_paragraph(text):
@@ -443,31 +472,49 @@ class Orchestrator:
         from_year = self._from_year(answers)
         task_dir = self.artifact_root / task.id
         task_dir.mkdir(parents=True, exist_ok=True)
+        report_stage_phase('search', 'retrieve')
         pools = self.search_factory(task_dir).run(SearchRequest(
             terms=terms,
             from_year=from_year,
             mode=self._search_mode(mode),
+            direction=answers.get('direction', {}).get('direction', ''),
         ))
         papers = pools['limited']['papers']
         analyzer = self.analysis_factory(self.model)
 
+        analysis_reported = False
+
         def analyze(paper_pool):
-            classified = analyzer.classify(paper_pool)
+            nonlocal analysis_reported
+            first = not analysis_reported
+            if first:
+                report_stage_phase('search', 'classify')
+            workers = max(1, int(os.environ.get('ANALYSIS_CONCURRENCY', '2')))
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                classify_future = pool.submit(analyzer.classify, paper_pool)
+                votes_future = pool.submit(analyzer.extract_factor_votes, paper_pool)
+                relations_future = pool.submit(analyzer.extract_relations, paper_pool)
+                classified = classify_future.result()
+                factor_votes = [asdict(vote) for vote in votes_future.result()]
+                relations = [asdict(relation) for relation in relations_future.result()]
+            analysis_reported = True
             return {
                 'classify': classified,
-                'factor_votes': [asdict(vote) for vote in analyzer.extract_factor_votes(paper_pool)],
-                'relations': [asdict(relation) for relation in analyzer.extract_relations(paper_pool)],
+                'factor_votes': factor_votes,
+                'relations': relations,
             }
 
         analysis = {'all': analyze(pools['unlimited']['papers'])}
         if from_year is not None:
             analysis['limited'] = analyze(papers)
         (task_dir / 'analysis.json').write_text(json.dumps(analysis, ensure_ascii=False, indent=2), encoding='utf-8')
+        report_stage_phase('search', 'stats')
         stats = self.stats_runner(task_dir, terms, from_year)
         (task_dir / 'stats.json').write_text(json.dumps(stats, ensure_ascii=False, indent=2), encoding='utf-8')
         graph_pools = dict(pools)
         if from_year is None:
             graph_pools.pop('limited', None)
+        report_stage_phase('search', 'graph')
         graph_result = self.graph_builder(
             task_dir,
             graph_pools,
@@ -476,6 +523,7 @@ class Orchestrator:
             topic=answers.get('direction', {}).get('direction', ''),
             condition=f'模式 {mode}',
         )
+        report_stage_phase('search', 'upload')
         synced = self._sync_artifacts(task_dir)
         return {
             'state': TaskState.DASHBOARD_READY.value,
@@ -490,13 +538,32 @@ class Orchestrator:
             },
         }
 
-    def _writing_task(self, task, answers, mode, papers, analysis, task_id=None):
+    def _writing_task(self, task, answers, mode, papers, analysis, task_id=None, materials=None):
         project = dict(answers.get('mode', {}).get('project', {}))
+        theme = answers.get('mode', {}).get('theme')
+        if isinstance(theme, dict) and theme:
+            project['theme'] = theme
         if isinstance(project.get('research_contents'), str):
             project['research_contents'] = [
                 item.strip() for item in re.split(r'[\n；;]+', project['research_contents']) if item.strip()
             ]
+        elif not isinstance(project.get('research_contents'), list):
+            # The B card only collects name/goal/funding; the remaining sections are system-generated.
+            project['research_contents'] = []
+        for field in ('technical_route', 'feasibility', 'expected_outcomes'):
+            if not isinstance(project.get(field), str):
+                project[field] = ''
         project.setdefault('funding', '未指定')
+        mode_answers = answers.get('mode', {})
+        c_info_route = str(mode_answers.get('c_info_route') or '')
+        c_material = str(mode_answers.get('c_material') or '')
+        legacy_material = str(mode_answers.get('user_results') or '')
+        if not c_info_route and (c_material or legacy_material):
+            c_info_route = 'upload'
+        if c_info_route == 'skip':
+            c_material = ''
+        else:
+            c_material = c_material or legacy_material
         return WritingTask(
             id=task_id or task.id,
             mode=mode,
@@ -511,9 +578,12 @@ class Orchestrator:
                 'pool_count': len(papers),
             },
             project=project,
-            user_results=answers.get('mode', {}).get('user_results', ''),
-            target_journal=answers.get('mode', {}).get('target_journal', ''),
+            user_results=c_material,
+            c_info_route=c_info_route,
+            target_journal=str(mode_answers.get('target_journal') or '').strip(),
             team_context=answers.get('mode', {}).get('team_context', ''),
+            materials=list(materials or []),
+            custom_purpose=answers.get('mode', {}).get('custom', ''),
         )
 
     def _generate_c_pair(self, task, answers, papers, analysis, version):
@@ -571,6 +641,9 @@ class Orchestrator:
             (task_dir / filename).write_text(linkage['bodies'][mode], encoding='utf-8')
             (task_dir / f'outline_{mode}.md').write_text(output.outline, encoding='utf-8')
             (task_dir / f'sample_{mode}.md').write_text(output.sample, encoding='utf-8')
+            style_card = self.artifact_root / f'{task.id}-{mode}' / STYLE_REFERENCE_FILE
+            if style_card.exists():
+                shutil.copyfile(style_card, task_dir / f'{mode}_{STYLE_REFERENCE_FILE}')
             combined_components[mode] = getattr(output.components, 'data', {})
         combined_components['linkage'] = linkage['summary']
 
@@ -607,6 +680,7 @@ class Orchestrator:
         }
         if not can_combine:
             failures.append('C1+C2 独立交付、衔接检查或根目录复核未通过，已阻止合并交付')
+            report_stage_phase('generate', 'upload')
             synced = self._sync_artifacts(task_dir)
             return {
                 'state': TaskState.DONE.value,
@@ -668,6 +742,7 @@ class Orchestrator:
         clean = can_combine and all(result.clean for result in deliveries.values())
         failures.extend(combined_delivery.failures)
         warnings.extend(combined_delivery.warnings)
+        report_stage_phase('generate', 'upload')
         synced = self._sync_artifacts(task_dir)
         return {
             'state': TaskState.DONE.value,
@@ -692,12 +767,32 @@ class Orchestrator:
         analysis_document = json.loads((task_dir / 'analysis.json').read_text(encoding='utf-8')) if (task_dir / 'analysis.json').exists() else {}
         analysis = analysis_document.get('limited', analysis_document.get('all', analysis_document))
         version = self._version(task)
+        ledger = _requirements_ledger_text(answers)
+        if ledger is not None:
+            (task_dir / REQUIREMENTS_LEDGER_FILE).write_text(ledger, encoding='utf-8')
         if mode == 'C1+C2':
-            return self._generate_c_pair(task, answers, papers, analysis, version)
+            result = self._generate_c_pair(task, answers, papers, analysis, version)
+            if ledger is not None:
+                result['checkpoint']['requirements_ledger'] = REQUIREMENTS_LEDGER_FILE
+            return result
         delivery_answer = answers.get('delivery', {})
         form = str(delivery_answer.get('form', delivery_answer.get('delivery', 'A'))).upper()
         writing_mode = 'A_DIALOGUE' if mode == 'A' and form == 'B' else mode
-        writing_task = self._writing_task(task, answers, writing_mode, papers, analysis)
+        materials = []
+        rejected_materials = []
+        material_listing = ''
+        material_originals = {}
+        if writing_mode == 'B':
+            collection = collect_b_materials(
+                task_dir, answers.get('mode', {}).get('policy_materials', ''),
+            )
+            materials = collection.items
+            rejected_materials = collection.rejected
+            material_listing = collection.listing_text
+            material_originals = collection.originals
+        writing_task = self._writing_task(
+            task, answers, writing_mode, papers, analysis, materials=materials,
+        )
         writing = self.writing_factory(self.artifact_root, self.model, version)
         written = writing.produce(writing_task)
         body = written.body_path.read_text(encoding='utf-8')
@@ -721,19 +816,42 @@ class Orchestrator:
                 {'requirement': f'用途模式为 {mode}', 'location': written.body_path.name, 'passed': True},
                 {'requirement': f'交付形式为 {form}', 'location': '交付文件', 'passed': True},
             ],
+            material_listing=material_listing,
+            material_originals=material_originals,
         )
+        if writing_mode == 'B':
+            if materials:
+                delivery_task.requirements.append({
+                    'requirement': f'[M] 材料 {len(materials)} 条及清单、原件纳入交付',
+                    'location': '非论文材料清单.md / M*_（平铺原件）',
+                    'passed': True,
+                })
+            else:
+                delivery_task.requirements.append({
+                    'requirement': '未提供非论文材料，正文不得编造政策/报告/统计内容',
+                    'location': written.body_path.name,
+                    'passed': True,
+                })
         delivered = self.delivery_factory(self.artifact_root).deliver(delivery_task)
+        report_stage_phase('generate', 'upload')
         synced = self._sync_artifacts(task_dir)
+        warnings = list(delivered.warnings) + rejected_materials
+        checkpoint = {
+            'stage': 'generate',
+            'clean': delivered.clean,
+            'failures': delivered.failures,
+            'warnings': warnings,
+            'storage_synced': synced,
+        }
+        if writing_mode == 'B':
+            checkpoint['materials'] = {'accepted': len(materials), 'rejected': rejected_materials}
         return {
             'state': TaskState.DONE.value,
             'next_card': None,
             'message': '交付文件已生成；请查看复核与覆盖边界' if delivered.clean else '交付文件已生成，但仍有需要修订或人工核对的项目',
             'checkpoint': {
-                'stage': 'generate',
-                'clean': delivered.clean,
-                'failures': delivered.failures,
-                'warnings': delivered.warnings,
-                'storage_synced': synced,
+                **checkpoint,
+                'requirements_ledger': REQUIREMENTS_LEDGER_FILE if ledger is not None else None,
             },
         }
 

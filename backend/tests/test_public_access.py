@@ -186,3 +186,31 @@ def test_legacy_session_security_migration_is_repeatable_and_non_destructive(tmp
             text("SELECT id FROM tasks WHERE id='legacy-task'")
         ).scalar() == 'legacy-task'
     engine.dispose()
+
+
+def test_session_creation_redacts_task_store_failures(client, monkeypatch):
+    """public_access shared the same str(error) echo; both paths must stay safe."""
+    secret = 'sk-live-2f7c8b1d4e6a9305c1de'
+    password = 'fake-store-password-6a3f'
+
+    class FailingSync:
+        def sync_session(self, *args, **kwargs):
+            raise RuntimeError(
+                'task store rejected the session '
+                '(api_key={}, password={})'.format(secret, password)
+            )
+
+    monkeypatch.setenv('TASK_STORE_AUTHORITY', 'sites')
+    get_settings.cache_clear()
+    monkeypatch.setattr('app.public_access._sites_sync', lambda: FailingSync())
+
+    response = client.post('/api/session', json={})
+
+    assert response.status_code == 503
+    detail = response.json()['detail']
+    assert detail['code'] == 'task_store_unavailable'
+    assert secret not in response.text
+    assert password not in response.text
+    assert '[REDACTED]' in detail['message']
+    assert 'RuntimeError' in detail['message']
+    assert 'task store rejected the session' in detail['message']

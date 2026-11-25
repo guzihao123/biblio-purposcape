@@ -1,4 +1,4 @@
-from app.task_presenters import _delivery_card, _years_card
+from app.task_presenters import _delivery_card, _mode_card, _years_card
 
 
 def test_years_card_has_no_recommendation_markers():
@@ -7,16 +7,68 @@ def test_years_card_has_no_recommendation_markers():
         assert all('推荐' not in label for label in labels)
 
 
-def test_delivery_card_letters_follow_position_not_form():
+def test_delivery_card_keeps_form_letters_when_order_changes():
     labels = [option['label'] for option in _delivery_card('A')['options']]
     values = [option['value'] for option in _delivery_card('A')['options']]
-    assert labels[0] == 'A 仅对话中给要点和代表文献'
+    assert labels[0] == 'B 仅对话中给要点和代表文献'
     assert values[0] == 'B'
+    assert labels[1] == 'A 正式调研报告（Word，含文献依据）'
 
     d_labels = [option['label'] for option in _delivery_card('D')['options']]
     d_values = [option['value'] for option in _delivery_card('D')['options']]
-    assert d_labels[0] == 'A 展示 PPT'
+    assert d_labels[0] == 'C 展示 PPT'
     assert d_values[0] == 'C'
+    assert d_labels[1] == 'A 正式调研报告（Word，含文献依据）'
 
     b_labels = [option['label'] for option in _delivery_card('B')['options']]
     assert b_labels[0] == 'A 正式调研报告（Word，含文献依据）'
+
+
+def test_c_mode_card_has_three_info_routes_material_and_optional_journal():
+    fields = _mode_card()['conditional_fields']['C']
+    by_name = {field['name']: field for field in fields}
+
+    assert [option['value'] for option in by_name['c_info_route']['options']] == ['skip', 'upload', 'oral']
+    assert [option['label'] for option in by_name['c_info_route']['options']] == [
+        '跳过，按通用口径写框架',
+        '已有论文初稿，提供文件',
+        '现场口述研究问题与方法',
+    ]
+    assert [option['description'] for option in by_name['c_info_route']['options']] == [
+        '不提供本文细节，只给框架与占位提示，并在交付中注明。',
+        '用户提供论文文件或粘贴内容后，先提取研究目标、方法、数据与创新，再决定补检索。',
+        '用户直接说明研究问题、方法与创新，据此填写本文研究思路与贡献相关内容。',
+    ]
+    assert by_name['c_material']['kind'] == 'textarea'
+    assert '题目、摘要、方法、结果、创新' in by_name['c_material']['label']
+    assert by_name['target_journal']['label'] == '目标期刊（可跳过）'
+    assert 'user_results' not in by_name
+    journals = [
+        field['name']
+        for mode_fields in _mode_card()['conditional_fields'].values()
+        for field in mode_fields
+        if field['name'] == 'target_journal'
+    ]
+    assert journals == ['target_journal']
+
+
+def test_b_mode_card_asks_project_fields_and_optional_materials():
+    fields = _mode_card()['conditional_fields']['B']
+    names = [field['name'] for field in fields]
+
+    assert names == ['name', 'goal', 'funding', 'policy_materials']
+    assert [field.get('required') for field in fields] == [True, True, None, None]
+    assert fields[-1]['kind'] == 'textarea'
+    for generated in ('research_contents', 'technical_route', 'feasibility', 'expected_outcomes'):
+        assert generated not in names
+
+
+def test_mode_card_exposes_custom_e_option_and_generic_custom_field():
+    card = _mode_card()
+    options = {option['value']: option for option in card['options']}
+
+    assert 'E' in options
+    assert options['E']['label'] == 'E 其他用途（自定义）'
+    assert card['custom']['label'] == '自定义用途'
+    assert card['custom']['required'] is True
+    assert card['custom_for'] == ['E']

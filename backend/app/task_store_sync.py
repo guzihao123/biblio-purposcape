@@ -9,7 +9,7 @@ this layer's public boundary.
 from functools import wraps
 
 
-_SAFE_PROVIDER_CODES = frozenset({
+SAFE_PROVIDER_CODES = frozenset({
     'answer_conflict',
     'invalid_provider_response',
     'job_not_found',
@@ -21,6 +21,8 @@ _SAFE_PROVIDER_CODES = frozenset({
     'task_store_unavailable',
     'worker_unauthorized',
 })
+# Kept for the private-name call sites in this module.
+_SAFE_PROVIDER_CODES = SAFE_PROVIDER_CODES
 _ANSWER_METHODS = {
     'direction': 'answer_direction',
     'mode': 'answer_mode',

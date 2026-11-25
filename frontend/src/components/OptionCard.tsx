@@ -41,7 +41,10 @@ export function OptionCard({ option, selected, onSelect }: OptionCardProps) {
         </span>
       )}
       {option.preview && (
-        <span className="full-power-option__preview" lang="en">
+        <span
+          className={`full-power-option__preview${option.preview.includes('\n') ? ' is-multiline' : ''}`}
+          lang={/[\u4e00-\u9fff]/.test(option.preview) ? 'zh-CN' : 'en'}
+        >
           {option.preview}
         </span>
       )}

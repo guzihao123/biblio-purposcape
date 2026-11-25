@@ -100,6 +100,40 @@
   border-color: rgba(255, 180, 194, .28);
 }
 
+.task-progress {
+  width: min(100%, 520px);
+  margin: 20px auto 8px;
+}
+
+.task-progress__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: var(--site-muted);
+  font-size: 12px;
+}
+
+.task-progress__track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(126, 240, 200, .12);
+}
+
+.task-progress__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--site-accent), var(--site-accent-2));
+  transition: width .4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-progress__fill {
+    transition: none;
+  }
+}
+
 .dashboard-frame {
   margin-bottom: 32px;
   padding: 18px;

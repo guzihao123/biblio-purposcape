@@ -1,0 +1,51 @@
+PPT 结构与图表验收
+文件：/Users/crisprcas_9/WorkBuddy/2026-11-06-20-49-06/purpose-landscape-web-dfigure/dev/acceptance/dfigure/run/肝细胞癌免疫治疗耐药机制组会汇报.pptx
+图片资源：11；原生图表：2
+
+PASS 页数 20–30：实际 25
+PASS 结构内容：研究背景
+PASS 结构内容：文献检索
+PASS 结构内容：研究进展
+PASS 结构内容：核心方法
+PASS 结构内容：代表作精读
+PASS 结构内容：研究不足
+PASS 结构内容：总结
+PASS 不单设第七部分“潜在研究选题与推荐”
+PASS 末尾包含完整参考文献
+PASS 第八部分包含优先方向
+PASS 第八部分包含下一步研究建议
+PASS 年度趋势（真实聚合）：P6 实际嵌入图表或数据图
+PASS 主题分布（真实聚合）：P7 实际嵌入图表或数据图
+PASS 研究背景与科学问题：P3 包含框架/流程图形
+PASS 研究背景与科学问题：包含关键结点“研究对象”
+PASS 研究背景与科学问题：包含关键结点“作用链条”
+PASS 核心方法与技术路线：P12 包含框架/流程图形
+PASS 核心方法与技术路线：包含关键结点“核心方法”
+PASS 发展趋势｜不足→潜在突破：P22 包含框架/流程图形
+PASS 发展趋势｜不足→潜在突破：包含关键结点“不足”
+PASS 发展趋势｜不足→潜在突破：包含关键结点“突破”
+PASS [4] Fig.1，原文 p3，正式版 OA 版本：源文件存在 figures/ref4_fig1_概念框架.png
+PASS [4] Fig.1，原文 p3，正式版 OA 版本：P3 实际嵌入图片
+PASS [4] Fig.2，原文 p11，正式版 OA 版本：源文件存在 figures/ref4_fig2_临床比较.png
+PASS [4] Fig.2，原文 p11，正式版 OA 版本：P8 实际嵌入图片
+PASS [3] Fig.3，原文 p【待核实】，正式版 OA 版本：源文件存在 figures/ref3_fig3_机制模型.png
+PASS [3] Fig.3，原文 p【待核实】，正式版 OA 版本：P11 实际嵌入图片
+PASS [2] Fig.1，原文 p【待核实】，正式版 OA 版本：源文件存在 figures/ref2_fig1_研究设计.png
+PASS [2] Fig.1，原文 p【待核实】，正式版 OA 版本：P13 实际嵌入图片
+PASS [1] Fig.1，原文 p【待核实】，正式版 OA 版本：源文件存在 figures/ref1_fig1_结果图.png
+PASS [1] Fig.1，原文 p【待核实】，正式版 OA 版本：P14 实际嵌入图片
+PASS [1] Fig.2，原文 p【待核实】，正式版 OA 版本：源文件存在 figures/ref1_fig2_机制模型.png
+PASS [1] Fig.2，原文 p【待核实】，正式版 OA 版本：P15 实际嵌入图片
+PASS [2] Fig.2，原文 p【待核实】，正式版 OA 版本：源文件存在 figures/ref2_fig2_结果图.png
+PASS [2] Fig.2，原文 p【待核实】，正式版 OA 版本：P16 实际嵌入图片
+PASS [2] Fig.3，原文 p【待核实】，正式版 OA 版本：源文件存在 figures/ref2_fig3_机制模型.png
+PASS [2] Fig.3，原文 p【待核实】，正式版 OA 版本：P17 实际嵌入图片
+PASS [3] Fig.1，原文 p【待核实】，正式版 OA 版本：源文件存在 figures/ref3_fig1_临床比较.png
+PASS [3] Fig.1，原文 p【待核实】，正式版 OA 版本：P18 实际嵌入图片
+PASS [3] Fig.2，原文 p【待核实】，正式版 OA 版本：源文件存在 figures/ref3_fig2_治疗验证.png
+PASS [3] Fig.2，原文 p【待核实】，正式版 OA 版本：P19 实际嵌入图片
+PASS [3] Fig.8，原文 p【待核实】，正式版 OA 版本：源文件存在 figures/ref3_fig8_治疗验证.png
+PASS [3] Fig.8，原文 p【待核实】，正式版 OA 版本：P22 实际嵌入图片
+PASS 全稿至少包含一个真实图片或图表对象
+
+结果：PASS（通过 45，降级 0，失败 0）

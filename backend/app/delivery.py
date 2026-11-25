@@ -6,6 +6,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from app.progress_reporter import report_stage_phase
 from app.writing import BODY_FILES
 
 
@@ -46,6 +47,8 @@ class DeliveryTask:
     delivery_form: str = 'ALL'
     requirements: list = field(default_factory=list)
     search_log: str = ''
+    material_listing: str = ''
+    material_originals: dict = field(default_factory=dict)
 
 
 def _pending_confirmations(report):
@@ -237,7 +240,78 @@ def _add_flow_nodes(slide, lines):
             connector.line.width = Pt(1.5)
 
 
-def _add_ppt_slide(prs, title, lines, layout='stacked', variant=None, chart_spec=None):
+def _add_figure_image(slide, figure, left, top, width, height):
+    from PIL import Image
+    from pptx.dml.color import RGBColor
+    from pptx.util import Inches, Pt
+
+    path = Path(figure.path)
+    if not path.is_file():
+        raise FileNotFoundError(f'figure asset missing: {path}')
+    with Image.open(path) as image:
+        image_width, image_height = image.size
+    ratio = min(width / float(image_width), height / float(image_height))
+    draw_width = image_width * ratio
+    draw_height = image_height * ratio
+    draw_left = left + (width - draw_width) / 2
+    draw_top = top + (height - draw_height) / 2
+    picture = slide.shapes.add_picture(
+        str(path), Inches(draw_left), Inches(draw_top), Inches(draw_width), Inches(draw_height)
+    )
+    picture.line.color.rgb = RGBColor(0x2A, 0x3B, 0x55)
+    picture.line.width = Pt(0.75)
+    return picture
+
+
+def _add_figure_caption(slide, figure, left, top, width):
+    from pptx.dml.color import RGBColor
+    from pptx.util import Inches, Pt
+
+    box = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(0.34))
+    frame = box.text_frame
+    frame.word_wrap = True
+    run = frame.paragraphs[0].add_run()
+    run.text = figure.caption_line()
+    run.font.size = Pt(11)
+    run.font.color.rgb = RGBColor(0x9F, 0xB0, 0xCC)
+
+
+def _add_degraded_figure_note(slide, degraded):
+    from pptx.dml.color import RGBColor
+    from pptx.util import Inches, Pt
+
+    description = str(degraded.get('description') or '原文图未获取，标【待核实】。')
+    oa_url = str(degraded.get('oa_url') or '').strip()
+    text = description + ('　OA：' + oa_url if oa_url else '')
+    box = slide.shapes.add_textbox(Inches(0.7), Inches(6.2), Inches(8.9), Inches(0.72))
+    frame = box.text_frame
+    frame.word_wrap = True
+    paragraph = frame.paragraphs[0]
+    run = paragraph.add_run()
+    run.text = text
+    run.font.size = Pt(8.5)
+    run.font.color.rgb = RGBColor(0x9F, 0xB0, 0xCC)
+
+
+def _ppt_body_font_size(lines, has_figures):
+    """Keep long Chinese bullets inside the narrowed text column."""
+
+    if not has_figures:
+        return 17 if len(lines) <= 6 else 14 if len(lines) <= 9 else 9
+    characters = sum(len(str(line)) for line in lines)
+    if characters <= 180:
+        return 16
+    if characters <= 300:
+        return 14
+    if characters <= 430:
+        return 12
+    return 10
+
+
+def _add_ppt_slide(
+    prs, title, lines, layout='stacked', variant=None, chart_spec=None,
+    figures=None, degraded_figures=None,
+):
     from pptx.chart.data import ChartData
     from pptx.dml.color import RGBColor
     from pptx.enum.chart import XL_CHART_TYPE
@@ -263,14 +337,21 @@ def _add_ppt_slide(prs, title, lines, layout='stacked', variant=None, chart_spec
     if layout == 'flow_diagram':
         _add_flow_nodes(slide, lines)
         if title == '研究背景与科学问题':
+            note_width = 6.7 if figures else 11.8
             for index, line in enumerate(lines[1:]):
                 note = slide.shapes.add_textbox(
-                    Inches(0.75), Inches(3.45 + index * 0.55), Inches(11.8), Inches(0.5),
+                    Inches(0.75), Inches(3.45 + index * 0.55), Inches(note_width), Inches(0.5),
                 )
                 run = note.text_frame.paragraphs[0].add_run()
                 run.text = line
                 run.font.size = Pt(14)
                 run.font.color.rgb = RGBColor(0x9F, 0xB0, 0xCC)
+            if figures:
+                _add_figure_image(slide, figures[0], 7.65, 3.3, 5.05, 3.0)
+                _add_figure_caption(slide, figures[0], 7.65, 6.42, 5.05)
+        elif figures:
+            _add_figure_image(slide, figures[0], 3.7, 3.85, 5.9, 2.35)
+            _add_figure_caption(slide, figures[0], 3.7, 6.33, 5.9)
     elif chart_spec:
         from pptx.enum.chart import XL_DATA_LABEL_POSITION, XL_LEGEND_POSITION
 
@@ -333,7 +414,7 @@ def _add_ppt_slide(prs, title, lines, layout='stacked', variant=None, chart_spec
                 connector.line.width = Pt(1.5)
     else:
         if layout in {'split_list', 'reading', 'references'}:
-            columns = 2
+            columns = 1 if figures else 2
         elif layout == 'summary':
             columns = 3
         else:
@@ -342,27 +423,34 @@ def _add_ppt_slide(prs, title, lines, layout='stacked', variant=None, chart_spec
         for column, column_lines in enumerate(grouped):
             if layout == 'asym':
                 left = variant.get('side') == 'right'
-                x = 6.3 if left else 0.72
-                width = 5.9
+                x = 6.45 if left else 0.72
+                width = 6.0 if figures else 5.9
             elif columns > 1:
                 x = 0.55 + column * (12.2 / columns)
                 width = 11.7 / columns
             else:
                 x = 0.72
-                width = 11.8
+                width = 5.9 if figures else 11.8
             body_box = slide.shapes.add_textbox(Inches(x), Inches(1.45), Inches(width), Inches(5.45))
             frame = body_box.text_frame
             frame.word_wrap = True
             frame.clear()
+            font_size = _ppt_body_font_size(column_lines, bool(figures))
             for index, line in enumerate(column_lines):
                 paragraph = frame.paragraphs[0] if index == 0 else frame.add_paragraph()
                 paragraph.space_after = Pt(12 if len(column_lines) <= 8 else 4)
                 text = f'{index + 1:02d}  {line}' if layout in {'flow', 'toc'} else line
                 _pending_runs(paragraph, text, 'pptx')
                 for run in paragraph.runs:
-                    run.font.size = Pt(17 if len(column_lines) <= 6 else 14 if len(column_lines) <= 9 else 9)
+                    run.font.size = Pt(font_size)
                     if '【待核实】' not in run.text:
                         run.font.color.rgb = RGBColor(0xD8, 0xE5, 0xFA)
+        if figures:
+            image_left = 0.55 if layout == 'asym' and variant.get('side') == 'right' else 6.75
+            _add_figure_image(slide, figures[0], image_left, 1.52, 5.8, 4.55)
+            _add_figure_caption(slide, figures[0], image_left, 6.13, 5.8)
+    for degraded in degraded_figures or []:
+        _add_degraded_figure_note(slide, degraded)
     number = slide.shapes.add_textbox(Inches(12.2), Inches(7.05), Inches(0.6), Inches(0.25))
     number.text_frame.text = str(len(prs.slides))
     number.text_frame.paragraphs[0].runs[0].font.size = Pt(9)
@@ -551,7 +639,9 @@ def _d_slides(task, references):
     return core + summary + reference_slides
 
 
-def _ppt_asset_manifest(slides):
+def _ppt_asset_manifest(slides, base_dir=None, figure_bundle=None):
+    from app.ppt_figures import manifest_entries
+
     visuals = []
     for slide in slides:
         page = slide['n']
@@ -565,10 +655,28 @@ def _ppt_asset_manifest(slides):
         page = next((slide['n'] for slide in slides if slide['title'] == title), None)
         if page:
             visuals.append({'page': page, 'kind': 'diagram', 'name': title, 'expected_text': expected, 'min_shapes': 4})
-    return {
+    if base_dir is not None:
+        visuals.extend(manifest_entries(slides, base_dir))
+    manifest = {
         'summary_pages': [slide['n'] for slide in slides if slide['title'] in {'总结与下一步建议', '团队讨论与决策'}],
         'visuals': visuals,
     }
+    if figure_bundle is not None:
+        manifest['figure_acquisition'] = [
+            {
+                'ref_no': attempt.get('ref_no'),
+                'title': attempt.get('title'),
+                'oa_url': attempt.get('oa_url'),
+                'source_url': attempt.get('source_url'),
+                'version': attempt.get('version'),
+                'reading_depth': attempt.get('depth'),
+                'status': attempt.get('status'),
+                'figure_count': len(figure_bundle.by_ref(attempt.get('ref_no') or 0)),
+                'failures': attempt.get('failures') or [],
+            }
+            for attempt in figure_bundle.attempts
+        ]
+    return manifest
 
 
 def _ppt_filename(direction):
@@ -593,17 +701,43 @@ def _set_cjk_theme(path):
     temporary.replace(path)
 
 
-def _write_pptx(task, body, references, path):
+def _write_pptx(task, body, references, path, figure_loader=None):
     from pptx import Presentation
     from pptx.util import Inches
 
     prs = Presentation()
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
+    figure_bundle = None
     if task.mode == 'D':
         slides = _d_slides(task, references)
+        if figure_loader is not None:
+            try:
+                figure_bundle = figure_loader(
+                    task.papers,
+                    task.components.get('reading_cards', []),
+                    path.parent,
+                )
+            except Exception as error:
+                figure_bundle = None
+                figure_loader_error = f'{type(error).__name__}: {error}'
+            else:
+                figure_loader_error = ''
+            if figure_bundle is not None:
+                from app.ppt_figures import decorate_d_slides
+                decorate_d_slides(slides, figure_bundle)
+            elif figure_loader_error:
+                (path.parent / 'figure_acquisition_log.md').write_text(
+                    '# D 原文图获取日志\n\n- 原图管线异常，已降级保留文字与 OA 链接：'
+                    + figure_loader_error + '\n',
+                    encoding='utf-8',
+                )
         for slide in slides:
-            _add_ppt_slide(prs, slide['title'], slide['lines'], slide.get('layout', 'stacked'), slide.get('variant'), slide.get('chart'))
+            _add_ppt_slide(
+                prs, slide['title'], slide['lines'], slide.get('layout', 'stacked'),
+                slide.get('variant'), slide.get('chart'), slide.get('figures'),
+                slide.get('degraded_figures'),
+            )
     else:
         slides = _generic_slides(task, body, references)
         for title, lines in slides:
@@ -614,7 +748,7 @@ def _write_pptx(task, body, references, path):
         return {'artifacts': {}, 'failures': []}
 
     task_dir = path.parent
-    manifest = _ppt_asset_manifest(slides)
+    manifest = _ppt_asset_manifest(slides, base_dir=task_dir, figure_bundle=figure_bundle)
     manifest_path = task_dir / 'ppt_asset_manifest.json'
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
     layout_manifest = {
@@ -656,10 +790,14 @@ def _write_pptx(task, body, references, path):
 
 
 class DeliveryService:
-    def __init__(self, workspace_root, verification_runner=None, reference_checker=None):
+    def __init__(self, workspace_root, verification_runner=None, reference_checker=None, figure_loader=None):
         self.workspace_root = Path(workspace_root)
         self.verification_runner = verification_runner or self._run_preset_verifier
         self.reference_checker = reference_checker or self._run_reference_checker
+        if figure_loader is None:
+            from app.ppt_figures import prepare_d_figures
+            figure_loader = prepare_d_figures
+        self.figure_loader = figure_loader
 
     def _run_preset_verifier(self, task, body_path, report_name):
         report_path = body_path.parent / report_name
@@ -781,6 +919,7 @@ class DeliveryService:
         body_path = task_dir / BODY_FILES.get(task.mode, '综述初稿.md')
         body_path.write_text(body, encoding='utf-8')
         citation_map = self._renumber_citations(task, body_path)
+        report_stage_phase('generate', 'review')
         if isinstance(citation_map, str):
             verification = {
                 'clean': False,
@@ -804,6 +943,19 @@ class DeliveryService:
         failures = list(verification.get('failures') or [])
         if citation_map is not None and not isinstance(citation_map, str):
             artifacts['citation_map.json'] = citation_map
+        if task.material_listing:
+            listing_path = task_dir / '非论文材料清单.md'
+            listing_path.write_text(task.material_listing, encoding='utf-8')
+            artifacts['非论文材料清单.md'] = listing_path
+        for filename, source in (task.material_originals or {}).items():
+            # Artifact names must stay at the task root: the web upload route
+            # rejects path separators and only syncs top-level files.
+            safe_name = Path(filename).name
+            source_path = Path(source)
+            target = task_dir / safe_name
+            if source_path.resolve() != target.resolve():
+                shutil.copyfile(source_path, target)
+            artifacts[safe_name] = target
         if not verification.get('clean') and not failures:
             failures.append('证据复核未通过，未返回失败明细')
         warnings = list(verification.get('warnings') or [])
@@ -811,6 +963,7 @@ class DeliveryService:
         dialogue = None
         form = task.delivery_form.upper()
 
+        report_stage_phase('generate', 'office')
         if form in {'A', 'ALL'}:
             word_name = WORD_FILENAMES.get(task.mode, '综述初稿.docx')
             report_path = task_dir / word_name
@@ -818,7 +971,7 @@ class DeliveryService:
             artifacts[word_name] = report_path
         if form in {'C', 'ALL'}:
             slides_path = task_dir / _ppt_filename(task.direction)
-            ppt_result = _write_pptx(task, body, references, slides_path)
+            ppt_result = _write_pptx(task, body, references, slides_path, figure_loader=self.figure_loader)
             artifacts[slides_path.name] = slides_path
             artifacts.update(ppt_result['artifacts'])
             failures.extend(ppt_result['failures'])

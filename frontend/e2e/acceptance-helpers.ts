@@ -20,7 +20,7 @@ export async function startResearch(page: Page) {
 }
 
 export async function answerDirection(page: Page) {
-  await page.getByRole('button', { name: '肝癌免疫治疗耐药机制的最新进展', exact: true }).click()
+  await page.getByRole('textbox', { name: '研究方向或核心问题', exact: true }).fill('肝癌免疫治疗耐药机制的最新进展')
   await page.getByRole('button', { name: '确认选择', exact: true }).click()
   await expect(page.getByRole('heading', { name: '这次洞察用来做什么？', exact: true })).toBeVisible()
 }

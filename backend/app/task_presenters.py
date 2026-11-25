@@ -35,22 +35,35 @@ def _mode_card():
         'id': 'mode',
         'eyebrow': '用途确认',
         'title': '这次洞察用来做什么？',
-        'description': '选择最贴近当前目标的一项。',
+        'description': '选择最贴近当前目标的一项；选 B 先凝练项目主题，选 E 请写明自定义用途。',
         'options': [
             _option('A', 'A 选题立项前摸底', '领域全景、研究空白与可做方向', '选题立项前摸底'),
-            _option('B', 'B 撰写标书/立项依据', '组织项目论证链与立项素材', '标书与立项依据'),
+            _option('B', 'B 撰写标书/立项依据', '先选项目主题，再填写项目名称与目标', '标书与立项依据'),
             _option('C', 'C 撰写论文引言与讨论', '分别组织 C1 引言与 C2 文献综述素材', '论文写作'),
             _option('D', 'D 组会或团队学习', '系统调研、方法比较与代表作精读', '组会主题调研'),
+            _option(
+                'E', 'E 其他用途（自定义）',
+                '自由描述用途，按基线形态交付：综述初稿 + 空白点清单 + 3 个可做方向',
+                '其他用途',
+            ),
         ],
+        'custom': {
+            'label': '自定义用途',
+            'placeholder': '例如：为学院写一份面向政策制定的交通安全证据简报（写明交付对象、关注重点与期望产出）',
+            'required': True,
+        },
+        'custom_for': ['E'],
         'conditional_fields': {
             'B': [
                 {'name': 'name', 'label': '项目名称', 'group': 'project', 'required': True},
                 {'name': 'goal', 'label': '一句话目标', 'group': 'project', 'required': True},
                 {'name': 'funding', 'label': '资助类别/学科属性（可跳过）', 'group': 'project'},
-                {'name': 'research_contents', 'label': '研究内容（3–4 项）', 'group': 'project', 'kind': 'textarea', 'required': True},
-                {'name': 'technical_route', 'label': '技术路线（输入→方法→验证→输出）', 'group': 'project', 'required': True},
-                {'name': 'feasibility', 'label': '可行性（数据/工具/团队/预实验）', 'group': 'project', 'kind': 'textarea', 'required': True},
-                {'name': 'expected_outcomes', 'label': '预期成果', 'group': 'project', 'kind': 'textarea', 'required': True},
+                {
+                    'name': 'policy_materials',
+                    'label': '政策/报告/统计材料（可粘贴全文或链接，可跳过）',
+                    'kind': 'textarea',
+                    'placeholder': '可粘贴多段材料；每段用键：值写标题、发布机构、文号、成文日期、链接，随后粘贴原文。也可只填官方链接（需已配置授权抓取器）。',
+                },
             ],
             'C': [
                 {
@@ -61,7 +74,29 @@ def _mode_card():
                         {'value': 'C1+C2', 'label': '从零写引言和文献综述（两个都选）'},
                     ],
                 },
-                {'name': 'user_results', 'label': '本文信息', 'placeholder': '核心研究问题、拟用方法、结果与预期创新（可跳过）', 'kind': 'textarea'},
+                {
+                    'name': 'c_info_route', 'label': '本文信息', 'kind': 'select',
+                    'options': [
+                        {
+                            'value': 'skip', 'label': '跳过，按通用口径写框架',
+                            'description': '不提供本文细节，只给框架与占位提示，并在交付中注明。',
+                        },
+                        {
+                            'value': 'upload', 'label': '已有论文初稿，提供文件',
+                            'description': '用户提供论文文件或粘贴内容后，先提取研究目标、方法、数据与创新，再决定补检索。',
+                        },
+                        {
+                            'value': 'oral', 'label': '现场口述研究问题与方法',
+                            'description': '用户直接说明研究问题、方法与创新，据此填写本文研究思路与贡献相关内容。',
+                        },
+                    ],
+                },
+                {
+                    'name': 'c_material',
+                    'label': '本文材料（粘贴题目、摘要、方法、结果、创新）',
+                    'placeholder': '按题目/摘要/方法/结果/创新分段粘贴；现场口述时写研究问题与方法',
+                    'kind': 'textarea',
+                },
                 {'name': 'target_journal', 'label': '目标期刊（可跳过）', 'placeholder': '输入目标期刊'},
             ],
             'D': [
@@ -143,9 +178,9 @@ def _delivery_card(mode):
     elif mode == 'A':
         order = ['B', 'A', 'C']
     options = []
-    for index, form in enumerate(order):
+    for form in order:
         label, description, preview = forms[form]
-        options.append(_option(form, f'{chr(65 + index)} {label[2:]}', description, preview))
+        options.append(_option(form, label, description, preview))
     return {
         'id': 'delivery',
         'eyebrow': '交付形式确认',
@@ -192,6 +227,7 @@ def task_payload(db, task):
         'progress': None if progress is None else {
             'stage': progress.stage,
             'message': progress.message,
+            'percent': int(getattr(progress, 'percent', 0) or 0),
             'checkpoint': progress.checkpoint,
         },
     }
@@ -228,6 +264,7 @@ def remote_task_payload(db, task, candidate_event=None, version_content=None):
         'progress': {
             'stage': progress.get('stage', 'collecting'),
             'message': progress.get('message', ''),
+            'percent': int(progress.get('percent') or 0),
             'checkpoint': progress.get('checkpoint'),
         },
     }

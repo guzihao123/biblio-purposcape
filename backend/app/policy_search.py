@@ -2,6 +2,7 @@
 
 import re
 import shutil
+import tempfile
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
 from pathlib import Path
@@ -53,6 +54,34 @@ class _BlockHTMLParser(HTMLParser):
         self._flush()
 
 
+_POLICY_EXCERPT_HINTS = (
+    '应当', '必须', '要求', '目标', '到20', '达到', '覆盖', '保障', '支持', '纳入',
+    '实施', '比例', '万元', '不得', '禁止', 'percent', 'shall',
+)
+_PLAIN_SENTENCE_SPLIT = re.compile(r'(?<=[。！？!?；;\n])')
+
+
+def _plain_text_excerpts(raw, limit=8):
+    """Return verbatim sentence excerpts with positional anchors."""
+    text = '\n'.join(line.rstrip() for line in str(raw or '').splitlines()).strip()
+    if not text:
+        return []
+    sentences = []
+    for piece in _PLAIN_SENTENCE_SPLIT.split(text):
+        sentence = ' '.join(piece.split())
+        if sentence:
+            sentences.append(sentence)
+    if not sentences:
+        return []
+    candidates = list(enumerate(sentences, 1))
+    prioritized = [
+        item for item in candidates
+        if any(hint in item[1] for hint in _POLICY_EXCERPT_HINTS)
+    ]
+    chosen = sorted((prioritized or candidates)[:limit])
+    return [PolicyExcerpt(sentence, '文本 第{}句'.format(index)) for index, sentence in chosen]
+
+
 @dataclass(frozen=True)
 class PolicyExcerpt:
     text: str
@@ -75,6 +104,9 @@ class PolicyMaterial:
     excerpts: list = field(default_factory=list)
     excerpt_note: str = ''
     included_in_n_pool: bool = False
+    source_link: str = ''
+    repost_note: str = ''
+    archived_path: str = ''
 
 
 class PolicyService:
@@ -127,7 +159,7 @@ class PolicyService:
         if source_type == 'republication' and not str(source.get('published_at') or '').strip():
             return PolicyMaterial(False, '转载政策须同时记录成文日期与转载发布日期')
         if (
-            source_type != 'republication'
+            source_type not in {'republication', 'user_material'}
             and source.get('published_at')
             and source['published_at'] != source['issued_at']
         ):
@@ -165,9 +197,12 @@ class PolicyService:
             source_type=source_type,
             excerpts=excerpts,
             excerpt_note=excerpt_note,
+            source_link=str(source.get('source_link') or '').strip(),
+            repost_note=str(source.get('repost_note') or '').strip(),
         )
         self.materials.append(material)
-        self._archive_source(source, citation)
+        archived = self._archive_source(source, citation)
+        material.archived_path = str(archived) if archived else ''
         self._append_listing(material, source_type == 'republication')
         return material
 
@@ -195,6 +230,9 @@ class PolicyService:
                 if paragraph.text.strip()
             ]
             return excerpts, ''
+        if kind in {'txt', 'text', 'md', 'markdown'}:
+            raw = Path(source['local_path']).read_text(encoding='utf-8')
+            return _plain_text_excerpts(raw), ''
         if kind == 'pdf':
             service = FullTextService(self.output_dir / 'policy_pdfs', ocr=source.get('ocr') or self.ocr)
             full_text, _, ocr_used, _ = service._extract_pdf(
@@ -218,8 +256,12 @@ class PolicyService:
             target = target_dir / '{}_{}'.format(name, Path(local_path).name)
             if Path(local_path).resolve() != target.resolve():
                 shutil.copyfile(local_path, target)
+            return target
         elif source.get('html'):
-            (target_dir / '{}.html'.format(name)).write_text(source['html'], encoding='utf-8')
+            target = target_dir / '{}.html'.format(name)
+            target.write_text(source['html'], encoding='utf-8')
+            return target
+        return None
 
     def _append_listing(self, material, is_republication):
         path = self.output_dir / '非论文材料清单.md'
@@ -235,6 +277,9 @@ class PolicyService:
             lines.append('- 转载发布日期：{}'.format(material.published_at))
         elif material.published_at:
             lines.append('- 发布日期：{}'.format(material.published_at))
+        lines.append('- 链接：{}'.format(material.source_link or material.source_url or '未提供'))
+        if material.repost_note:
+            lines.append('- 转载注明：{}'.format(material.repost_note))
         if material.source_type == 'user_material':
             lines.append('- 来源：用户自有材料（非官方检索证据）')
         elif material.source_url:
@@ -248,3 +293,181 @@ class PolicyService:
             lines.append('  - {}：{}'.format(excerpt.anchor, excerpt.text))
         with path.open('a', encoding='utf-8') as handle:
             handle.write('\n'.join(lines) + '\n')
+
+
+# B-mode input bridge. It only parses text the user pasted or a URL the user
+# explicitly supplied; it never discovers policy pages by itself.
+_METADATA_LABELS = {
+    '标题': 'title', '名称': 'title',
+    '发布机构': 'issuer', '机构': 'issuer', '发文机关': 'issuer',
+    '文号': 'document_number', '发文字号': 'document_number',
+    '成文日期': 'issued_at',
+    '发布日期': 'published_at', '转载发布日期': 'published_at',
+    '链接': 'link', '来源链接': 'link', '网址': 'link', 'url': 'link',
+    '原文链接': 'original_url', '官方原文链接': 'original_url',
+    '来源': 'source', '转载': 'repost',
+    '正文': 'body_start',
+}
+_METADATA_LINE = re.compile(r'^\s*(?:[-*]\s*)?([^:：]{1,12})\s*[:：]\s*(.*?)\s*$')
+_BLOCK_SEPARATOR = re.compile(r'^\s*(?:-{3,}|={3,})\s*$', re.M)
+_BARE_URL = re.compile(r'^https?://\S+$', re.I)
+
+
+@dataclass
+class MaterialCollection:
+    output_dir: Path
+    items: list = field(default_factory=list)
+    rejected: list = field(default_factory=list)
+
+    @property
+    def listing_text(self):
+        path = Path(self.output_dir) / '非论文材料清单.md'
+        return path.read_text(encoding='utf-8') if path.exists() else ''
+
+    @property
+    def originals(self):
+        return {
+            Path(item['original_path']).name: Path(item['original_path'])
+            for item in self.items if item.get('original_path')
+        }
+
+
+def _material_payload(material):
+    return {
+        'citation': material.citation,
+        'title': material.title,
+        'issuer': material.issuer,
+        'document_number': material.document_number,
+        'issued_at': material.issued_at,
+        'published_at': material.published_at,
+        'link': material.source_link or material.source_url or '未提供',
+        'source_type': material.source_type,
+        'repost_note': material.repost_note,
+        'excerpt_note': material.excerpt_note,
+        'excerpts': [{'text': item.text, 'anchor': item.anchor} for item in material.excerpts],
+        'original_path': material.archived_path,
+        'included_in_n_pool': material.included_in_n_pool,
+    }
+
+
+def _parse_material_block(block):
+    metadata = {}
+    body_lines = []
+    stripped = str(block or '').strip()
+    if _BARE_URL.match(stripped):
+        return {'link': stripped}, ''
+    for line in str(block or '').splitlines():
+        if not line.strip():
+            continue
+        match = _METADATA_LINE.match(line)
+        key = _METADATA_LABELS.get(match.group(1).strip().casefold()) if match else None
+        if key:
+            if key == 'body_start':
+                continue
+            metadata[key] = match.group(2).strip()
+            continue
+        body_lines.append(line.rstrip())
+    return metadata, '\n'.join(body_lines).strip()
+
+
+def collect_b_materials(output_dir, raw_input, fetcher=None):
+    """Collect B-mode [M] materials from pasted text or explicitly given official URLs.
+
+    No discovery/search is performed. A bare link is only fetched when the
+    caller supplies an authorized, URL-targeted fetcher.
+    """
+    output_dir = Path(output_dir).resolve()
+    collection = MaterialCollection(output_dir=output_dir)
+    raw = str(raw_input or '').strip()
+    if not raw:
+        return collection
+    service = PolicyService(output_dir, fetcher=fetcher)
+    for index, block in enumerate(_BLOCK_SEPARATOR.split(raw), 1):
+        metadata, body = _parse_material_block(block)
+        metadata_keys = ('title', 'issuer', 'document_number', 'issued_at')
+        link = metadata.get('link', '')
+        if not body and link and not any(metadata.get(key) for key in metadata_keys):
+            if fetcher is None:
+                collection.rejected.append(
+                    '第{}段：仅提供链接 {}，未粘贴全文且未配置授权抓取器；未发起网络请求'.format(index, link)
+                )
+                continue
+            if not PolicyService._official_url(link):
+                collection.rejected.append(
+                    '第{}段：链接 {} 不是 gov.cn 官方页面，未抓取'.format(index, link)
+                )
+                continue
+            try:
+                result = service.collect(fetcher({'url': link}))
+            except Exception as error:
+                collection.rejected.append(
+                    '第{}段：官方链接抓取失败：{}'.format(index, str(error)[:200])
+                )
+                continue
+            if result.accepted:
+                collection.items.append(_material_payload(result))
+            else:
+                collection.rejected.append('第{}段：{}'.format(index, result.reason))
+            continue
+
+        if not body:
+            collection.rejected.append('第{}段：未提供可摘录的原文正文'.format(index))
+            continue
+        missing = [
+            label for label, key in (
+                ('发布机构', 'issuer'), ('文号', 'document_number'), ('成文日期', 'issued_at'),
+            ) if not metadata.get(key)
+        ]
+        if missing:
+            collection.rejected.append(
+                '第{}段：缺政策三要素（{}），已跳过，未编造元数据'.format(index, '、'.join(missing))
+            )
+            continue
+
+        source_note = metadata.get('source', '')
+        repost_flag = str(metadata.get('repost') or '').strip().casefold() in {
+            '是', 'yes', 'true', '1', '转载',
+        }
+        repost = bool(
+            repost_flag
+            or ('转载' in source_note and '非转载' not in source_note)
+            or metadata.get('original_url')
+            or (
+                metadata.get('published_at')
+                and metadata['published_at'] != metadata['issued_at']
+            )
+        )
+        repost_note = ''
+        if repost:
+            parts = ['gov.cn 转载文本（按用户粘贴内容著录，未联网核验转载关系）']
+            if metadata.get('original_url'):
+                parts.append('官方原文链接：{}'.format(metadata['original_url']))
+            if metadata.get('published_at'):
+                parts.append('转载发布日期：{}'.format(metadata['published_at']))
+            if source_note:
+                parts.append('来源注明：{}'.format(source_note))
+            repost_note = '；'.join(parts)
+
+        title = metadata.get('title') or link or '用户材料第{}段'.format(index)
+        slug = re.sub(r'[^\w\u4e00-\u9fff.\-]', '_', title)[:48] or 'material_{}'.format(index)
+        with tempfile.TemporaryDirectory(prefix='bmaterials-') as temp_dir:
+            local_path = Path(temp_dir) / '{}.txt'.format(slug)
+            local_path.write_text(body, encoding='utf-8')
+            result = service.collect({
+                'user_provided': True,
+                'local_path': str(local_path),
+                'content_type': 'txt',
+                'title': title,
+                'issuer': metadata['issuer'],
+                'document_number': metadata['document_number'],
+                'issued_at': metadata['issued_at'],
+                'published_at': metadata.get('published_at', ''),
+                'source_link': link,
+                'repost_note': repost_note,
+                'url': link,
+            })
+        if result.accepted:
+            collection.items.append(_material_payload(result))
+        else:
+            collection.rejected.append('第{}段：{}'.format(index, result.reason))
+    return collection

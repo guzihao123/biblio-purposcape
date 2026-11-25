@@ -74,6 +74,20 @@ def _year(value):
         _error(422, 'invalid_answer', 'year is outside the allowed range')
 
 
+def _project_theme(theme):
+    if not isinstance(theme, dict):
+        _error(422, 'invalid_answer', 'theme must be an object')
+    _keys(theme, {'name', 'goal', 'object', 'method', 'expected_output', 'custom'})
+    for field, maximum in (
+        ('name', 500), ('goal', 2_000), ('object', 4_000),
+        ('method', 4_000), ('expected_output', 4_000), ('custom', 2_000),
+    ):
+        if field in theme:
+            _string(theme[field], f'theme.{field}', maximum)
+    if not any(str(theme.get(field) or '').strip() for field in ('name', 'custom')):
+        _error(422, 'invalid_answer', 'theme requires a name or custom text')
+
+
 def validate_answer_value(card_id, value):
     if not isinstance(value, dict):
         _error(422, 'invalid_answer', 'answer value must be an object')
@@ -85,17 +99,34 @@ def validate_answer_value(card_id, value):
         return
 
     if card_id == 'mode':
-        _keys(value, {'mode', 'c_route', 'user_results', 'target_journal', 'team_context', 'project'})
+        _keys(value, {
+            'mode', 'c_route', 'c_info_route', 'c_material', 'user_results',
+            'target_journal', 'team_context', 'project', 'policy_materials',
+            'custom', 'theme',
+        })
         _string(value.get('mode'), 'mode', 10, required=True)
         if value['mode'] not in {'A', 'B', 'C', 'D', 'E'}:
             _error(422, 'invalid_answer', 'unsupported mode')
         if 'c_route' in value and value['c_route'] not in {'C1', 'C2', 'C1+C2'}:
             _error(422, 'invalid_answer', 'unsupported C route')
+        if 'c_info_route' in value:
+            if value['mode'] != 'C':
+                _error(422, 'invalid_answer', 'c_info_route is only valid for mode C')
+            if value['c_info_route'] not in {'skip', 'upload', 'oral'}:
+                _error(422, 'invalid_answer', 'unsupported C info route')
+            if value['c_info_route'] in {'upload', 'oral'} and not str(value.get('c_material') or '').strip():
+                _error(422, 'invalid_answer', 'c_material is required for upload or oral')
         for field, maximum in (
-            ('user_results', 16_000), ('target_journal', 500), ('team_context', 8_000),
+            ('user_results', 16_000), ('c_material', 16_000),
+            ('target_journal', 500), ('team_context', 8_000),
+            ('policy_materials', 16_000), ('custom', 2_000),
         ):
             if field in value:
                 _string(value[field], field, maximum)
+        if value['mode'] == 'E' and not str(value.get('custom') or '').strip():
+            _error(422, 'invalid_answer', 'mode E requires a custom purpose')
+        if 'theme' in value:
+            _project_theme(value['theme'])
         if 'project' in value:
             project = value['project']
             if not isinstance(project, dict):

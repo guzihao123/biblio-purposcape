@@ -365,3 +365,34 @@ def test_reference_checker_timeout_returns_a_disclosed_failure(tmp_path, monkeyp
     assert result['clean'] is False
     assert result['issues']
     assert '失败' in output.read_text()
+
+
+def test_e_mode_delivery_a_writes_the_survey_word_file(tmp_path):
+    from docx import Document
+
+    fixture = Path(__file__).resolve().parents[2] / 'fixtures' / 'hcc-20261122'
+    papers = json.loads((fixture / 'papers.json').read_text())['papers']
+    task = DeliveryTask(
+        id='e-delivery',
+        mode='E',
+        direction='肝细胞癌免疫治疗耐药',
+        papers=papers,
+        body=(fixture / '综述初稿.md').read_text(),
+        evidence_ledger=(fixture / 'evidence_ledger.md').read_text(),
+        components={'markdown': '按用户用途组织的构件'},
+        outline='1. 按用户用途定制的提纲',
+        search_log=(fixture / 'search_log.md').read_text(),
+        delivery_form='A',
+        requirements=[{'requirement': 'E 自定义用途交付 Word', 'location': '综述初稿.docx', 'passed': True}],
+    )
+    result = DeliveryService(
+        workspace_root=tmp_path,
+        reference_checker=passing_reference_checker,
+    ).deliver(task)
+
+    assert result.clean is True
+    assert '综述初稿.docx' in result.artifacts
+    assert result['综述初稿.docx'].read_bytes().startswith(b'PK')
+    assert len(Document(result['综述初稿.docx']).paragraphs) > 20
+    assert result['综述初稿.md'].read_text(encoding='utf-8').startswith('# 肝癌免疫治疗耐药机制')
+    assert '## 参考文献' in result['综述初稿.md'].read_text(encoding='utf-8')

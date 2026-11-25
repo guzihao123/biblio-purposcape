@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from app.analysis import verbatim_quote
+from app.progress_reporter import report_stage_phase
 
 
 BODY_FILES = {
@@ -49,6 +50,26 @@ OUTLINE_HEADINGS = {
 _EVIDENCE_SHAPE = 'EVIDENCE={"claim":"论断","refs":[论文 ref_no],"quotes":{"<ref_no>":"摘要逐字原句"}}'
 _COMPONENT_EVIDENCE_NOTE = '；evidence 必须是 EVIDENCE 列表，' + _EVIDENCE_SHAPE
 
+B_SYSTEM_GENERATED_PLACEHOLDER = '（由系统根据项目主题与文献生成，见正文）'
+B_PROJECT_GENERATION_RULE = (
+    'B 模式用户只提供项目名称、一句话目标与资助类别/学科属性；'
+    '研究内容（3–4 项）、技术路线（输入→方法→验证→输出）、可行性（数据/工具/预实验）、预期成果'
+    '必须由你基于项目主题与本次论文池生成实质内容，不得留空、不得只写占位符或复述用户输入。'
+    'project.theme 中给出的研究对象、方法与预期产出是本次项目主题的组成部分，研究内容与技术路线必须与之对应。'
+    'B 正文必须完整保留「研究内容（3–4 项）」「技术路线」「可行性」「预期成果」章节。'
+)
+B_MATERIAL_RULE = (
+    'B 模式非论文材料按 [M] 分通道著录：只能使用 materials 与 material_index 中给出的逐字摘录支撑'
+    '政策/报告/统计事实；正文引用写成「（据材料 M1）」，不得把 [M] 写成论文 [n] 编号，'
+    '不得把材料摘录写进 evidence 台账；未提供材料时不得编造政策/报告/统计内容，也不得写（据材料 M…）。'
+)
+_MATERIAL_CITATION_RE = re.compile(r'（据材料\s*M(\d+)）')
+E_CUSTOM_PURPOSE_RULE = (
+    'E 模式是用户自定义用途：custom_purpose 是本次写作的唯一用途依据，必须先把用途转成可核对的写作要求并逐条落实。'
+    '同时保留 E 基线形态：综述初稿 + 空白点清单 + 3 个可做方向；'
+    '用户用途无法在现有证据下实现时，在正文中说明原因并给出最接近的替代，不得虚构结论或交付物。'
+)
+
 LENGTH_TARGETS = {
     'A': '1500-2500',
     'A_DIALOGUE': '1500-2500',
@@ -62,7 +83,32 @@ LENGTH_TARGETS = {
 FORMAT_RULES = {
     'A': '研究空白证据表每行必须以「空白1：」「空白2：」…开头，并在同一行写 [n] 引用与理由类型；方向卡保留「第 N 推荐」「核心研究问题」「数据可得性」。',
     'A_DIALOGUE': '每类选题的两张卡与综合第 1 推荐必须保留推荐理由与主要风险。',
+    'E': '先用「## 用途落实」逐条说明如何落实 custom_purpose，再给综述要点、空白点清单与 3 个可做方向；空白证据与引用要求同 A 基线。',
 }
+
+STYLE_REFERENCE_FILE = '写法参考卡.md'
+C1_SKIP_RULE = (
+    'C 模式 c_info_route=skip：研究空白必须根据池内文献逐行实写并附 [n] 证据；'
+    '只有“研究思路与方法”“研究贡献”两张段落卡和完整引言第 4/5 段允许写占位，'
+    '不得把研究空白、文献比较或未来方向写成占位，也不得虚构本文结果。'
+)
+C1_MATERIAL_RULE = (
+    'C 模式 c_info_route=upload/oral：从 user_material 提取本文研究问题、方法与预期创新，'
+    '用于 Research Gap 的“本文回应”、第 4/5 段与贡献句；'
+    '本文材料只作为用户自述，不产生 [n]，不冒充外部文献证据或全文事实。'
+)
+C2_SKIP_RULE = (
+    'C 模式 c_info_route=skip：C2 不要求本文结果；研究主题与检索范围、综合分析、技术路线比较、'
+    '研究空白和未来方向必须按池内文献证据实写，不得留占位，也不得写成 Discussion。'
+)
+C2_MATERIAL_RULE = (
+    'C 模式 c_info_route=upload/oral：本文材料只可在“未来研究方向”中呼应本文问题，'
+    '不得进入文献比较表或研究空白分析表的文献证据列，不得为本文材料编造 [n] 引用。'
+)
+C1_STYLE_RULE = (
+    '仅当用户提供 target_journal 时：读取 style_reference_note，按目标期刊学科定位调整引言口径；'
+    '若参考卡已降级，明确写“按通用口径写”，不得抄写任何范文原句或虚构范文结构。'
+)
 
 COMPONENT_SCHEMAS = {
     'A': (
@@ -108,9 +154,22 @@ COMPONENT_SCHEMAS = {
         + _COMPONENT_EVIDENCE_NOTE
     ),
     'C2': (
-        '{"classification":["…"],"comparison":[{"literature":"[n] 作者 年","research_question":"…",'
+        '{"scope":{"topic":"…","objects":"…","time_range":"…","disciplines":"…","evidence_boundary":"…"},'
+        '"keywords":[{"concept":"…","cn":"…","en_synonyms":"…","boolean":"…","use":"…"}],'
+        '"search_strategy":{"databases":"只列实际接入并执行","queries":["实际检索式"],'
+        '"tracing":"实际执行的追溯/追踪","screening":"实际筛选标准",'
+        '"systematic_review":false,"prisma":false},'
+        '"classification":["…"],'
+        '"comparison":[{"literature":"[n] 作者 年","research_question":"…",'
         '"data":"…","method":"…","findings":"…","limitation":"…"}],'
-        '"gaps":[{"direction":"…","progress":"…","limitation":"…","evidence_text":"[n] 摘要证据","future_question":"…"}]}'
+        '"synthesis":[{"direction":"…","progress":"…","representative_methods":"…","scenarios":"…","limit":"…"}],'
+        '"route_comparison":[{"route":"…","problem":"…","performance":"…","conditions":"…",'
+        '"limitation":"…","complementarity":"…"}],'
+        '"gaps":[{"direction":"…","progress":"…","limitation":"…","evidence_text":"[n] 摘要证据","future_question":"…"}],'
+        '"future_directions":[{"direction":"…","basis":"…","question":"…"}]}；'
+        'classification 按理论基础、研究对象、研究问题、技术方法、数据与实验、研究结论、研究局限七维给出；'
+        'synthesis、route_comparison、future_directions 各至少 2 项且基于已有进展与不足；'
+        '新增字段不得引入文献比较表与研究空白表之外的 [n]，引用只用可审计编号'
     ),
     'D': (
         '{"progress":[{"direction":"…","summary":"…"}],'
@@ -121,7 +180,11 @@ COMPONENT_SCHEMAS = {
         '"ranking":[{"rank":1,"topic":"…","reason":"…","risk":"…"}],'
         '"discussion_questions":["…"]}；reading_cards 3–5 张'
     ),
-    'E': '{"markdown":"按用户用途组织的 Markdown 构件（含 [n] 引用与证据）"}',
+    'E': (
+        '{"markdown":"按 custom_purpose 组织的 Markdown 构件（含 [n] 引用与证据）；'
+        '至少覆盖综述要点、空白点清单与 3 个可做方向","evidence":[EVIDENCE]}'
+        + _COMPONENT_EVIDENCE_NOTE
+    ),
 }
 
 
@@ -146,8 +209,11 @@ class WritingTask:
     search_overview: dict = field(default_factory=dict)
     project: dict = field(default_factory=dict)
     user_results: str = ''
+    c_info_route: str = ''
     target_journal: str = ''
     team_context: str = ''
+    materials: list = field(default_factory=list)
+    custom_purpose: str = ''
     events: list = field(default_factory=list)
 
 
@@ -319,18 +385,47 @@ def _render_a(data):
     return '\n'.join(lines).strip()
 
 
+def _render_material_index(materials):
+    lines = ['## 非论文材料索引（[M] 与论文 [n] 分通道）', '']
+    for item in materials:
+        lines.append('- {} {}｜{}｜{}｜{}｜链接：{}'.format(
+            item.get('citation', ''), item.get('title', ''), item.get('issuer', ''),
+            item.get('document_number', ''), item.get('issued_at', ''),
+            item.get('link') or '未提供',
+        ))
+        for excerpt in item.get('excerpts', [])[:3]:
+            lines.append('  - 逐字摘录（{}）：{}'.format(excerpt.get('anchor', ''), excerpt.get('text', '')))
+        if item.get('repost_note'):
+            lines.append('  - 转载注明：{}'.format(item['repost_note']))
+    lines.extend(['', '正文引用格式：（据材料 M1）；[M] 不进入 [n] 台账与 verify 检查。'])
+    return '\n'.join(lines)
+
+
 def _render_b(task, data):
     project = task.project
+    theme = project.get('theme') if isinstance(project.get('theme'), dict) else {}
     lines = [
         '# 模式 B 构件', '',
         f"项目名称：{project['name']}",
         f"资助类别/学科属性：{project.get('funding', '未指定')}",
         f"一句话目标：{project['goal']}", '',
+    ]
+    if theme:
+        lines.extend([
+            '## 项目主题（用户选定）', '',
+            f"- 研究对象：{theme.get('object') or '未提供'}",
+            f"- 方法：{theme.get('method') or '未提供'}",
+            f"- 预期产出：{theme.get('expected_output') or '未提供'}",
+        ])
+        if theme.get('custom'):
+            lines.append(f"- 自定义补充：{theme['custom']}")
+        lines.append('')
+    lines.extend([
         '## 刚性需求段', '',
         f"{data['demand']['text']} {_evidence_refs(data['demand']['evidence'])}", '',
         '## 已有研究对本项目技术路线的支撑', '',
         '| 资产 | 对应研究内容 | 文献证据 |', '|---|---|---|',
-    ]
+    ])
     for row in data['assets']:
         lines.append(f"| {row['name']} | {row['research_content']} | {_evidence_refs(row['evidence'])} |")
     lines.extend(['', '## 不足↔科学问题↔研究内容一一对解表', '', '| 不足 | 科学问题 | 研究内容 | 文献证据 |', '|---|---|---|---|'])
@@ -341,10 +436,27 @@ def _render_b(task, data):
         row = data['chain'][name]
         lines.append(f"### {name}\n{row['text']} {_evidence_refs(row['evidence'])}\n")
     lines.extend(['## 研究内容与技术路线', ''])
-    lines.extend(f"- {item}" for item in project['research_contents'])
-    lines.extend([f"- 技术路线：{project['technical_route']}", f"- 可行性：{project['feasibility']}", f"- 预期成果：{project['expected_outcomes']}", '', '## 创新点与已有工作差异表', '', '| 创新点 | 与已有工作的差异 | 文献证据 |', '|---|---|---|'])
+    raw_contents = project.get('research_contents') or []
+    if isinstance(raw_contents, str):
+        raw_contents = re.split(r'[\n；;]+', raw_contents)
+    research_contents = [str(item).strip() for item in raw_contents if str(item).strip()]
+    if research_contents:
+        lines.extend(f"- {item}" for item in research_contents)
+    else:
+        lines.append(f"- 研究内容：{B_SYSTEM_GENERATED_PLACEHOLDER}")
+    for label, key in (
+        ('技术路线', 'technical_route'),
+        ('可行性', 'feasibility'),
+        ('预期成果', 'expected_outcomes'),
+    ):
+        value = str(project.get(key) or '').strip()
+        lines.append(f"- {label}：{value or B_SYSTEM_GENERATED_PLACEHOLDER}")
+    lines.extend(['', '## 创新点与已有工作差异表', '', '| 创新点 | 与已有工作的差异 | 文献证据 |', '|---|---|---|'])
     for row in data['innovations']:
         lines.append(f"| {row['innovation']} | {row['difference']} | {_evidence_refs(row['evidence'])} |")
+    materials = getattr(task, 'materials', None) or []
+    if materials:
+        lines.extend(['', _render_material_index(materials)])
     return '\n'.join(lines).strip()
 
 
@@ -362,15 +474,112 @@ def _render_c1(data):
     return '\n'.join(lines).strip()
 
 
-def _render_c2(data):
-    lines = ['# 模式 C2 构件', '', '## 分类框架', '']
-    lines.extend(f"- {item}" for item in data['classification'])
+def _render_c2(data, task=None):
+    comparison = data.get('comparison') or []
+    gaps = data.get('gaps') or []
+    overview = getattr(task, 'search_overview', {}) or {}
+    scope = data.get('scope') if isinstance(data.get('scope'), dict) else {}
+    strategy = data.get('search_strategy') if isinstance(data.get('search_strategy'), dict) else {}
+
+    time_label = f"{overview.get('from_year')} 起" if overview.get('from_year') else '不限起始年'
+    boundary_label = (
+        f"检索池 {overview.get('pool_count', 0)} 篇，摘要深度；未覆盖数据库见 search_log.md"
+    )
+    lines = ['# 模式 C2 构件', '', '## 研究主题与检索范围', '']
+    lines.extend([
+        f"- 综述主题与核心概念：{scope.get('topic') or getattr(task, 'direction', '') or '未记录'}",
+        f"- 研究对象与应用场景：{scope.get('objects') or '按文献分类框架归纳'}",
+        f"- 时间范围与学科范围：{scope.get('time_range') or time_label}；{scope.get('disciplines') or '学科范围见检索日志'}",
+        f"- 检索时间、数据库、时间范围与筛选标准：{strategy.get('screening') or '按 search_log.md 实写'}",
+        f"- 证据边界：{scope.get('evidence_boundary') or boundary_label}",
+    ])
+
+    lines.extend(['', '## 关键词和检索策略', '', '| 概念 | 中文词 | 英文词/同义词 | 组合与布尔逻辑 | 实际用途 |', '|---|---|---|---|---|'])
+    keyword_rows = data.get('keywords') or []
+    if not keyword_rows:
+        keyword_rows = [
+            {'concept': query, 'en_synonyms': query, 'boolean': '本次实际检索式见 search_log.md', 'use': '本次实际检索'}
+            for query in (overview.get('queries') or [])
+        ]
+    if not keyword_rows:
+        keyword_rows = [{'concept': '未记录', 'boolean': '未记录', 'use': '未记录'}]
+    for row in keyword_rows:
+        lines.append(
+            f"| {row.get('concept', '')} | {row.get('cn', '')} | {row.get('en_synonyms', '')} | "
+            f"{row.get('boolean', '')} | {row.get('use', '')} |"
+        )
+    databases = strategy.get('databases') or '、'.join(overview.get('databases') or []) or '未记录'
+    queries = strategy.get('queries') or overview.get('queries') or []
+    lines.extend([
+        '', f"- 实际接入并执行的数据库：{databases}",
+        f"- 实际检索式：{'；'.join(str(query) for query in queries) or '未记录'}",
+        f"- 追溯与追踪：{strategy.get('tracing') or '仅记录本次实际执行的策略'}",
+        f"- 系统综述声明：{'已执行（须与 search_log.md 记录一致）' if strategy.get('systematic_review') else '未声明系统综述，未执行 PRISMA'}；"
+        f"PRISMA：{'已执行' if strategy.get('prisma') else '未执行'}",
+    ])
+
+    lines.extend(['', '## 文献分类框架', ''])
+    lines.extend(f"- {item}" for item in (data.get('classification') or ['未记录分类']))
+    lines.extend(['', '## 不同研究方向的综合分析', ''])
+    synthesis = data.get('synthesis') or []
+    if not synthesis:
+        synthesis = [
+            {
+                'direction': row.get('research_question') or row.get('method') or '研究方向',
+                'progress': row.get('findings', ''),
+                'representative_methods': row.get('method', ''),
+                'scenarios': '适用场景由文献比较表归纳，未取得全文的细节标未确认',
+                'limit': row.get('limitation', ''),
+            }
+            for row in comparison[:4]
+        ]
+    if not synthesis:
+        synthesis = [{'direction': '未记录研究方向', 'progress': '未记录', 'representative_methods': '未记录', 'scenarios': '未记录', 'limit': '未记录'}]
+    for item in synthesis:
+        lines.extend([
+            f"### {item.get('direction', '未记录研究方向')}", '',
+            f"- 发展过程与已有进展：{item.get('progress', '')}",
+            f"- 代表性方法：{item.get('representative_methods', '')}",
+            f"- 适用场景：{item.get('scenarios', '')}",
+            f"- 局限：{item.get('limit', '')}", '',
+        ])
+
+    lines.extend(['## 主要技术路线比较', '', '| 技术路线 | 解决的问题 | 性能/适用条件 | 局限 | 互补或融合可能 |', '|---|---|---|---|---|'])
+    route_rows = data.get('route_comparison') or []
+    if not route_rows:
+        route_rows = [
+            {
+                'route': row.get('method', '未记录路线'),
+                'problem': row.get('research_question', ''),
+                'performance': '摘要未报告可核对的性能指标，标未确认',
+                'conditions': '适用条件由文献比较表归纳',
+                'limitation': row.get('limitation', ''),
+                'complementarity': '与其他路线的互补性见综合分析',
+            }
+            for row in comparison[:4]
+        ]
+    for row in route_rows:
+        lines.append(
+            f"| {row.get('route', '')} | {row.get('problem', '')} | {row.get('performance', '')} | "
+            f"{row.get('limitation', '')} | {row.get('complementarity', '')} |"
+        )
+
     lines.extend(['', '## 文献比较表', '', '| 文献 | 研究问题 | 数据 | 核心方法 | 主要发现 | 局限性 |', '|---|---|---|---|---|---|'])
-    for row in data['comparison']:
+    for row in comparison:
         lines.append(f"| {row['literature']} | {row['research_question']} | {row['data']} | {row['method']} | {row['findings']} | {row['limitation']} |")
     lines.extend(['', '## 研究空白分析表', '', '| 研究方向 | 已有进展 | 现有不足 | 文献证据 | 可深入研究的问题 |', '|---|---|---|---|---|'])
-    for row in data['gaps']:
+    for row in gaps:
         lines.append(f"| {row['direction']} | {row['progress']} | {row['limitation']} | {row['evidence_text']} | {row['future_question']} |")
+    lines.extend(['', '## 未来研究方向', '', '| 方向 | 已有进展与不足依据 | 待研究问题 |', '|---|---|---|'])
+    future_rows = data.get('future_directions') or []
+    if not future_rows:
+        future_rows = [
+            {'direction': row.get('direction', ''), 'basis': f"{row.get('progress', '')}；{row.get('limitation', '')}", 'question': row.get('future_question', '')}
+            for row in gaps
+        ]
+    for row in future_rows:
+        lines.append(f"| {row.get('direction', '')} | {row.get('basis', '')} | {row.get('question', '')} |")
+    lines.extend(['', '各方向均基于已有进展与不足归纳，不作脱离文献的主观预测。'])
     return '\n'.join(lines).strip()
 
 
@@ -465,9 +674,21 @@ def _validate_component_shape(task, mode):
     elif mode == 'C1':
         if not 4 <= len(data.get('paragraph_cards', [])) <= 6:
             raise WritingInputError('mode C1 requires 4–6 paragraph cards')
+    elif mode == 'C2':
+        if not data.get('comparison') or not data.get('gaps'):
+            raise WritingInputError('mode C2 requires comparison and gap rows')
+        for key in ('keywords', 'synthesis', 'route_comparison', 'future_directions'):
+            if key in data and not isinstance(data[key], list):
+                raise WritingInputError(f'mode C2 {key} must be a list')
+        for key in ('synthesis', 'route_comparison', 'future_directions'):
+            if key in data and len(data[key]) < 2:
+                raise WritingInputError(f'mode C2 requires at least two {key} rows')
     elif mode == 'D':
         if not 3 <= len(data.get('reading_cards', [])) <= 5:
             raise WritingInputError('mode D requires 3–5 reading cards')
+    elif mode == 'E':
+        if not str(data.get('markdown') or '').strip():
+            raise WritingInputError('mode E requires a markdown component')
 
 
 def _citation_refs(text):
@@ -479,6 +700,25 @@ def _validate_citation_coverage(text, evidence):
     missing = sorted(_citation_refs(text) - available)
     if missing:
         raise WritingInputError(f'citation {missing[0]} has no evidence ledger entry')
+
+
+def _validate_material_citations(text, materials):
+    """[M] is a separate channel: validate only the explicit material marker."""
+    if not materials:
+        if _MATERIAL_CITATION_RE.search(text):
+            raise WritingInputError('未提供非论文材料，不得写（据材料 M…）')
+        return
+    allowed = set()
+    for item in materials:
+        match = re.search(r'M(\d+)', str(item.get('citation', '')))
+        if match:
+            allowed.add(int(match.group(1)))
+    used = {int(value) for value in _MATERIAL_CITATION_RE.findall(text)}
+    if not used:
+        raise WritingInputError('B 正文必须至少引用一条（据材料 M…）')
+    missing = sorted(used - allowed)
+    if missing:
+        raise WritingInputError('material citation M{} has no accepted material'.format(missing[0]))
 
 
 def _label_abstract_citations(text, evidence):
@@ -498,6 +738,92 @@ def _label_abstract_citations(text, evidence):
         return match.group(0) + label
 
     return re.sub(r'(?:\[\d+\])+', replace, text)
+
+
+_MATERIAL_ALIASES = {
+    '题目': '题目', '研究问题': '研究问题', '问题': '研究问题',
+    '摘要': '摘要', '方法': '方法', '研究方法': '方法',
+    '结果': '结果', '创新': '创新', '创新点': '创新', '预期创新': '创新',
+}
+
+
+def extract_user_material(text):
+    """Parse a pasted draft or oral notes into the fields C1/C2 prompts need."""
+    result = {name: '' for name in ('题目', '研究问题', '摘要', '方法', '结果', '创新')}
+    current = None
+    for raw_line in str(text or '').splitlines():
+        line = raw_line.strip().lstrip('#*- ').strip()
+        if not line:
+            continue
+        match = re.match(r'^(题目|研究问题|问题|摘要|方法|研究方法|结果|创新|创新点|预期创新)\s*[:：]\s*(.*)$', line)
+        if match:
+            current = _MATERIAL_ALIASES[match.group(1)]
+            result[current] = match.group(2).strip()
+        elif current:
+            result[current] = (result[current] + '\n' + line).strip()
+    if not any(result.values()):
+        # An unlabelled oral note or pasted abstract still counts as supplied material.
+        result['摘要'] = ' '.join(str(text or '').split())[:2_000]
+    abstract = result['摘要']
+    first_sentence = re.split(r'(?<=[。.!?])', abstract, maxsplit=1)[0].strip() if abstract else ''
+    result['研究问题'] = result['题目'] or result['研究问题'] or first_sentence[:160]
+    result['本文方法'] = result['方法']
+    result['预期创新'] = result['创新'] or result['结果']
+    return result
+
+
+def c_info_route(task):
+    route = str(getattr(task, 'c_info_route', '') or '').strip().lower()
+    if route in {'skip', 'upload', 'oral'}:
+        return route
+    # Legacy answers carried free text without a route; treat them as supplied material.
+    return 'upload' if str(task.user_results or '').strip() else 'skip'
+
+
+def c_writing_rule(task):
+    mode = task.mode.upper()
+    route = c_info_route(task)
+    if mode == 'C1':
+        return C1_SKIP_RULE if route == 'skip' else C1_MATERIAL_RULE
+    if mode == 'C2':
+        return C2_SKIP_RULE if route == 'skip' else C2_MATERIAL_RULE
+    return ''
+
+
+def style_reference_card(task):
+    """Build the target-journal reference card, or state explicitly why it is degraded."""
+    journal = str(task.target_journal or '').strip()
+    if not journal:
+        return '', False, '未提供目标期刊'
+    folded = journal.casefold()
+    matches = [
+        paper for paper in task.papers
+        if folded in str(paper.get('venue') or paper.get('journal') or '').casefold()
+    ]
+    lines = ['# 目标期刊写法参考卡', '', f'目标期刊：{journal}', '']
+    if len(matches) < 2:
+        reason = (
+            f'检索池内属于《{journal}》的范文仅 {len(matches)} 篇（少于 2 篇），'
+            '不能形成可靠的写法参考；本次按通用引言口径写，不抄写任何单篇范文措辞。'
+        )
+        lines.extend(['## 降级原因', '', reason])
+        return '\n'.join(lines).strip(), True, reason
+    lines.extend(['## 可参考范文（仅看结构与书目信息）', ''])
+    for paper in matches[:3]:
+        lines.append(f"- [{paper.get('ref_no')}] {paper.get('title', '未命名')}（{paper.get('venue', '')}）")
+    lines.extend([
+        '', '## 字段降级说明', '',
+        '检索池只含摘要与书目信息，未取得开放全文；段数与职能、顺序过渡、引用密度位置无法可靠判定，'
+        '三项均按降级处理。只借结构与学科口径，不复制范文原句。',
+    ])
+    return '\n'.join(lines).strip(), False, ''
+
+
+def _style_reference_note(task):
+    if task.mode.upper() != 'C1' or not str(task.target_journal or '').strip():
+        return ''
+    _, degraded, reason = style_reference_card(task)
+    return reason if degraded else '已生成写法参考卡，只借结构不抄文字。'
 
 
 class WritingService:
@@ -533,8 +859,21 @@ class WritingService:
             'search_overview': task.search_overview,
             'project': task.project,
             'user_results': task.user_results,
+            'c_info_route': c_info_route(task),
+            'user_material': extract_user_material(task.user_results) if c_info_route(task) != 'skip' else {},
+            'c_writing_rules': c_writing_rule(task),
+            'target_journal': task.target_journal,
+            'style_reference_note': _style_reference_note(task),
             'team_context': task.team_context,
+            'custom_purpose': task.custom_purpose,
         }
+        if task.mode.upper() == 'B':
+            payload['project_generation_rules'] = B_PROJECT_GENERATION_RULE
+            payload['materials'] = list(task.materials or [])
+            payload['material_index'] = _render_material_index(task.materials) if task.materials else ''
+            payload['material_rules'] = B_MATERIAL_RULE
+        if task.mode.upper() == 'E':
+            payload['custom_purpose_rules'] = E_CUSTOM_PURPOSE_RULE
         if strict:
             payload['schema_reminder'] = (
                 '上一次返回缺少必需键、数量不符、引用了没有 evidence 条目的编号，或 quote 不是摘要逐字原句；'
@@ -545,7 +884,12 @@ class WritingService:
             '你是科研写作构件生成器。只使用输入摘要，所有文献事实必须附 refs 和逐字摘要 quotes；'
             'quote 必须是该篇摘要中逐字复制的一个连续片段（含原标点与空格），不得改写、翻译、拼接或概括，'
             '摘要中没有可直接复制的原句时不要输出该条证据或该论断；'
-            '不得虚构研究空白、项目基础或用户结果。严格按 components_schema 的键名、字段与数量范围返回 JSON 对象 {"components": ...}。',
+            '不得虚构研究空白、项目基础或用户结果。严格按 components_schema 的键名、字段与数量范围返回 JSON 对象 {"components": ...}。'
+            + c_writing_rule(task)
+            + (C1_STYLE_RULE if task.mode.upper() == 'C1' and str(task.target_journal or '').strip() else '')
+            + (B_PROJECT_GENERATION_RULE if task.mode.upper() == 'B' else '')
+            + (B_MATERIAL_RULE if task.mode.upper() == 'B' and task.materials else '')
+            + (E_CUSTOM_PURPOSE_RULE if task.mode.upper() == 'E' else ''),
             payload,
         )
         if not isinstance(response, dict) or not isinstance(response.get('components'), dict):
@@ -565,7 +909,7 @@ class WritingService:
         elif mode == 'C1':
             markdown = _render_c1(task.component_data)
         elif mode == 'C2':
-            markdown = _render_c2(task.component_data)
+            markdown = _render_c2(task.component_data, task)
         elif mode == 'D':
             markdown = _render_d(task, task.component_data)
         else:
@@ -581,6 +925,7 @@ class WritingService:
         )
 
     def produce_components(self, task):
+        report_stage_phase('generate', 'components')
         mode = task.mode.upper()
         if mode not in OUTLINE_HEADINGS:
             raise WritingInputError(f'unsupported writing mode: {task.mode}')
@@ -597,6 +942,7 @@ class WritingService:
         raise last_error
 
     def produce_outline_and_sample(self, task, components):
+        report_stage_phase('generate', 'outline_sample')
         headings = '\n'.join(f'{index}. {heading}' for index, heading in enumerate(OUTLINE_HEADINGS[components.mode], 1))
         outline = f"# {task.direction}｜模式 {components.mode} 提纲\n\n{headings}\n\n## 构件与证据索引\n\n{components.markdown}"
         if components.mode == 'A_DIALOGUE':
@@ -619,6 +965,7 @@ class WritingService:
         return OutlineSample(outline=outline, sample=sample)
 
     def write_body(self, task, components, outline_sample, body_writer):
+        report_stage_phase('generate', 'body')
         model_backed = body_writer is None and self.model is not None
         if model_backed:
             def body_writer(context):
@@ -626,7 +973,12 @@ class WritingService:
                     '你是科研正文写作器。先读已完成的构件、提纲和样章，再写连贯正文。每个文献事实必须在 evidence 中给出 refs 与逐字摘要 quotes；'
                     'quote 必须是该篇摘要中逐字复制的一个连续片段（含原标点），不得改写、翻译或拼接；'
                     '分析判断标明“分析”，不得虚构用户结果、全文细节或参考文献；'
-                    '正文 CJK 字数必须落在 length_target 区间，并严格遵守 format_rules。',
+                    '正文 CJK 字数必须落在 length_target 区间，并严格遵守 format_rules。'
+                    + c_writing_rule(task)
+                    + (C1_STYLE_RULE if task.mode.upper() == 'C1' and str(task.target_journal or '').strip() else '')
+                    + (B_PROJECT_GENERATION_RULE if task.mode.upper() == 'B' else '')
+                    + (B_MATERIAL_RULE if task.mode.upper() == 'B' and task.materials else '')
+                    + (E_CUSTOM_PURPOSE_RULE if task.mode.upper() == 'E' else ''),
                     {
                         'stage': 'body',
                         'mode': task.mode,
@@ -638,7 +990,24 @@ class WritingService:
                         'papers': task.papers,
                         'analysis': task.analysis,
                         'project': task.project,
+                        'project_generation_rules': (
+                            B_PROJECT_GENERATION_RULE if task.mode.upper() == 'B' else ''
+                        ),
+                        'materials': list(task.materials or []) if task.mode.upper() == 'B' else [],
+                        'material_index': (
+                            _render_material_index(task.materials) if task.mode.upper() == 'B' and task.materials else ''
+                        ),
+                        'material_rules': B_MATERIAL_RULE if task.mode.upper() == 'B' else '',
+                        'custom_purpose': task.custom_purpose,
+                        'custom_purpose_rules': (
+                            E_CUSTOM_PURPOSE_RULE if task.mode.upper() == 'E' else ''
+                        ),
                         'user_results': task.user_results,
+                        'c_info_route': c_info_route(task),
+                        'user_material': extract_user_material(task.user_results) if c_info_route(task) != 'skip' else {},
+                        'c_writing_rules': c_writing_rule(task),
+                        'target_journal': task.target_journal,
+                        'style_reference_note': _style_reference_note(task),
                         'team_context': task.team_context,
                         'length_target': LENGTH_TARGETS.get(task.mode.upper(), ''),
                         'format_rules': FORMAT_RULES.get(task.mode.upper(), ''),
@@ -675,6 +1044,7 @@ class WritingService:
                 evidence = auditor.audit_items(result.get('evidence') or [])
                 text = result['text']
                 _validate_citation_coverage(text, evidence)
+                _validate_material_citations(text, task.materials)
                 text = _label_abstract_citations(text, evidence)
                 return BodyOutput(text=text, evidence=evidence)
             except WritingInputError as error:
@@ -693,6 +1063,11 @@ class WritingService:
         task.events.append(WritingEvent(kind='outline_ready'))
         (task_dir / 'sample.md').write_text(outline_sample.sample, encoding='utf-8')
         task.events.append(WritingEvent(kind='sample_ready'))
+
+        if task.mode.upper() == 'C1' and str(task.target_journal or '').strip():
+            card, degraded, reason = style_reference_card(task)
+            (task_dir / STYLE_REFERENCE_FILE).write_text(card, encoding='utf-8')
+            task.events.append(WritingEvent(kind='style_reference_ready', payload={'degraded': degraded, 'reason': reason}))
 
         body = self.write_body(task, components, outline_sample, body_writer)
         body_path = task_dir / BODY_FILES[components.mode]

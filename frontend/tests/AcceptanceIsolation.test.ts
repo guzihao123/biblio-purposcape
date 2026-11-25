@@ -20,9 +20,9 @@ function listTests(config?: string) {
 }
 
 describe('browser acceptance isolation', () => {
-  it('keeps the default suite on the ten main-flow tests', () => {
+  it('keeps the default suite on the eleven main-flow tests', () => {
     const output = listTests()
-    assert.match(output, /Total: 10 tests in 1 file/)
+    assert.match(output, /Total: 11 tests in 1 file/)
     assert.doesNotMatch(output, /motion(?:-components)?\.spec\.ts/)
   })
 

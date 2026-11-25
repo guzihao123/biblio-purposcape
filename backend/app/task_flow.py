@@ -232,9 +232,28 @@ def _record_adjustment(db, task, answer, value):
     return AnswerDecision(result=_answer_result(answer), changed=True)
 
 
+def _record_c_requirements(db, task_id, value):
+    """Write the two C card choices and the supplied material to the requirement ledger."""
+    if value.get('mode') != 'C' or 'c_info_route' not in value:
+        return
+    db.add(TaskEvent(
+        task_id=task_id,
+        event_type='user_requirements_recorded',
+        payload={
+            'card_id': 'mode',
+            'c_route': value.get('c_route', ''),
+            'c_info_route': value['c_info_route'],
+            'c_material': value.get('c_material', '') or value.get('user_results', ''),
+            'target_journal': value.get('target_journal', ''),
+        },
+    ))
+
+
 def _first_answer(db, task, card, value, transition):
     result_state, next_card = transition
     _claim_transition(db, task, result_state, next_card)
+    if card == CardId.MODE:
+        _record_c_requirements(db, task.id, value)
     answer = TaskAnswer(
         task_id=task.id,
         card_id=card.value,

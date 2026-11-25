@@ -1,0 +1,62 @@
+{
+  "query": [
+    "课后服务"
+  ],
+  "source": "crossref",
+  "total_hits": 39738,
+  "retrieved_at": "2026-11-25T15:03:11",
+  "papers": [
+    {
+      "source": "crossref",
+      "id": "https://doi.org/10.67328/wslwpp0536",
+      "title": "课后服务视域下小学数学拓展趣味课程开发研究",
+      "year": 2026,
+      "authors": [
+        "左龙"
+      ],
+      "venue": "数据期刊",
+      "cited_by_count": 0,
+      "doi": "https://doi.org/10.67328/wslwpp0536",
+      "url": "https://doi.org/10.67328/wslwpp0536",
+      "oa_url": null,
+      "pdf_url": null,
+      "abstract": null,
+      "type": "journal-article",
+      "language": null,
+      "institutions": [],
+      "countries": [],
+      "is_retracted": false,
+      "referenced_works": [],
+      "volume": null,
+      "issue": null,
+      "page": null,
+      "publisher": "Xinlan Culture Limited",
+      "evidence_level": "C"
+    },
+    {
+      "source": "crossref",
+      "id": "https://doi.org/10.69979/3029-2735.26.07.077",
+      "title": "U-S协同视域下课后服务课程资源转化机制研究",
+      "year": 2026,
+      "authors": [],
+      "venue": "智慧教育",
+      "cited_by_count": 0,
+      "doi": "https://doi.org/10.69979/3029-2735.26.07.077",
+      "url": "https://doi.org/10.69979/3029-2735.26.07.077",
+      "oa_url": null,
+      "pdf_url": null,
+      "abstract": null,
+      "type": "journal-article",
+      "language": null,
+      "institutions": [],
+      "countries": [],
+      "is_retracted": false,
+      "referenced_works": [],
+      "volume": "3",
+      "issue": "7",
+      "page": null,
+      "publisher": "Singapore Juzhi Journal Publishing PTE. Ltd.",
+      "evidence_level": "C"
+    }
+  ]
+}
