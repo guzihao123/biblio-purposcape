@@ -1,6 +1,6 @@
 {
   "scenario": "a-dialogue",
-  "task_id": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01",
+  "task_id": "d6c61daa-7017-417e-9b1f-74f527b51c2f",
   "states": [
     "searching",
     "dashboard_ready",
@@ -13,7 +13,7 @@
       "worker_class": "ProtectedSimpleWorker",
       "burst": true,
       "job_ids": [
-        "1ba89ddd-390a-46b3-bf99-e2a9e1762be4"
+        "344d63f4-fda4-4768-9c15-f1dbdf5846a4"
       ],
       "job_statuses": [
         "finished"
@@ -23,13 +23,13 @@
       ],
       "queue_count_after": 0,
       "log_file": "a-dialogue-search-worker.log",
-      "log_text": "2026-11-25 07:56:38,788 rq.worker INFO Worker offline-e2e-a-dialogue-search-a6ab7cb5: started with PID 13241, version 2.8.0\n2026-11-25 07:56:38,788 rq.worker INFO Worker offline-e2e-a-dialogue-search-a6ab7cb5: subscribing to channel rq:pubsub:offline-e2e-a-dialogue-search-a6ab7cb5\n2026-11-25 07:56:38,789 rq.worker INFO *** Listening on landscape...\n2026-11-25 07:56:38,789 rq.worker INFO Worker offline-e2e-a-dialogue-search-a6ab7cb5: cleaning registries for queue: landscape\n2026-11-25 07:56:38,790 rq.worker INFO landscape: app.queueing.run_stage('b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01', 'search') (1ba89ddd-390a-46b3-bf99-e2a9e1762be4)\n2026-11-25 07:56:39,050 rq.worker INFO Successfully completed app.queueing.run_stage('b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01', 'search') job in 0:00:00.257836s on worker offline-e2e-a-dialogue-search-a6ab7cb5\n2026-11-25 07:56:39,050 rq.worker INFO landscape: Job OK (1ba89ddd-390a-46b3-bf99-e2a9e1762be4)\n2026-11-25 07:56:39,050 rq.worker INFO Result is kept for 500 seconds\n2026-11-25 07:56:39,051 rq.worker INFO Worker offline-e2e-a-dialogue-search-a6ab7cb5: done, quitting\n2026-11-25 07:56:39,051 rq.worker INFO Worker offline-e2e-a-dialogue-search-a6ab7cb5: unsubscribing from channel rq:pubsub:offline-e2e-a-dialogue-search-a6ab7cb5\n"
+      "log_text": "2026-11-25 08:24:02,398 rq.worker INFO Worker offline-e2e-a-dialogue-search-79f22332: started with PID 18275, version 2.8.0\n2026-11-25 08:24:02,399 rq.worker INFO Worker offline-e2e-a-dialogue-search-79f22332: subscribing to channel rq:pubsub:offline-e2e-a-dialogue-search-79f22332\n2026-11-25 08:24:02,399 rq.worker INFO *** Listening on landscape...\n2026-11-25 08:24:02,399 rq.worker INFO Worker offline-e2e-a-dialogue-search-79f22332: cleaning registries for queue: landscape\n2026-11-25 08:24:02,400 rq.worker INFO landscape: app.queueing.run_stage('d6c61daa-7017-417e-9b1f-74f527b51c2f', 'search') (344d63f4-fda4-4768-9c15-f1dbdf5846a4)\n2026-11-25 08:24:02,760 rq.worker INFO Successfully completed app.queueing.run_stage('d6c61daa-7017-417e-9b1f-74f527b51c2f', 'search') job in 0:00:00.357304s on worker offline-e2e-a-dialogue-search-79f22332\n2026-11-25 08:24:02,760 rq.worker INFO landscape: Job OK (344d63f4-fda4-4768-9c15-f1dbdf5846a4)\n2026-11-25 08:24:02,760 rq.worker INFO Result is kept for 500 seconds\n2026-11-25 08:24:02,761 rq.worker INFO Worker offline-e2e-a-dialogue-search-79f22332: done, quitting\n2026-11-25 08:24:02,761 rq.worker INFO Worker offline-e2e-a-dialogue-search-79f22332: unsubscribing from channel rq:pubsub:offline-e2e-a-dialogue-search-79f22332\n"
     },
     "generate": {
       "worker_class": "ProtectedSimpleWorker",
       "burst": true,
       "job_ids": [
-        "33127831-7d87-4b26-b108-7b6f7278d4fa"
+        "4e4cc91d-47bb-435c-8539-2990cf89bf1d"
       ],
       "job_statuses": [
         "finished"
@@ -39,7 +39,7 @@
       ],
       "queue_count_after": 0,
       "log_file": "a-dialogue-generate-worker.log",
-      "log_text": "2026-11-25 07:56:39,068 rq.worker INFO Worker offline-e2e-a-dialogue-generate-8d4f4782: started with PID 13241, version 2.8.0\n2026-11-25 07:56:39,068 rq.worker INFO Worker offline-e2e-a-dialogue-generate-8d4f4782: subscribing to channel rq:pubsub:offline-e2e-a-dialogue-generate-8d4f4782\n2026-11-25 07:56:39,069 rq.worker INFO *** Listening on landscape...\n2026-11-25 07:56:39,069 rq.worker INFO Worker offline-e2e-a-dialogue-generate-8d4f4782: cleaning registries for queue: landscape\n2026-11-25 07:56:39,070 rq.worker INFO landscape: app.queueing.run_stage('b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01', 'generate') (33127831-7d87-4b26-b108-7b6f7278d4fa)\n2026-11-25 07:56:39,132 rq.worker INFO Successfully completed app.queueing.run_stage('b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01', 'generate') job in 0:00:00.060010s on worker offline-e2e-a-dialogue-generate-8d4f4782\n2026-11-25 07:56:39,132 rq.worker INFO landscape: Job OK (33127831-7d87-4b26-b108-7b6f7278d4fa)\n2026-11-25 07:56:39,132 rq.worker INFO Result is kept for 500 seconds\n2026-11-25 07:56:39,133 rq.worker INFO Worker offline-e2e-a-dialogue-generate-8d4f4782: done, quitting\n2026-11-25 07:56:39,133 rq.worker INFO Worker offline-e2e-a-dialogue-generate-8d4f4782: unsubscribing from channel rq:pubsub:offline-e2e-a-dialogue-generate-8d4f4782\n"
+      "log_text": "2026-11-25 08:24:02,792 rq.worker INFO Worker offline-e2e-a-dialogue-generate-7a03ef4e: started with PID 18275, version 2.8.0\n2026-11-25 08:24:02,793 rq.worker INFO Worker offline-e2e-a-dialogue-generate-7a03ef4e: subscribing to channel rq:pubsub:offline-e2e-a-dialogue-generate-7a03ef4e\n2026-11-25 08:24:02,793 rq.worker INFO *** Listening on landscape...\n2026-11-25 08:24:02,794 rq.worker INFO Worker offline-e2e-a-dialogue-generate-7a03ef4e: cleaning registries for queue: landscape\n2026-11-25 08:24:02,795 rq.worker INFO landscape: app.queueing.run_stage('d6c61daa-7017-417e-9b1f-74f527b51c2f', 'generate') (4e4cc91d-47bb-435c-8539-2990cf89bf1d)\n2026-11-25 08:24:02,895 rq.worker INFO Successfully completed app.queueing.run_stage('d6c61daa-7017-417e-9b1f-74f527b51c2f', 'generate') job in 0:00:00.097128s on worker offline-e2e-a-dialogue-generate-7a03ef4e\n2026-11-25 08:24:02,895 rq.worker INFO landscape: Job OK (4e4cc91d-47bb-435c-8539-2990cf89bf1d)\n2026-11-25 08:24:02,895 rq.worker INFO Result is kept for 500 seconds\n2026-11-25 08:24:02,896 rq.worker INFO Worker offline-e2e-a-dialogue-generate-7a03ef4e: done, quitting\n2026-11-25 08:24:02,897 rq.worker INFO Worker offline-e2e-a-dialogue-generate-7a03ef4e: unsubscribing from channel rq:pubsub:offline-e2e-a-dialogue-generate-7a03ef4e\n"
     }
   },
   "checkpoints": {
@@ -49,8 +49,8 @@
       "unlimited_count": 3,
       "graph_artifacts": 6,
       "storage_synced": 0,
-      "input_hash": "8c805c3ca45bbcb0444213ff5eddf50fc30eedf0b96719daa41b42f0d32bc84b",
-      "timestamp": "2026-11-24T23:56:39.045637+00:00"
+      "input_hash": "b3236849a60e2af9d45face43e11d73bed6d9d9209f385ee281797c17bed61ac",
+      "timestamp": "2026-11-25T00:24:02.753711+00:00"
     },
     "generate": {
       "stage": "generate",
@@ -58,8 +58,8 @@
       "failures": [],
       "warnings": [],
       "storage_synced": 0,
-      "input_hash": "a8aff38fc39fc2714655bdb26f2f703043af27c47ca4197e4bc50b73e2772f67",
-      "timestamp": "2026-11-24T23:56:39.128153+00:00"
+      "input_hash": "09800fe7146d061de56a4f14e99ac8478cfb97e67aa40910c903f2a98e35cee7",
+      "timestamp": "2026-11-25T00:24:02.890397+00:00"
     }
   },
   "database": {
@@ -67,13 +67,13 @@
     "next_card": null,
     "jobs": [
       {
-        "id": "91a9425d-1b96-4810-b6ae-e1b2a0c67aed",
+        "id": "7a2f1488-ec05-4e0f-b961-36bcb716979d",
         "kind": "generate",
         "status": "completed",
         "answer_id": 6
       },
       {
-        "id": "4880c647-a4c9-40df-a018-754ee36ab03d",
+        "id": "c4b03ac0-8c31-44c3-ac17-87d0e237d156",
         "kind": "search",
         "status": "completed",
         "answer_id": 4
@@ -102,7 +102,7 @@
         "card_id": "years",
         "result_state": "searching",
         "next_card": null,
-        "job_id": "4880c647-a4c9-40df-a018-754ee36ab03d"
+        "job_id": "c4b03ac0-8c31-44c3-ac17-87d0e237d156"
       },
       {
         "card_id": "adjustment",
@@ -114,7 +114,7 @@
         "card_id": "delivery",
         "result_state": "generating",
         "next_card": null,
-        "job_id": "91a9425d-1b96-4810-b6ae-e1b2a0c67aed"
+        "job_id": "7a2f1488-ec05-4e0f-b961-36bcb716979d"
       }
     ],
     "events": [
@@ -131,16 +131,16 @@
         "kind": "queued",
         "payload": {
           "stage": "search",
-          "input_hash": "8c805c3ca45bbcb0444213ff5eddf50fc30eedf0b96719daa41b42f0d32bc84b",
-          "timestamp": "2026-11-24T23:56:38.781732+00:00"
+          "input_hash": "b3236849a60e2af9d45face43e11d73bed6d9d9209f385ee281797c17bed61ac",
+          "timestamp": "2026-11-25T00:24:02.390653+00:00"
         }
       },
       {
         "kind": "started",
         "payload": {
           "stage": "search",
-          "input_hash": "8c805c3ca45bbcb0444213ff5eddf50fc30eedf0b96719daa41b42f0d32bc84b",
-          "timestamp": "2026-11-24T23:56:38.791997+00:00"
+          "input_hash": "b3236849a60e2af9d45face43e11d73bed6d9d9209f385ee281797c17bed61ac",
+          "timestamp": "2026-11-25T00:24:02.402632+00:00"
         }
       },
       {
@@ -151,16 +151,16 @@
           "unlimited_count": 3,
           "graph_artifacts": 6,
           "storage_synced": 0,
-          "input_hash": "8c805c3ca45bbcb0444213ff5eddf50fc30eedf0b96719daa41b42f0d32bc84b",
-          "timestamp": "2026-11-24T23:56:39.045637+00:00"
+          "input_hash": "b3236849a60e2af9d45face43e11d73bed6d9d9209f385ee281797c17bed61ac",
+          "timestamp": "2026-11-25T00:24:02.753711+00:00"
         }
       },
       {
         "kind": "completed",
         "payload": {
           "stage": "search",
-          "input_hash": "8c805c3ca45bbcb0444213ff5eddf50fc30eedf0b96719daa41b42f0d32bc84b",
-          "timestamp": "2026-11-24T23:56:39.047742+00:00",
+          "input_hash": "b3236849a60e2af9d45face43e11d73bed6d9d9209f385ee281797c17bed61ac",
+          "timestamp": "2026-11-25T00:24:02.757152+00:00",
           "message": "双范围检索、分析与七类图谱已生成"
         }
       },
@@ -176,16 +176,16 @@
         "kind": "queued",
         "payload": {
           "stage": "generate",
-          "input_hash": "a8aff38fc39fc2714655bdb26f2f703043af27c47ca4197e4bc50b73e2772f67",
-          "timestamp": "2026-11-24T23:56:39.063068+00:00"
+          "input_hash": "09800fe7146d061de56a4f14e99ac8478cfb97e67aa40910c903f2a98e35cee7",
+          "timestamp": "2026-11-25T00:24:02.784485+00:00"
         }
       },
       {
         "kind": "started",
         "payload": {
           "stage": "generate",
-          "input_hash": "a8aff38fc39fc2714655bdb26f2f703043af27c47ca4197e4bc50b73e2772f67",
-          "timestamp": "2026-11-24T23:56:39.071909+00:00"
+          "input_hash": "09800fe7146d061de56a4f14e99ac8478cfb97e67aa40910c903f2a98e35cee7",
+          "timestamp": "2026-11-25T00:24:02.798564+00:00"
         }
       },
       {
@@ -196,16 +196,16 @@
           "failures": [],
           "warnings": [],
           "storage_synced": 0,
-          "input_hash": "a8aff38fc39fc2714655bdb26f2f703043af27c47ca4197e4bc50b73e2772f67",
-          "timestamp": "2026-11-24T23:56:39.128153+00:00"
+          "input_hash": "09800fe7146d061de56a4f14e99ac8478cfb97e67aa40910c903f2a98e35cee7",
+          "timestamp": "2026-11-25T00:24:02.890397+00:00"
         }
       },
       {
         "kind": "completed",
         "payload": {
           "stage": "generate",
-          "input_hash": "a8aff38fc39fc2714655bdb26f2f703043af27c47ca4197e4bc50b73e2772f67",
-          "timestamp": "2026-11-24T23:56:39.129918+00:00",
+          "input_hash": "09800fe7146d061de56a4f14e99ac8478cfb97e67aa40910c903f2a98e35cee7",
+          "timestamp": "2026-11-25T00:24:02.892512+00:00",
           "message": "交付文件已生成；请查看复核与覆盖边界"
         }
       }
@@ -213,15 +213,15 @@
     "progress": {
       "stage": "generate",
       "message": "交付文件已生成；请查看复核与覆盖边界",
-      "input_hash": "a8aff38fc39fc2714655bdb26f2f703043af27c47ca4197e4bc50b73e2772f67",
+      "input_hash": "09800fe7146d061de56a4f14e99ac8478cfb97e67aa40910c903f2a98e35cee7",
       "checkpoint": {
         "stage": "generate",
         "clean": true,
         "failures": [],
         "warnings": [],
         "storage_synced": 0,
-        "input_hash": "a8aff38fc39fc2714655bdb26f2f703043af27c47ca4197e4bc50b73e2772f67",
-        "timestamp": "2026-11-24T23:56:39.128153+00:00"
+        "input_hash": "09800fe7146d061de56a4f14e99ac8478cfb97e67aa40910c903f2a98e35cee7",
+        "timestamp": "2026-11-25T00:24:02.890397+00:00"
       },
       "traceback": null
     }
@@ -307,170 +307,170 @@
   ],
   "artifacts": [
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/analysis.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/analysis.json",
       "size": 5153,
       "sha256": "5082973773a318ba4384269bfa2fae71c2d77bb77e75e4eb7f9baaa64dfcabcb"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/components.md",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/components.md",
       "size": 26966,
       "sha256": "11ddce7e42de600d0ac7ec19b094f83587f8aff89eda653eb21248a47a85bf14"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/conformance.md",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/conformance.md",
       "size": 391,
       "sha256": "e89f1d4dcfd81cf226fac6fcc8f0a063d43bcd8d2e6adb868e6ee8dd67ccec53"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/dashboard_data.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/dashboard_data.json",
       "size": 26190,
       "sha256": "2a22251b3c89c65050cb66511133a5465198379398898d3c24623bb8ad9d265c"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/desktop.html",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/desktop.html",
       "size": 1110896,
       "sha256": "284d62da20f7b23d233defee93a94f29f864ee46f412dbb25ee6988667f5e633"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/dialogue.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/dialogue.json",
       "size": 39473,
       "sha256": "080a322d8170d0e8c4f60717b77d7fa76b789bd400f09a8eb01b9935adb29db6"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/evidence_ledger.md",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/evidence_ledger.md",
       "size": 341,
       "sha256": "374133474acff394308fc4b88aca680ebdd6c3beb5e9f2e8babe4b0138dc0f5b"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/graph_evidence.md",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/graph_evidence.md",
       "size": 692,
       "sha256": "ff17683fed11f71e3edec017c7dcd708cc9b8b36be262d3df324dd33ddadf47c"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/index.html",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/index.html",
       "size": 4959,
       "sha256": "e95572ab1004b33340a1a671df007ebcb8c37cdf20dc3046f72d0887375cf82d"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/mobile.html",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/mobile.html",
       "size": 1085600,
       "sha256": "d6c149d3fba5a0039c83f099b9c71af57043d00ef3c6290efc7726afafbb02d8"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/openalex_limited_selected.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/openalex_limited_selected.json",
       "size": 1475,
       "sha256": "a1fd9c4202396a75cb908530f4a6ee141145286c4b83c3684fa505005741e320"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/openalex_unlimited_selected.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/openalex_unlimited_selected.json",
       "size": 2136,
       "sha256": "a277fdfe70eebdb37a87a4b4b1e97a4dee96ec15bb204a7c1ebc0b40bad6df8d"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/outline.md",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/outline.md",
       "size": 13900,
       "sha256": "48905121281522f5c5acccfcd132353bd5de39de3d3f512a673ea42d0ea5998a"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/papers.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/papers.json",
       "size": 1478,
       "sha256": "9c3d7f2dea413ebf327f113aa3fe98cb845eb99e5b559701f3829807bf14ea42"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/papers_all.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/papers_all.json",
       "size": 2255,
       "sha256": "7298b9ee13484a3bc90de732c2360f38689f6c0ec4c543dfebef41b9bda0feb1"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/references.md",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/references.md",
       "size": 504,
       "sha256": "252d03f3ff8337d13f65c865a3227a3611c2d49e0c288df820c5777fb624e98f"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/references_check.md",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/references_check.md",
       "size": 155,
       "sha256": "6ed849d181639bddc71df913f24ce26baa671848a4a14c5cf1abb169e646c130"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/relations.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/relations.json",
       "size": 2859,
       "sha256": "663db68fe8fcefe6d2b312609fd5e53fa5ab3fb9260f35fb4f80b0650d8c7db3"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/relations_evidence.md",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/relations_evidence.md",
       "size": 619,
       "sha256": "82736255b0385b957662aa785a2503431d88e3e72ff013f7a2468b0291a71d82"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/sample.md",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/sample.md",
       "size": 919,
       "sha256": "a01e36c8361798cfba51fbe83d18eb62ca09115badf7a9da139da880cd255c66"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/search_log.md",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/search_log.md",
       "size": 235,
       "sha256": "d49a6b5d8c50dd65226fc034157d28e3d90acffeab9ef53b78ea94583568631e"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/stats.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/stats.json",
       "size": 1512,
       "sha256": "c279a266059b0fddf99447d0a269d866c05776168b49fbf9c2e2712d4efbea8a"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/stats_series_1.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/stats_series_1.json",
       "size": 143,
       "sha256": "734ff565c1f893bf3babcc310c8f10ce4d168be5d47d40d10a0268b5cff2faff"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/stats_series_2.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/stats_series_2.json",
       "size": 91,
       "sha256": "da7e2e08da7cb4b40328214ba3651c3adea849b5e114e7377cb8b578f38a4e85"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/stats_topics_all.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/stats_topics_all.json",
       "size": 298,
       "sha256": "9092469a041311ae58512be3e867a952d9dfd634858b7d68faeb2b3d41c5a16c"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/stats_topics_limited.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/stats_topics_limited.json",
       "size": 319,
       "sha256": "c4569963aaf8fa9ef70523bf5905756388bbf4af7b2a3fc0aa4dbac211dc4517"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/stats_year.json",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/stats_year.json",
       "size": 195,
       "sha256": "c87e16b99011ea5c7e3514bd42ea8f776cb7ed3baadde07d0a77ba7765af98af"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/verify_delivery.py",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/verify_delivery.py",
       "size": 34329,
       "sha256": "6dd22bb7c8bbcd7030fc6ddebf1cd37147b20133f6841a6dd84ba21a84e40f98"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/verify_report.txt",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/verify_report.txt",
       "size": 10793,
       "sha256": "c881cb6c7e86cce30ac7fad07c17121e69e88816ea0896a54f35cb1512cf561a"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/文献图谱仪表盘.html",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/文献图谱仪表盘.html",
       "size": 1107612,
       "sha256": "b542dbdb6aa73aefa9e3ddc838cdea3f0da98da6d9b206e64a8ae08b9a2ee6fe"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/文献图谱仪表盘.png",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/文献图谱仪表盘.png",
       "size": 455900,
       "sha256": "50db38d8b34f0ac246aae69f6271d71c4a061ec39d2f666eb056192b36fac0f2"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/文献图谱仪表盘.svg",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/文献图谱仪表盘.svg",
       "size": 21361,
       "sha256": "884bcebc777668c031cd35801e705466bfb7e41a5d8f834480b7674648e5e7df"
     },
     {
-      "path": "b9aa95c4-ff06-4cd8-b1ed-ec9f2e8bbe01/综述初稿.md",
+      "path": "d6c61daa-7017-417e-9b1f-74f527b51c2f/综述初稿.md",
       "size": 14558,
       "sha256": "8908229309bfcf6076408df0fb74b1c9ec11bbbff8772e01c251a1342981a396"
     }
   ],
-  "recorded_at": "2026-11-24T23:56:39.189134+00:00"
+  "recorded_at": "2026-11-25T00:24:02.977154+00:00"
 }

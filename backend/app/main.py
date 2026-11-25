@@ -106,7 +106,8 @@ def _remote_prepare_terms(sync, task_id, session, limiter, request, answers):
         direction = direction.get('direction', '')
     mode = str((answers.get('mode') or {}).get('mode', 'A'))
     previous = sync.get_latest_terms_event(session.id, task_id)
-    if previous is not None and previous.payload.get('direction') == direction and previous.payload.get('mode') == mode:
+    previous_payload = previous.get('payload', {}) if isinstance(previous, dict) else {}
+    if previous_payload.get('direction') == direction and previous_payload.get('mode') == mode:
         return
     candidate_hash = hashlib.sha256(
         json.dumps(

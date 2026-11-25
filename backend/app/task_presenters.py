@@ -79,7 +79,10 @@ def _terms_card(db, task, version, answers=None, candidate_event=None):
         ).order_by(TaskEvent.id.desc()).first()
     else:
         event = candidate_event
-    candidates = event.payload.get('options', []) if event is not None else []
+    payload = {}
+    if event is not None:
+        payload = event.get('payload', {}) if isinstance(event, dict) else event.payload
+    candidates = payload.get('options', [])
     if event is None and version is not None:
         candidates = version.content.get('cards', {}).get('candidate_terms', [])
     return {

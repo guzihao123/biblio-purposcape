@@ -1,6 +1,6 @@
 {
   "scenario": "graph-error",
-  "task_id": "43b03e94-02af-4b9a-9df8-e39c2af3ceca",
+  "task_id": "9001a502-0ce4-44f9-b14a-8274c5f56fe0",
   "states": [
     "searching",
     "error"
@@ -10,7 +10,7 @@
       "worker_class": "ProtectedSimpleWorker",
       "burst": true,
       "job_ids": [
-        "55cc0895-b521-4003-a9f0-f0c8e73ef111"
+        "df06b513-3cd5-45f8-bd39-9cebf868c007"
       ],
       "job_statuses": [
         "failed"
@@ -20,7 +20,7 @@
       ],
       "queue_count_after": 0,
       "log_file": "graph-error-search-worker.log",
-      "log_text": "2026-11-25 07:56:39,236 rq.worker INFO Worker offline-e2e-graph-error-search-847c2857: started with PID 13241, version 2.8.0\n2026-11-25 07:56:39,236 rq.worker INFO Worker offline-e2e-graph-error-search-847c2857: subscribing to channel rq:pubsub:offline-e2e-graph-error-search-847c2857\n2026-11-25 07:56:39,236 rq.worker INFO *** Listening on landscape...\n2026-11-25 07:56:39,237 rq.worker INFO Worker offline-e2e-graph-error-search-847c2857: cleaning registries for queue: landscape\n2026-11-25 07:56:39,237 rq.worker INFO landscape: app.queueing.run_stage('43b03e94-02af-4b9a-9df8-e39c2af3ceca', 'search') (55cc0895-b521-4003-a9f0-f0c8e73ef111)\n2026-11-25 07:56:39,254 rq.worker ERROR Worker offline-e2e-graph-error-search-847c2857: job 55cc0895-b521-4003-a9f0-f0c8e73ef111: exception raised while executing (app.queueing.run_stage)\nTraceback (most recent call last):\n  File \"[REDACTED_PATH]\", line 1522, in perform_job\n    return_value = job.perform()\n  File \"[REDACTED_PATH]\", line 1342, in perform\n    self._result = self._execute()\n  File \"[REDACTED_PATH]\", line 1402, in _execute\n    result = self.func(*self.args, **self.kwargs)\n  File \"[REDACTED_PATH]\", line 386, in run_stage\n    raise public_error from None\napp.queueing.StageExecutionError: 任务执行失败，请稍后重试。\n\n2026-11-25 07:56:39,256 rq.worker INFO Worker offline-e2e-graph-error-search-847c2857: done, quitting\n2026-11-25 07:56:39,256 rq.worker INFO Worker offline-e2e-graph-error-search-847c2857: unsubscribing from channel rq:pubsub:offline-e2e-graph-error-search-847c2857\n"
+      "log_text": "2026-11-25 08:24:03,049 rq.worker INFO Worker offline-e2e-graph-error-search-952a4fdf: started with PID 18275, version 2.8.0\n2026-11-25 08:24:03,049 rq.worker INFO Worker offline-e2e-graph-error-search-952a4fdf: subscribing to channel rq:pubsub:offline-e2e-graph-error-search-952a4fdf\n2026-11-25 08:24:03,049 rq.worker INFO *** Listening on landscape...\n2026-11-25 08:24:03,050 rq.worker INFO Worker offline-e2e-graph-error-search-952a4fdf: cleaning registries for queue: landscape\n2026-11-25 08:24:03,051 rq.worker INFO landscape: app.queueing.run_stage('9001a502-0ce4-44f9-b14a-8274c5f56fe0', 'search') (df06b513-3cd5-45f8-bd39-9cebf868c007)\n2026-11-25 08:24:03,070 rq.worker ERROR Worker offline-e2e-graph-error-search-952a4fdf: job df06b513-3cd5-45f8-bd39-9cebf868c007: exception raised while executing (app.queueing.run_stage)\nTraceback (most recent call last):\n  File \"[REDACTED_PATH]\", line 1522, in perform_job\n    return_value = job.perform()\n  File \"[REDACTED_PATH]\", line 1342, in perform\n    self._result = self._execute()\n  File \"[REDACTED_PATH]\", line 1402, in _execute\n    result = self.func(*self.args, **self.kwargs)\n  File \"[REDACTED_PATH]\", line 386, in run_stage\n    raise public_error from None\napp.queueing.StageExecutionError: 任务执行失败，请稍后重试。\n\n2026-11-25 08:24:03,072 rq.worker INFO Worker offline-e2e-graph-error-search-952a4fdf: done, quitting\n2026-11-25 08:24:03,072 rq.worker INFO Worker offline-e2e-graph-error-search-952a4fdf: unsubscribing from channel rq:pubsub:offline-e2e-graph-error-search-952a4fdf\n"
     }
   },
   "database": {
@@ -28,7 +28,7 @@
     "next_card": null,
     "jobs": [
       {
-        "id": "036fc42e-638a-46a1-8ab2-3ff31b6728ed",
+        "id": "e99e7f3a-f167-47a4-aa6e-66272049faa8",
         "kind": "search",
         "status": "failed",
         "answer_id": 4
@@ -57,7 +57,7 @@
         "card_id": "years",
         "result_state": "searching",
         "next_card": null,
-        "job_id": "036fc42e-638a-46a1-8ab2-3ff31b6728ed"
+        "job_id": "e99e7f3a-f167-47a4-aa6e-66272049faa8"
       }
     ],
     "events": [
@@ -74,24 +74,24 @@
         "kind": "queued",
         "payload": {
           "stage": "search",
-          "input_hash": "b55f1ba8bacb85ee4bbcf65c61e88b47a7bc03dfa91b7b373d3fdbed36d2eb5f",
-          "timestamp": "2026-11-24T23:56:39.229199+00:00"
+          "input_hash": "c2bb226fa84a774f362095af25ed6fc4db61ab846605346c57d8348c664f93b0",
+          "timestamp": "2026-11-25T00:24:03.039898+00:00"
         }
       },
       {
         "kind": "started",
         "payload": {
           "stage": "search",
-          "input_hash": "b55f1ba8bacb85ee4bbcf65c61e88b47a7bc03dfa91b7b373d3fdbed36d2eb5f",
-          "timestamp": "2026-11-24T23:56:39.239627+00:00"
+          "input_hash": "c2bb226fa84a774f362095af25ed6fc4db61ab846605346c57d8348c664f93b0",
+          "timestamp": "2026-11-25T00:24:03.053168+00:00"
         }
       },
       {
         "kind": "failed",
         "payload": {
           "stage": "search",
-          "input_hash": "b55f1ba8bacb85ee4bbcf65c61e88b47a7bc03dfa91b7b373d3fdbed36d2eb5f",
-          "timestamp": "2026-11-24T23:56:39.249292+00:00",
+          "input_hash": "c2bb226fa84a774f362095af25ed6fc4db61ab846605346c57d8348c664f93b0",
+          "timestamp": "2026-11-25T00:24:03.065320+00:00",
           "message": "任务执行失败，请稍后重试。",
           "retryable": true,
           "retry_action": {
@@ -104,7 +104,7 @@
     "progress": {
       "stage": "search",
       "message": "任务执行失败，请稍后重试。",
-      "input_hash": "b55f1ba8bacb85ee4bbcf65c61e88b47a7bc03dfa91b7b373d3fdbed36d2eb5f",
+      "input_hash": "c2bb226fa84a774f362095af25ed6fc4db61ab846605346c57d8348c664f93b0",
       "checkpoint": null,
       "traceback": "Traceback (most recent call last):\n  File \"[REDACTED_PATH]\", line 316, in run_stage\n    result = service(task, stage_input) or {}\n  File \"[REDACTED_PATH]\", line 428, in search_stage\n    graph_result = self.graph_builder(\n  File \"[REDACTED_PATH]\", line 276, in _default_graph_builder\n    return build_graph_artifacts(task_dir, topic or '文献研究', pools.get('limited', pools.get('unlimited', {})).get('count', 0))\n  File \"[REDACTED_PATH]\", line 620, in fail_renderer\n    raise RuntimeError('OFFLINE_FORCED_DASHBOARD_RENDERER_FAILURE')\nRuntimeError: OFFLINE_FORCED_DASHBOARD_RENDERER_FAILURE\n"
     }
@@ -174,85 +174,85 @@
   ],
   "artifacts": [
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/analysis.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/analysis.json",
       "size": 5153,
       "sha256": "5082973773a318ba4384269bfa2fae71c2d77bb77e75e4eb7f9baaa64dfcabcb"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/dashboard_data.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/dashboard_data.json",
       "size": 26190,
       "sha256": "2a22251b3c89c65050cb66511133a5465198379398898d3c24623bb8ad9d265c"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/graph_evidence.md",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/graph_evidence.md",
       "size": 692,
       "sha256": "ff17683fed11f71e3edec017c7dcd708cc9b8b36be262d3df324dd33ddadf47c"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/openalex_limited_selected.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/openalex_limited_selected.json",
       "size": 1475,
       "sha256": "a1fd9c4202396a75cb908530f4a6ee141145286c4b83c3684fa505005741e320"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/openalex_unlimited_selected.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/openalex_unlimited_selected.json",
       "size": 2136,
       "sha256": "a277fdfe70eebdb37a87a4b4b1e97a4dee96ec15bb204a7c1ebc0b40bad6df8d"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/papers.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/papers.json",
       "size": 1592,
       "sha256": "4c198b0a7dda012cebe0a5268bcffefa4a71c97b8f61f902b5c4762d392978e9"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/papers_all.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/papers_all.json",
       "size": 2255,
       "sha256": "7298b9ee13484a3bc90de732c2360f38689f6c0ec4c543dfebef41b9bda0feb1"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/relations.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/relations.json",
       "size": 2859,
       "sha256": "663db68fe8fcefe6d2b312609fd5e53fa5ab3fb9260f35fb4f80b0650d8c7db3"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/relations_evidence.md",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/relations_evidence.md",
       "size": 619,
       "sha256": "82736255b0385b957662aa785a2503431d88e3e72ff013f7a2468b0291a71d82"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/search_log.md",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/search_log.md",
       "size": 235,
       "sha256": "d49a6b5d8c50dd65226fc034157d28e3d90acffeab9ef53b78ea94583568631e"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/stats.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/stats.json",
       "size": 1512,
       "sha256": "c279a266059b0fddf99447d0a269d866c05776168b49fbf9c2e2712d4efbea8a"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/stats_series_1.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/stats_series_1.json",
       "size": 143,
       "sha256": "734ff565c1f893bf3babcc310c8f10ce4d168be5d47d40d10a0268b5cff2faff"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/stats_series_2.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/stats_series_2.json",
       "size": 91,
       "sha256": "da7e2e08da7cb4b40328214ba3651c3adea849b5e114e7377cb8b578f38a4e85"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/stats_topics_all.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/stats_topics_all.json",
       "size": 298,
       "sha256": "9092469a041311ae58512be3e867a952d9dfd634858b7d68faeb2b3d41c5a16c"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/stats_topics_limited.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/stats_topics_limited.json",
       "size": 319,
       "sha256": "c4569963aaf8fa9ef70523bf5905756388bbf4af7b2a3fc0aa4dbac211dc4517"
     },
     {
-      "path": "43b03e94-02af-4b9a-9df8-e39c2af3ceca/stats_year.json",
+      "path": "9001a502-0ce4-44f9-b14a-8274c5f56fe0/stats_year.json",
       "size": 195,
       "sha256": "c87e16b99011ea5c7e3514bd42ea8f776cb7ed3baadde07d0a77ba7765af98af"
     }
   ],
-  "recorded_at": "2026-11-24T23:56:39.262000+00:00"
+  "recorded_at": "2026-11-25T00:24:03.077988+00:00"
 }

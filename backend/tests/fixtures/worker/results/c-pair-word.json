@@ -1,6 +1,6 @@
 {
   "scenario": "c-pair-word",
-  "task_id": "eb428d28-6ffb-4486-816c-a521a1cb4007",
+  "task_id": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238",
   "states": [
     "searching",
     "dashboard_ready",
@@ -13,7 +13,7 @@
       "worker_class": "ProtectedSimpleWorker",
       "burst": true,
       "job_ids": [
-        "2efc941a-751d-43d0-ab00-116c93387b6a"
+        "f23a72b4-f323-40c3-8180-5b3599c6d1bb"
       ],
       "job_statuses": [
         "finished"
@@ -23,13 +23,13 @@
       ],
       "queue_count_after": 0,
       "log_file": "c-pair-word-search-worker.log",
-      "log_text": "2026-11-25 07:56:37,282 rq.worker INFO Worker offline-e2e-c-pair-word-search-217d681b: started with PID 13241, version 2.8.0\n2026-11-25 07:56:37,282 rq.worker INFO Worker offline-e2e-c-pair-word-search-217d681b: subscribing to channel rq:pubsub:offline-e2e-c-pair-word-search-217d681b\n2026-11-25 07:56:37,283 rq.worker INFO *** Listening on landscape...\n2026-11-25 07:56:37,283 rq.worker INFO Worker offline-e2e-c-pair-word-search-217d681b: cleaning registries for queue: landscape\n2026-11-25 07:56:37,284 rq.worker INFO landscape: app.queueing.run_stage('eb428d28-6ffb-4486-816c-a521a1cb4007', 'search') (2efc941a-751d-43d0-ab00-116c93387b6a)\n2026-11-25 07:56:37,547 rq.worker INFO Successfully completed app.queueing.run_stage('eb428d28-6ffb-4486-816c-a521a1cb4007', 'search') job in 0:00:00.260919s on worker offline-e2e-c-pair-word-search-217d681b\n2026-11-25 07:56:37,547 rq.worker INFO landscape: Job OK (2efc941a-751d-43d0-ab00-116c93387b6a)\n2026-11-25 07:56:37,547 rq.worker INFO Result is kept for 500 seconds\n2026-11-25 07:56:37,548 rq.worker INFO Worker offline-e2e-c-pair-word-search-217d681b: done, quitting\n2026-11-25 07:56:37,548 rq.worker INFO Worker offline-e2e-c-pair-word-search-217d681b: unsubscribing from channel rq:pubsub:offline-e2e-c-pair-word-search-217d681b\n"
+      "log_text": "2026-11-25 08:24:00,839 rq.worker INFO Worker offline-e2e-c-pair-word-search-03eac07d: started with PID 18275, version 2.8.0\n2026-11-25 08:24:00,839 rq.worker INFO Worker offline-e2e-c-pair-word-search-03eac07d: subscribing to channel rq:pubsub:offline-e2e-c-pair-word-search-03eac07d\n2026-11-25 08:24:00,839 rq.worker INFO *** Listening on landscape...\n2026-11-25 08:24:00,840 rq.worker INFO Worker offline-e2e-c-pair-word-search-03eac07d: cleaning registries for queue: landscape\n2026-11-25 08:24:00,840 rq.worker INFO landscape: app.queueing.run_stage('f45bc8d1-3b9b-48ef-ba06-c2b33f27d238', 'search') (f23a72b4-f323-40c3-8180-5b3599c6d1bb)\n2026-11-25 08:24:01,107 rq.worker INFO Successfully completed app.queueing.run_stage('f45bc8d1-3b9b-48ef-ba06-c2b33f27d238', 'search') job in 0:00:00.264448s on worker offline-e2e-c-pair-word-search-03eac07d\n2026-11-25 08:24:01,107 rq.worker INFO landscape: Job OK (f23a72b4-f323-40c3-8180-5b3599c6d1bb)\n2026-11-25 08:24:01,107 rq.worker INFO Result is kept for 500 seconds\n2026-11-25 08:24:01,108 rq.worker INFO Worker offline-e2e-c-pair-word-search-03eac07d: done, quitting\n2026-11-25 08:24:01,108 rq.worker INFO Worker offline-e2e-c-pair-word-search-03eac07d: unsubscribing from channel rq:pubsub:offline-e2e-c-pair-word-search-03eac07d\n"
     },
     "generate": {
       "worker_class": "ProtectedSimpleWorker",
       "burst": true,
       "job_ids": [
-        "b4f3e65e-ed81-4e54-8896-bd93ec5d9e32"
+        "df657974-b2bc-48d0-8c70-7cc9cc39d581"
       ],
       "job_statuses": [
         "finished"
@@ -39,7 +39,7 @@
       ],
       "queue_count_after": 0,
       "log_file": "c-pair-word-generate-worker.log",
-      "log_text": "2026-11-25 07:56:37,565 rq.worker INFO Worker offline-e2e-c-pair-word-generate-304da2b4: started with PID 13241, version 2.8.0\n2026-11-25 07:56:37,566 rq.worker INFO Worker offline-e2e-c-pair-word-generate-304da2b4: subscribing to channel rq:pubsub:offline-e2e-c-pair-word-generate-304da2b4\n2026-11-25 07:56:37,566 rq.worker INFO *** Listening on landscape...\n2026-11-25 07:56:37,566 rq.worker INFO Worker offline-e2e-c-pair-word-generate-304da2b4: cleaning registries for queue: landscape\n2026-11-25 07:56:37,567 rq.worker INFO landscape: app.queueing.run_stage('eb428d28-6ffb-4486-816c-a521a1cb4007', 'generate') (b4f3e65e-ed81-4e54-8896-bd93ec5d9e32)\n2026-11-25 07:56:37,891 rq.worker INFO Successfully completed app.queueing.run_stage('eb428d28-6ffb-4486-816c-a521a1cb4007', 'generate') job in 0:00:00.322063s on worker offline-e2e-c-pair-word-generate-304da2b4\n2026-11-25 07:56:37,891 rq.worker INFO landscape: Job OK (b4f3e65e-ed81-4e54-8896-bd93ec5d9e32)\n2026-11-25 07:56:37,891 rq.worker INFO Result is kept for 500 seconds\n2026-11-25 07:56:37,892 rq.worker INFO Worker offline-e2e-c-pair-word-generate-304da2b4: done, quitting\n2026-11-25 07:56:37,892 rq.worker INFO Worker offline-e2e-c-pair-word-generate-304da2b4: unsubscribing from channel rq:pubsub:offline-e2e-c-pair-word-generate-304da2b4\n"
+      "log_text": "2026-11-25 08:24:01,126 rq.worker INFO Worker offline-e2e-c-pair-word-generate-1703a943: started with PID 18275, version 2.8.0\n2026-11-25 08:24:01,126 rq.worker INFO Worker offline-e2e-c-pair-word-generate-1703a943: subscribing to channel rq:pubsub:offline-e2e-c-pair-word-generate-1703a943\n2026-11-25 08:24:01,126 rq.worker INFO *** Listening on landscape...\n2026-11-25 08:24:01,126 rq.worker INFO Worker offline-e2e-c-pair-word-generate-1703a943: cleaning registries for queue: landscape\n2026-11-25 08:24:01,127 rq.worker INFO landscape: app.queueing.run_stage('f45bc8d1-3b9b-48ef-ba06-c2b33f27d238', 'generate') (df657974-b2bc-48d0-8c70-7cc9cc39d581)\n2026-11-25 08:24:01,461 rq.worker INFO Successfully completed app.queueing.run_stage('f45bc8d1-3b9b-48ef-ba06-c2b33f27d238', 'generate') job in 0:00:00.331953s on worker offline-e2e-c-pair-word-generate-1703a943\n2026-11-25 08:24:01,461 rq.worker INFO landscape: Job OK (df657974-b2bc-48d0-8c70-7cc9cc39d581)\n2026-11-25 08:24:01,461 rq.worker INFO Result is kept for 500 seconds\n2026-11-25 08:24:01,462 rq.worker INFO Worker offline-e2e-c-pair-word-generate-1703a943: done, quitting\n2026-11-25 08:24:01,462 rq.worker INFO Worker offline-e2e-c-pair-word-generate-1703a943: unsubscribing from channel rq:pubsub:offline-e2e-c-pair-word-generate-1703a943\n"
     }
   },
   "checkpoints": {
@@ -49,8 +49,8 @@
       "unlimited_count": 3,
       "graph_artifacts": 6,
       "storage_synced": 0,
-      "input_hash": "36928549ccaa78ea7c97c9cef036ae4fe332fc7f684ba2eb8c8faf0a375f2839",
-      "timestamp": "2026-11-24T23:56:37.543153+00:00"
+      "input_hash": "b4593e2a02d520ecb8d1b9a944e6aaf195dee8a4cbecb15888d50330081fbbb2",
+      "timestamp": "2026-11-25T00:24:01.103186+00:00"
     },
     "generate": {
       "stage": "generate",
@@ -65,8 +65,8 @@
         "initial_duplicates": 0,
         "remaining_duplicates": 0
       },
-      "input_hash": "e646addaba913d8dff50df42377f604d83f66463015a985151dec87aed42c54c",
-      "timestamp": "2026-11-24T23:56:37.887688+00:00"
+      "input_hash": "6dd3b99ae3b9ec3172051b5a56145df4392b23e01e4186fca6293917bd76903d",
+      "timestamp": "2026-11-25T00:24:01.458048+00:00"
     }
   },
   "database": {
@@ -74,13 +74,13 @@
     "next_card": null,
     "jobs": [
       {
-        "id": "89a118bc-aac1-4648-9708-059f42bea881",
+        "id": "bcc96a93-941f-481d-88e8-1944894d171b",
         "kind": "generate",
         "status": "completed",
         "answer_id": 6
       },
       {
-        "id": "3bd26db4-99e2-465e-b8cc-daa131b83c05",
+        "id": "3cf46cb6-4ebf-4bcd-af86-85954764c9cb",
         "kind": "search",
         "status": "completed",
         "answer_id": 4
@@ -109,7 +109,7 @@
         "card_id": "years",
         "result_state": "searching",
         "next_card": null,
-        "job_id": "3bd26db4-99e2-465e-b8cc-daa131b83c05"
+        "job_id": "3cf46cb6-4ebf-4bcd-af86-85954764c9cb"
       },
       {
         "card_id": "adjustment",
@@ -121,7 +121,7 @@
         "card_id": "delivery",
         "result_state": "generating",
         "next_card": null,
-        "job_id": "89a118bc-aac1-4648-9708-059f42bea881"
+        "job_id": "bcc96a93-941f-481d-88e8-1944894d171b"
       }
     ],
     "events": [
@@ -138,16 +138,16 @@
         "kind": "queued",
         "payload": {
           "stage": "search",
-          "input_hash": "36928549ccaa78ea7c97c9cef036ae4fe332fc7f684ba2eb8c8faf0a375f2839",
-          "timestamp": "2026-11-24T23:56:37.274783+00:00"
+          "input_hash": "b4593e2a02d520ecb8d1b9a944e6aaf195dee8a4cbecb15888d50330081fbbb2",
+          "timestamp": "2026-11-25T00:24:00.832294+00:00"
         }
       },
       {
         "kind": "started",
         "payload": {
           "stage": "search",
-          "input_hash": "36928549ccaa78ea7c97c9cef036ae4fe332fc7f684ba2eb8c8faf0a375f2839",
-          "timestamp": "2026-11-24T23:56:37.286362+00:00"
+          "input_hash": "b4593e2a02d520ecb8d1b9a944e6aaf195dee8a4cbecb15888d50330081fbbb2",
+          "timestamp": "2026-11-25T00:24:00.842780+00:00"
         }
       },
       {
@@ -158,16 +158,16 @@
           "unlimited_count": 3,
           "graph_artifacts": 6,
           "storage_synced": 0,
-          "input_hash": "36928549ccaa78ea7c97c9cef036ae4fe332fc7f684ba2eb8c8faf0a375f2839",
-          "timestamp": "2026-11-24T23:56:37.543153+00:00"
+          "input_hash": "b4593e2a02d520ecb8d1b9a944e6aaf195dee8a4cbecb15888d50330081fbbb2",
+          "timestamp": "2026-11-25T00:24:01.103186+00:00"
         }
       },
       {
         "kind": "completed",
         "payload": {
           "stage": "search",
-          "input_hash": "36928549ccaa78ea7c97c9cef036ae4fe332fc7f684ba2eb8c8faf0a375f2839",
-          "timestamp": "2026-11-24T23:56:37.545240+00:00",
+          "input_hash": "b4593e2a02d520ecb8d1b9a944e6aaf195dee8a4cbecb15888d50330081fbbb2",
+          "timestamp": "2026-11-25T00:24:01.105280+00:00",
           "message": "双范围检索、分析与七类图谱已生成"
         }
       },
@@ -183,16 +183,16 @@
         "kind": "queued",
         "payload": {
           "stage": "generate",
-          "input_hash": "e646addaba913d8dff50df42377f604d83f66463015a985151dec87aed42c54c",
-          "timestamp": "2026-11-24T23:56:37.560613+00:00"
+          "input_hash": "6dd3b99ae3b9ec3172051b5a56145df4392b23e01e4186fca6293917bd76903d",
+          "timestamp": "2026-11-25T00:24:01.121042+00:00"
         }
       },
       {
         "kind": "started",
         "payload": {
           "stage": "generate",
-          "input_hash": "e646addaba913d8dff50df42377f604d83f66463015a985151dec87aed42c54c",
-          "timestamp": "2026-11-24T23:56:37.569075+00:00"
+          "input_hash": "6dd3b99ae3b9ec3172051b5a56145df4392b23e01e4186fca6293917bd76903d",
+          "timestamp": "2026-11-25T00:24:01.129498+00:00"
         }
       },
       {
@@ -210,16 +210,16 @@
             "initial_duplicates": 0,
             "remaining_duplicates": 0
           },
-          "input_hash": "e646addaba913d8dff50df42377f604d83f66463015a985151dec87aed42c54c",
-          "timestamp": "2026-11-24T23:56:37.887688+00:00"
+          "input_hash": "6dd3b99ae3b9ec3172051b5a56145df4392b23e01e4186fca6293917bd76903d",
+          "timestamp": "2026-11-25T00:24:01.458048+00:00"
         }
       },
       {
         "kind": "completed",
         "payload": {
           "stage": "generate",
-          "input_hash": "e646addaba913d8dff50df42377f604d83f66463015a985151dec87aed42c54c",
-          "timestamp": "2026-11-24T23:56:37.889327+00:00",
+          "input_hash": "6dd3b99ae3b9ec3172051b5a56145df4392b23e01e4186fca6293917bd76903d",
+          "timestamp": "2026-11-25T00:24:01.459527+00:00",
           "message": "C1 与 C2 已分别生成并复核，真实衔接门禁通过，合并交付已完成"
         }
       }
@@ -227,7 +227,7 @@
     "progress": {
       "stage": "generate",
       "message": "C1 与 C2 已分别生成并复核，真实衔接门禁通过，合并交付已完成",
-      "input_hash": "e646addaba913d8dff50df42377f604d83f66463015a985151dec87aed42c54c",
+      "input_hash": "6dd3b99ae3b9ec3172051b5a56145df4392b23e01e4186fca6293917bd76903d",
       "checkpoint": {
         "stage": "generate",
         "clean": true,
@@ -241,8 +241,8 @@
           "initial_duplicates": 0,
           "remaining_duplicates": 0
         },
-        "input_hash": "e646addaba913d8dff50df42377f604d83f66463015a985151dec87aed42c54c",
-        "timestamp": "2026-11-24T23:56:37.887688+00:00"
+        "input_hash": "6dd3b99ae3b9ec3172051b5a56145df4392b23e01e4186fca6293917bd76903d",
+        "timestamp": "2026-11-25T00:24:01.458048+00:00"
       },
       "traceback": null
     }
@@ -354,371 +354,371 @@
   },
   "linkage": {
     "acceptance_linkage_returncode": 0,
-    "acceptance_linkage_report": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/worker_linkage_verify_report.txt",
+    "acceptance_linkage_report": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/worker_linkage_verify_report.txt",
     "acceptance_linkage_report_text": "交付前脚本复核报告 verify_report.txt（预置脚本 scripts/verify_delivery.py）\n交付正文: C2_文献综述.md ｜ 论文池: papers.json (2篇) ｜ 台账: 2条 ｜ 字数区间: 800-1200\n============================================================\n[PASS] ①证据等级：台账 2 条逐篇核对 evidence_level；全部一致\n[PASS] ③摘要通道：2/2 条摘要原句逐字命中（默认必过）\n[PASS] ③全文通道：0/0 条全文原句在指定页/节逐字命中\n[PASS] ②B级据摘要标注：含B级引用论断句 11 个，均带据摘要/部分据摘要\n[PASS] ④数字绑定台账：绑定台账原句 0 个；待人工确认 0 个（须交付说明披露并逐条人工判定）\n[PASS] ⑤字数：正文 CJK 汉字+英文词=1187（区间800-1200，不含参考文献）\n[PASS] ⑥参考文献完整性：正文引用2编号均有同号条目；条目2条均挂ref_no；无撤稿；交付序号按首次出现连续且已映射ref_no；通过\n[PASS] ⑦无摘要不得被正文引用：正文引用2编号均有摘要；池内无摘要[]仅可进参考文献；通过\n[PASS] ⑧模式形态(--mode C2)：有 正文引用与证据台账均不得为空；有 正文引用均有台账覆盖（缺 []）；有 参考文献列表不得为空；有 独立综述构件「研究主题与检索范围」；有 独立综述构件「关键词和检索策略」；有 独立综述构件「代表性文献清单」；有 独立综述构件「文献分类框架」；有 独立综述构件「完整综述文本」；有 独立综述构件「未来研究方向」；有 七维分类「理论基础」位于分类框架内；有 七维分类「研究对象」位于分类框架内；有 七维分类「研究问题」位于分类框架内；有 七维分类「技术方法」位于分类框架内；有 七维分类「数据与实验」位于分类框架内；有 七维分类「研究结论」位于分类框架内；有 七维分类「研究局限」位于分类框架内；有 不同研究方向的综合分析；有 完整综述正文非空且含引用；有 完整综述纳入研究空白及池内 [n] 证据；有 主要技术路线横向比较；有 现有研究不足/局限；有 六列文献比较表（精确表头且至少一行完整数据）；有 五列研究空白分析表（精确表头、完整数据行及池内 [n] 证据）；有 C2 独立文献综述而非讨论；有 C1+C2 衔接与重复检查；有 C1+C2 空白点一致性检查；有 C1+C2 重复检查与处理；有 C1+C2 空白点交叉指向；有 C1+C2 无重复段落（实得 0 段）\n============================================================\n④ 数字→台账原句 绑定明细:\n③ 全文通道明细（双轨证据链，2026-11-22 增）:\n============================================================\n总结论: 全部 9 项无失败\n",
     "production_c2_report_executed_linkage_gate": true
   },
   "artifacts": [
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/C1_引言.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/C1_引言.md",
       "size": 3676,
       "sha256": "b8e60a34de9db66e2d593f8a4792e44a55e4d69948b88d598bc3da6c40e8445c"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/C2_文献综述.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/C2_文献综述.md",
       "size": 4525,
       "sha256": "780340d791c13499ec9e9a9f2f28de6a62728a111dc588b23e813482b2af1ee1"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/analysis.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/analysis.json",
       "size": 5153,
       "sha256": "5082973773a318ba4384269bfa2fae71c2d77bb77e75e4eb7f9baaa64dfcabcb"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/citation_map.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/citation_map.json",
       "size": 276,
-      "sha256": "ba04c0c7fc3e8b512302b710273bcfd59c3b3843e6943c453f2acd7685a3d74c"
+      "sha256": "46907ca24091248654c378206054dbdd7f13c38bd91cddcd851967085e0ea1b2"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/components.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/components.md",
       "size": 6791,
       "sha256": "173ae96e87547d83f22ca3afd88a7139816e58505c9866951a55839b54b590f5"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/conformance.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/conformance.md",
       "size": 375,
       "sha256": "b410e4109508c47fad00ea46a0d0f02fa5bd1ccd86ecd3df7ed816483dd394fb"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/dashboard_data.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/dashboard_data.json",
       "size": 26194,
       "sha256": "5a979323f0e504f8dc5d211599545fb76e8209d1eee1b3ccb8757ce553e2ae55"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/desktop.html",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/desktop.html",
       "size": 1110900,
       "sha256": "106881669a792d3c62c2261cd1f0d92035e58bc86a234c8aea53891abd3b2bf7"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/evidence_ledger.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/evidence_ledger.md",
       "size": 683,
       "sha256": "49e2fc2845a85a0285f8568e8b5a5ff7ec838a56959bdf9edf34496cadfaf665"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/graph_evidence.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/graph_evidence.md",
       "size": 692,
       "sha256": "ff17683fed11f71e3edec017c7dcd708cc9b8b36be262d3df324dd33ddadf47c"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/index.html",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/index.html",
       "size": 4959,
       "sha256": "e95572ab1004b33340a1a671df007ebcb8c37cdf20dc3046f72d0887375cf82d"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/linkage_check.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/linkage_check.md",
       "size": 1246,
       "sha256": "5e9c9bce9da637200a1159cd7819043829fc6a4288e64b0f8a2d46835b5a256b"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/mobile.html",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/mobile.html",
       "size": 1085600,
       "sha256": "d6c149d3fba5a0039c83f099b9c71af57043d00ef3c6290efc7726afafbb02d8"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/openalex_limited_selected.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/openalex_limited_selected.json",
       "size": 1475,
       "sha256": "a1fd9c4202396a75cb908530f4a6ee141145286c4b83c3684fa505005741e320"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/openalex_unlimited_selected.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/openalex_unlimited_selected.json",
       "size": 2136,
       "sha256": "a277fdfe70eebdb37a87a4b4b1e97a4dee96ec15bb204a7c1ebc0b40bad6df8d"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/outline.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/outline.md",
       "size": 2250,
       "sha256": "bfd859fcb3341d793708d6ed74235030400b8db2447e992a7b16d6a116d6c273"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/outline_C1.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/outline_C1.md",
       "size": 1217,
       "sha256": "1304939d49c4e0d3d24ca047e34df2c0bf21a9e2c25adef3cc362684fc36ab23"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/outline_C2.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/outline_C2.md",
       "size": 1026,
       "sha256": "7fbe32c744a11b2eda89f35b5718047ef9fa4161ba6b73b5f42f53858dbc8b73"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/papers.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/papers.json",
       "size": 1478,
       "sha256": "9c3d7f2dea413ebf327f113aa3fe98cb845eb99e5b559701f3829807bf14ea42"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/papers_all.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/papers_all.json",
       "size": 2256,
       "sha256": "4c751a77827a263003a7de2ad6e18a9ec78f90d91175ee2a6b73a7118a3e9506"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/references.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/references.md",
       "size": 504,
       "sha256": "252d03f3ff8337d13f65c865a3227a3611c2d49e0c288df820c5777fb624e98f"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/references_check.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/references_check.md",
       "size": 155,
       "sha256": "6ed849d181639bddc71df913f24ce26baa671848a4a14c5cf1abb169e646c130"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/relations.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/relations.json",
       "size": 2859,
       "sha256": "663db68fe8fcefe6d2b312609fd5e53fa5ab3fb9260f35fb4f80b0650d8c7db3"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/relations_evidence.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/relations_evidence.md",
       "size": 619,
       "sha256": "82736255b0385b957662aa785a2503431d88e3e72ff013f7a2468b0291a71d82"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/report.docx",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/report.docx",
       "size": 40059,
-      "sha256": "c217cdd83e85b7455b99e3aab9582f8bb242eaaf5be272f6c5a4a1a44bf16053"
+      "sha256": "586beba154520219c58923e753b9c9203339c5b3590ddbe112370ede325ec4f3"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/sample.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/sample.md",
       "size": 691,
       "sha256": "cdfa4468df15813bf1bd7061e3d3737570cfab6d35e6ea87e3744625e2e76a95"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/sample_C1.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/sample_C1.md",
       "size": 176,
       "sha256": "36f30887d3893eb7245a89a2ea1e03d9d795b99243b7ae0ef60001bc6b03d1ed"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/sample_C2.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/sample_C2.md",
       "size": 508,
       "sha256": "c144b3efd95a08293b7ad0f2ec1fced93cd9b3a0b79f08106ae4497e673437a4"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/search_log.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/search_log.md",
       "size": 235,
       "sha256": "d49a6b5d8c50dd65226fc034157d28e3d90acffeab9ef53b78ea94583568631e"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/stats.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/stats.json",
       "size": 1512,
       "sha256": "c279a266059b0fddf99447d0a269d866c05776168b49fbf9c2e2712d4efbea8a"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/stats_series_1.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/stats_series_1.json",
       "size": 143,
       "sha256": "734ff565c1f893bf3babcc310c8f10ce4d168be5d47d40d10a0268b5cff2faff"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/stats_series_2.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/stats_series_2.json",
       "size": 91,
       "sha256": "da7e2e08da7cb4b40328214ba3651c3adea849b5e114e7377cb8b578f38a4e85"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/stats_topics_all.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/stats_topics_all.json",
       "size": 298,
       "sha256": "9092469a041311ae58512be3e867a952d9dfd634858b7d68faeb2b3d41c5a16c"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/stats_topics_limited.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/stats_topics_limited.json",
       "size": 319,
       "sha256": "c4569963aaf8fa9ef70523bf5905756388bbf4af7b2a3fc0aa4dbac211dc4517"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/stats_year.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/stats_year.json",
       "size": 195,
       "sha256": "c87e16b99011ea5c7e3514bd42ea8f776cb7ed3baadde07d0a77ba7765af98af"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/verify_delivery.py",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/verify_delivery.py",
       "size": 34329,
       "sha256": "6dd22bb7c8bbcd7030fc6ddebf1cd37147b20133f6841a6dd84ba21a84e40f98"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/verify_report.txt",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/verify_report.txt",
       "size": 1351,
       "sha256": "9fd24a86664f3507a248a80d5eb090f310ada62dcdb8ae1f3b43ede8ac7e2855"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/verify_report_C1.txt",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/verify_report_C1.txt",
       "size": 2248,
       "sha256": "4a2ecf189825711c2834cd129ce64ea0c0a100cffa464cad3c97dad99f340430"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/verify_report_C2.txt",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/verify_report_C2.txt",
       "size": 2849,
       "sha256": "ac46c03e76303453ecfdd36bf9ce43c6ad883f86fdf2bdbdac0bc8717cd3eec8"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/文献图谱仪表盘.html",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/文献图谱仪表盘.html",
       "size": 1107616,
       "sha256": "cb1e7d4c12a88773d759d27bbd5c5a5c02b2c2e7ab348e9e98ebd6c8246a8255"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/文献图谱仪表盘.png",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/文献图谱仪表盘.png",
       "size": 455900,
       "sha256": "50db38d8b34f0ac246aae69f6271d71c4a061ec39d2f666eb056192b36fac0f2"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/文献图谱仪表盘.svg",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/文献图谱仪表盘.svg",
       "size": 21361,
       "sha256": "884bcebc777668c031cd35801e705466bfb7e41a5d8f834480b7674648e5e7df"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007/综述初稿.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238/综述初稿.md",
       "size": 7938,
       "sha256": "518d7acf13f278964c9fcffc5ad7bb3008f8e2caffff6d0e2a6aa8e8647397ee"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/C1_引言.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/C1_引言.md",
       "size": 3676,
       "sha256": "b8e60a34de9db66e2d593f8a4792e44a55e4d69948b88d598bc3da6c40e8445c"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/citation_map.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/citation_map.json",
       "size": 270,
-      "sha256": "98e61ce4c2e789c7dd4d193240f3faf549dfa6d81b68a720fe52fb465becff14"
+      "sha256": "415985c5f34196c67d8aa0854c5b087a559520ea7769ca1d766c14e98034eea4"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/components.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/components.md",
       "size": 4204,
       "sha256": "3dc394873a13afd534eb89a860db4d0c4af3a9c698bdb9e497b48b3bbdef6087"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/conformance.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/conformance.md",
       "size": 270,
       "sha256": "5364784353fa8e007b38f93d1a062f2e92848571b8b48fe52a5b735ea2e709cd"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/dialogue.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/dialogue.json",
       "size": 1885,
       "sha256": "e8dad1326ef7e0f4d859d5708e00e652685f261aedbc5063ed54e709238c0834"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/evidence_ledger.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/evidence_ledger.md",
       "size": 341,
       "sha256": "374133474acff394308fc4b88aca680ebdd6c3beb5e9f2e8babe4b0138dc0f5b"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/outline.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/outline.md",
       "size": 1217,
       "sha256": "1304939d49c4e0d3d24ca047e34df2c0bf21a9e2c25adef3cc362684fc36ab23"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/papers.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/papers.json",
       "size": 1478,
       "sha256": "9c3d7f2dea413ebf327f113aa3fe98cb845eb99e5b559701f3829807bf14ea42"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/references.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/references.md",
       "size": 504,
       "sha256": "252d03f3ff8337d13f65c865a3227a3611c2d49e0c288df820c5777fb624e98f"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/references_check.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/references_check.md",
       "size": 155,
       "sha256": "6ed849d181639bddc71df913f24ce26baa671848a4a14c5cf1abb169e646c130"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/sample.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/sample.md",
       "size": 176,
       "sha256": "36f30887d3893eb7245a89a2ea1e03d9d795b99243b7ae0ef60001bc6b03d1ed"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/search_log.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/search_log.md",
       "size": 235,
       "sha256": "d49a6b5d8c50dd65226fc034157d28e3d90acffeab9ef53b78ea94583568631e"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/verify_delivery.py",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/verify_delivery.py",
       "size": 34329,
       "sha256": "6dd22bb7c8bbcd7030fc6ddebf1cd37147b20133f6841a6dd84ba21a84e40f98"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C1/verify_report.txt",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C1/verify_report.txt",
       "size": 2248,
       "sha256": "4a2ecf189825711c2834cd129ce64ea0c0a100cffa464cad3c97dad99f340430"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/C2_文献综述.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/C2_文献综述.md",
       "size": 4525,
       "sha256": "780340d791c13499ec9e9a9f2f28de6a62728a111dc588b23e813482b2af1ee1"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/citation_map.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/citation_map.json",
       "size": 282,
-      "sha256": "81b8f993b08a2d515788a3b1e2f841a4b9d60d4fc47f08cebd4a4dca0e69a6ed"
+      "sha256": "67b1e5b22a32e7d9ab3ab47dd843a0ec20d2c1262b7d626c9aa47e04368b522d"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/components.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/components.md",
       "size": 2011,
       "sha256": "b19cb56c657a93dbe0a53b3015419b63bf778d579c4fa8715f8769c58e118613"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/conformance.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/conformance.md",
       "size": 270,
       "sha256": "92756f94d699d7e1c80e1ec55b277cd22827d4da92d95c2faa9139ae11ec3a33"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/dialogue.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/dialogue.json",
       "size": 1759,
       "sha256": "2cc29a37acd10048afb4d72a2a74fd5bf4205103e86699675c29e8317f57d27d"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/evidence_ledger.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/evidence_ledger.md",
       "size": 341,
       "sha256": "374133474acff394308fc4b88aca680ebdd6c3beb5e9f2e8babe4b0138dc0f5b"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/outline.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/outline.md",
       "size": 1026,
       "sha256": "7fbe32c744a11b2eda89f35b5718047ef9fa4161ba6b73b5f42f53858dbc8b73"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/papers.json",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/papers.json",
       "size": 1478,
       "sha256": "9c3d7f2dea413ebf327f113aa3fe98cb845eb99e5b559701f3829807bf14ea42"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/references.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/references.md",
       "size": 504,
       "sha256": "252d03f3ff8337d13f65c865a3227a3611c2d49e0c288df820c5777fb624e98f"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/references_check.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/references_check.md",
       "size": 155,
       "sha256": "6ed849d181639bddc71df913f24ce26baa671848a4a14c5cf1abb169e646c130"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/sample.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/sample.md",
       "size": 508,
       "sha256": "c144b3efd95a08293b7ad0f2ec1fced93cd9b3a0b79f08106ae4497e673437a4"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/search_log.md",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/search_log.md",
       "size": 235,
       "sha256": "d49a6b5d8c50dd65226fc034157d28e3d90acffeab9ef53b78ea94583568631e"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/verify_delivery.py",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/verify_delivery.py",
       "size": 34329,
       "sha256": "6dd22bb7c8bbcd7030fc6ddebf1cd37147b20133f6841a6dd84ba21a84e40f98"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/verify_report.txt",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/verify_report.txt",
       "size": 2664,
       "sha256": "e80574d6d676b477d7ca3ab1bd11dd57d45a93da8489544ee2564b570bee6115"
     },
     {
-      "path": "eb428d28-6ffb-4486-816c-a521a1cb4007-C2/worker_linkage_verify_report.txt",
+      "path": "f45bc8d1-3b9b-48ef-ba06-c2b33f27d238-C2/worker_linkage_verify_report.txt",
       "size": 2849,
       "sha256": "ac46c03e76303453ecfdd36bf9ce43c6ad883f86fdf2bdbdac0bc8717cd3eec8"
     }
   ],
-  "recorded_at": "2026-11-24T23:56:37.979910+00:00"
+  "recorded_at": "2026-11-25T00:24:01.552602+00:00"
 }
