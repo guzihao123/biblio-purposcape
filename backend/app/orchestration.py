@@ -430,8 +430,12 @@ class Orchestrator:
         import urllib.request
         from urllib.parse import quote
 
+        optional_static = {'文献图谱仪表盘.html', '文献图谱仪表盘.png', '文献图谱仪表盘.svg'}
+
         def upload(path):
             if not path.is_file() or path.stat().st_size > 50_000_000:
+                return 0
+            if path.name in optional_static:
                 return 0
             url = '{}/api/internal/artifacts/{}/{}'.format(
                 origin,

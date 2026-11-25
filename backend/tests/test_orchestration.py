@@ -377,6 +377,71 @@ def test_sync_artifacts_uploads_to_web_origin(tmp_path, monkeypatch):
     assert captured[0].data == b'body'
 
 
+def test_sync_artifacts_skips_optional_static_dashboard_files(tmp_path, monkeypatch):
+    import urllib.request
+
+    from app.orchestration import Orchestrator
+
+    task_dir = tmp_path / 'task-1'
+    task_dir.mkdir()
+    (task_dir / 'report.md').write_text('body', encoding='utf-8')
+    (task_dir / '文献图谱仪表盘.html').write_text('optional', encoding='utf-8')
+    monkeypatch.setenv('WORKER_SHARED_SECRET', 'worker-secret')
+    monkeypatch.setenv('WEB_API_ORIGIN', 'https://web.example')
+    captured = []
+
+    class Response:
+        status = 201
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setattr(urllib.request, 'urlopen', lambda request, timeout=0: captured.append(request) or Response())
+    count = Orchestrator(artifact_root=tmp_path)._sync_artifacts(task_dir)
+
+    assert count == 1
+    assert [request.full_url.rsplit('/', 1)[-1] for request in captured] == ['report.md']
+
+
+def test_sync_artifacts_retries_a_transient_upload_failure(tmp_path, monkeypatch):
+    import urllib.error
+    import urllib.request
+
+    from app.orchestration import Orchestrator
+
+    task_dir = tmp_path / 'task-1'
+    task_dir.mkdir()
+    (task_dir / 'report.md').write_text('body', encoding='utf-8')
+    monkeypatch.setenv('WORKER_SHARED_SECRET', 'worker-secret')
+    monkeypatch.setenv('WEB_API_ORIGIN', 'https://web.example')
+    attempts = []
+
+    class Response:
+        status = 201
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    def urlopen(request, timeout=0):
+        attempts.append(timeout)
+        if len(attempts) == 1:
+            raise urllib.error.URLError('temporary gateway failure')
+        return Response()
+
+    monkeypatch.setattr(urllib.request, 'urlopen', urlopen)
+    count = Orchestrator(artifact_root=tmp_path)._sync_artifacts(task_dir)
+
+    assert count == 1
+    assert len(attempts) == 2
+    assert attempts[0] == 30
+
+
 def test_default_writing_factory_can_enable_thinking(monkeypatch, tmp_path):
     from types import SimpleNamespace
 
