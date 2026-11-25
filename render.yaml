@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: landscape-web
+    name: biblio-purposcape
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
