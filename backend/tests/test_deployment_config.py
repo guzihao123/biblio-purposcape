@@ -187,6 +187,18 @@ def test_sites_storage_client_rejects_lookalike_local_http_origins():
         SitesStorageClient(origin='https://user:pass@site.example', shared_secret='x')
 
 
+def test_postgres_engine_probes_and_recycles_pooled_connections():
+    from app.db import engine_kwargs
+
+    postgres = engine_kwargs('postgresql+psycopg://user:pass@pooler.example/postgres')
+    assert postgres['connect_args'] == {'prepare_threshold': None}
+    assert postgres['pool_pre_ping'] is True
+    assert postgres['pool_recycle'] == 300
+
+    sqlite = engine_kwargs('sqlite:///./test.db')
+    assert sqlite == {'connect_args': {'check_same_thread': False}}
+
+
 def test_sites_storage_client_uploads_fixed_worker_paths_only():
     calls = []
 

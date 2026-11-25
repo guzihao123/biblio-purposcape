@@ -20,15 +20,22 @@ def normalize_database_url(url):
     return url
 
 
+def engine_kwargs(url):
+    if url.startswith('sqlite'):
+        return {'connect_args': {'check_same_thread': False}}
+    if url.startswith('postgresql+psycopg'):
+        return {
+            # Supavisor/pgbouncer pooling cannot safely reuse client-side prepared statements.
+            'connect_args': {'prepare_threshold': None},
+            # Pooled TLS connections can die between checkouts; probe and recycle them.
+            'pool_pre_ping': True,
+            'pool_recycle': 300,
+        }
+    return {}
+
+
 database_url = normalize_database_url(settings.database_url)
-if database_url.startswith('sqlite'):
-    connect_args = {'check_same_thread': False}
-elif database_url.startswith('postgresql+psycopg'):
-    # Supavisor/pgbouncer pooling cannot safely reuse client-side prepared statements.
-    connect_args = {'prepare_threshold': None}
-else:
-    connect_args = {}
-engine = create_engine(database_url, connect_args=connect_args)
+engine = create_engine(database_url, **engine_kwargs(database_url))
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 

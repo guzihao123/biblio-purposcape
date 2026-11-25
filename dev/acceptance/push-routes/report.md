@@ -136,3 +136,16 @@ GIT_SSH_COMMAND='ssh -i <your-key> -o IdentitiesOnly=yes -o ConnectTimeout=8' \
 ## 6. 约束遵守情况
 
 未执行 `git push` / `commit` / `remote` / `config` 写操作；未创建或读取任何私钥、token、keychain 条目内容（仅判断存在性）；SSH 探测使用 `BatchMode` 与 `UserKnownHostsFile=/dev/null`，未写入 known_hosts；未部署、未触发 Render hook；报告内无 secret。唯一新增文件即本报告。
+
+## 复查更新（2026-11-25 13:28 GMT+8）
+
+本节为用户复查后的最新口径，**与上文冲突时以本节为准**；上文保留作为当时探测记录，不再作为部署依据。
+
+- 探测时可用的 `127.0.0.1:49290` **现已关闭**；当时得到的“HTTPS/SSH 已通”不是稳定状态，**不能作为部署路径**。
+- 当前主线环境代理为 `127.0.0.1:55855`，CONNECT 返回 **407（需要认证）**；直连 `github.com` 仍然超时。
+- 稳定可用端点是 **`api.github.com`（直连 200）**。
+- 主线已按 Git Data API 写好推送脚本，dry-run 通过：**15 个提交、29 个文件、约 600KB**，无密钥文件；待 PAT 到位即推，**不需要代理、不改 remote、不 force**。
+- 提交数已从 9 增至 **15**；上文的 9、18 个文件等旧数字作废，不再追。
+- **最终路径**：fine-grained PAT（仅授权该仓库、`Contents: Read and write`）→ 经 `api.github.com` 重放提交 → 校验 ref。classic token 对私有仓库需要 `repo` 权限，**`public_repo` 不够**（上文 §3.1 的 classic scope 口径作废）。
+- SSH 无授权 key 的结论**保持**；GitLab 镜像与 Render Deploy Hook **不作为方案**。
+- 本次仅追加本节，未再探测、未尝试 push。
