@@ -465,6 +465,11 @@ class Orchestrator:
             '.svg': 'image/svg+xml',
         }.get(path.suffix.lower(), 'application/octet-stream')
 
+    def _paper_limit(self, mode):
+        defaults = {'A': 20, 'B': 30, 'C': 20, 'D': 20}
+        key = 'C' if str(mode).startswith('C') else str(mode).upper()
+        return max(1, int(os.environ.get('PAPER_LIMIT_' + key, str(defaults.get(key, 20)))))
+
     def search_stage(self, task, stage_input):
         answers = self._answers(stage_input)
         mode = self._mode(answers)
@@ -504,9 +509,10 @@ class Orchestrator:
                 'relations': relations,
             }
 
-        analysis = {'all': analyze(pools['unlimited']['papers'])}
+        analysis_limit = self._paper_limit(mode)
+        analysis = {'all': analyze(pools['unlimited']['papers'][:analysis_limit])}
         if from_year is not None:
-            analysis['limited'] = analyze(papers)
+            analysis['limited'] = analyze(papers[:analysis_limit])
         (task_dir / 'analysis.json').write_text(json.dumps(analysis, ensure_ascii=False, indent=2), encoding='utf-8')
         report_stage_phase('search', 'stats')
         stats = self.stats_runner(task_dir, terms, from_year)
@@ -764,6 +770,7 @@ class Orchestrator:
         mode = self._mode(answers)
         task_dir = self.artifact_root / task.id
         papers = json.loads((task_dir / 'papers.json').read_text(encoding='utf-8'))['papers']
+        papers = papers[:self._paper_limit(mode if mode != 'C1+C2' else 'C')]
         analysis_document = json.loads((task_dir / 'analysis.json').read_text(encoding='utf-8')) if (task_dir / 'analysis.json').exists() else {}
         analysis = analysis_document.get('limited', analysis_document.get('all', analysis_document))
         version = self._version(task)
