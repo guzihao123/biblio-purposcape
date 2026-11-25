@@ -48,8 +48,11 @@ function routeSuffix(url: URL): string {
   const marker = '/functions/v1/app';
   const markerIndex = path.lastIndexOf(marker);
   if (markerIndex >= 0) path = path.slice(markerIndex + marker.length) || '/';
-  while (path === '/app' || path.startsWith('/app/')) {
-    path = path.slice(4) || '/';
+  // The gateway mounts the function at /app-<deployment suffix>/.
+  while (true) {
+    const prefix = path.match(/^\/app(?:-[A-Za-z0-9]+)?(?=\/|$)/);
+    if (!prefix) break;
+    path = path.slice(prefix[0].length) || '/';
   }
   if (path !== '/') return path;
   const action = url.searchParams.get('action') || 'health';

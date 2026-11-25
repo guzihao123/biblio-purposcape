@@ -96,6 +96,20 @@ test('answer subroute forwards the exact answer JSON and session cookie', async 
   assert.equal(new TextDecoder().decode(upstream.init.body), JSON.stringify({ value: { mode: 'A' } }));
 });
 
+test('deployment-hashed /app-<suffix> gateway prefix is stripped to the same route', async () => {
+  const health = await handler(new Request('https://site.example/app-d01a21111b08775a8a70ee03090b5e562/health'));
+  assert.equal(health.status, 200);
+  assert.deepEqual(await health.json(), { status: 'ok', python_api_configured: true });
+
+  const answer = await handler(new Request(`https://site.example/app-d01a21111b08775a8a70ee03090b5e562/tasks/${TASK_ID}/answers/mode`, {
+    method: 'POST',
+    headers: { cookie: 'invite_session=signed', 'content-type': 'application/json' },
+    body: JSON.stringify({ value: { mode: 'A' } }),
+  }));
+  assert.equal(answer.status, 200);
+  assert.deepEqual(await answer.json(), { next_card: 'terms' });
+});
+
 test('doubled /app gateway prefix is stripped to the same route', async () => {
   const health = await handler(new Request('https://site.example/app/app/health'));
   assert.equal(health.status, 200);
