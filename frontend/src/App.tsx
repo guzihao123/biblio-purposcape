@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { createTask, getTask } from './api'
 import { SceneBackdrop } from './components/SceneBackdrop'
+import { nextQualityMode, qualityModeLabel, readQualityMode, writeQualityMode } from './quality'
+import type { QualityLevel, QualityMode } from './quality'
 import type { TaskView } from './api'
 import { InvitePage } from './pages/InvitePage'
 import { TaskPage } from './pages/TaskPage'
@@ -26,6 +28,8 @@ export function App() {
   const [sessionReady, setSessionReady] = useState(false)
   const [route, setRoute] = useState<Route>(readRoute)
   const [task, setTask] = useState<TaskView | null>(null)
+  const [qualityMode, setQualityMode] = useState<QualityMode>(() => readQualityMode())
+  const [effectiveQuality, setEffectiveQuality] = useState<QualityLevel>('full')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const startingRef = useRef(false)
@@ -38,6 +42,14 @@ export function App() {
   }, [])
 
   const updateTask = useCallback((next: TaskView) => setTask(next), [])
+
+  const cycleQuality = useCallback(() => {
+    setQualityMode((current) => {
+      const next = nextQualityMode(current)
+      writeQualityMode(next)
+      return next
+    })
+  }, [])
 
   const openTask = useCallback(async (id: string) => {
     setError('')
@@ -82,10 +94,14 @@ export function App() {
     if (route.type === 'task' && task?.id !== route.id) void openTask(route.id)
   }, [sessionReady, route, task?.id, startTask, openTask])
 
+  const qualityText = qualityMode === 'auto'
+    ? `自动${effectiveQuality === 'lite' ? '·流畅' : ''}`
+    : qualityModeLabel(qualityMode).replace('优先', '')
+
   if (!sessionReady) {
     return (
       <div className="app-root">
-        <SceneBackdrop />
+        <SceneBackdrop qualityMode={qualityMode} onQualityChange={setEffectiveQuality} />
         <InvitePage onSuccess={() => setSessionReady(true)} />
       </div>
     )
@@ -93,7 +109,7 @@ export function App() {
 
   return (
     <div className="app-root">
-      <SceneBackdrop />
+      <SceneBackdrop qualityMode={qualityMode} onQualityChange={setEffectiveQuality} />
       <nav className="app-nav" aria-label="应用导航">
         <span className="app-nav__brand">研究图谱</span>
         <button type="button" onClick={() => {
@@ -104,6 +120,15 @@ export function App() {
           setRoute({ type: 'admin' })
           window.history.pushState({}, '', '/admin/skill')
         }}>Skill 管理</button>
+        <button
+          type="button"
+          className="app-nav__quality"
+          onClick={cycleQuality}
+          title={`性能模式：${qualityModeLabel(qualityMode)}。自动模式会根据设备与帧率自动降档；点击切换。`}
+          aria-label="性能模式"
+        >
+          性能：{qualityText}
+        </button>
         <button type="button" onClick={() => void startTask(true)}>新建研究</button>
       </nav>
       {error && <p className="app-message app-message--error" role="alert">{error}</p>}

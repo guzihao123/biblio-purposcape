@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react'
 
+import { baselineLevel, shouldDowngrade, shouldRecover } from '../quality'
+import type { QualityLevel, QualityMode } from '../quality'
+
 interface Star {
   x: number
   y: number
@@ -57,11 +60,21 @@ function createDebris(count: number): Debris[] {
   }))
 }
 
-export function SceneBackdrop() {
+interface SceneBackdropProps {
+  qualityMode?: QualityMode
+  onQualityChange?: (level: QualityLevel) => void
+}
+
+export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBackdropProps) {
   const sceneRef = useRef<HTMLDivElement>(null)
   const backCanvasRef = useRef<HTMLCanvasElement>(null)
   const frontCanvasRef = useRef<HTMLCanvasElement>(null)
   const planetRef = useRef<HTMLDivElement>(null)
+  const onQualityChangeRef = useRef(onQualityChange)
+
+  useEffect(() => {
+    onQualityChangeRef.current = onQualityChange
+  }, [onQualityChange])
 
   useEffect(() => {
     const scene = sceneRef.current
@@ -75,10 +88,16 @@ export function SceneBackdrop() {
 
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     const mobileQuery = window.matchMedia('(max-width: 760px)')
+    const navigatorHints = navigator as Navigator & { deviceMemory?: number }
+    const hardwareLevel: QualityLevel = baselineLevel(qualityMode, {
+      deviceMemory: navigatorHints.deviceMemory,
+      hardwareConcurrency: navigatorHints.hardwareConcurrency,
+    })
+    let level: QualityLevel = hardwareLevel
     let width = 0
     let height = 0
-    let stars = createStars(mobileQuery.matches ? 130 : 320)
-    let debris = createDebris(mobileQuery.matches ? 28 : 88)
+    let stars: Star[] = []
+    let debris: Debris[] = []
     let planetGeometry: PlanetGeometry = { centerX: 0, centerY: 0, radius: 0 }
     let animationFrame = 0
     let previousFrame = 0
@@ -88,6 +107,22 @@ export function SceneBackdrop() {
     let targetY = 0
     let scrollDepth = 0
     let targetScroll = 0
+    let downgradeCount = 0
+    let levelChangedAt = performance.now()
+    let lastEvaluation = performance.now()
+    let lastFrameTime = 0
+    let fpsSamples: number[] = []
+    let drawSamples: number[] = []
+
+    const average = (values: number[]) => (
+      values.reduce((sum, value) => sum + value, 0) / Math.max(values.length, 1)
+    )
+
+    const particleCounts = () => (
+      level === 'lite'
+        ? { stars: mobileQuery.matches ? 65 : 160, debris: mobileQuery.matches ? 14 : 44 }
+        : { stars: mobileQuery.matches ? 130 : 320, debris: mobileQuery.matches ? 28 : 88 }
+    )
 
     const drawStar = (star: Star, time: number) => {
       const perspective = 1 / (0.78 + star.depth * 0.9)
@@ -103,7 +138,7 @@ export function SceneBackdrop() {
         ? `rgba(126, 224, 213, ${alpha * 0.8})`
         : `rgba(145, 190, 224, ${alpha})`
       back.shadowColor = 'rgba(101, 177, 221, 0.28)'
-      back.shadowBlur = star.depth < 0.18 ? 5 : 0
+      back.shadowBlur = level === 'full' && star.depth < 0.18 ? 5 : 0
       back.arc(x, y, Math.max(0.35, star.size * perspective), 0, TAU)
       back.fill()
     }
@@ -172,7 +207,8 @@ export function SceneBackdrop() {
       debris.forEach((piece) => drawDebris(piece, sceneTime, true, planetX, planetY))
 
       if (!motionQuery.matches) {
-        for (let index = 0; index < 14; index += 1) {
+        const foregroundStars = level === 'lite' ? 6 : 14
+        for (let index = 0; index < foregroundStars; index += 1) {
           const star = stars[index]
           const depth = 1 - star.depth
           const x = width / 2 + star.x * width * 0.55 + pointerX * 30 * depth
@@ -185,11 +221,55 @@ export function SceneBackdrop() {
       }
     }
 
+    const applyLevel = (next: QualityLevel, time: number) => {
+      if (next === level) return
+      level = next
+      if (next === 'lite') downgradeCount += 1
+      levelChangedAt = time
+      previousFrame = 0
+      fpsSamples = []
+      drawSamples = []
+      scene.dataset.quality = level
+      resize()
+      onQualityChangeRef.current?.(level)
+    }
+
+    const evaluateQuality = (time: number) => {
+      if (qualityMode !== 'auto' || fpsSamples.length < 36) return
+      const fps = 1000 / Math.max(average(fpsSamples), 1)
+      const drawMs = average(drawSamples)
+      if (level === 'full' && time - levelChangedAt > 2500 && shouldDowngrade({ fps, drawMs })) {
+        applyLevel('lite', time)
+        return
+      }
+      if (
+        level === 'lite'
+        && hardwareLevel === 'full'
+        && time - levelChangedAt > 12000
+        && downgradeCount < 2
+        && shouldRecover({ fps, drawMs })
+      ) {
+        applyLevel('full', time)
+      }
+    }
+
     const animate = (time: number) => {
-      const frameInterval = mobileQuery.matches ? 50 : 33
+      if (lastFrameTime > 0) {
+        fpsSamples.push(time - lastFrameTime)
+        if (fpsSamples.length > 90) fpsSamples.shift()
+      }
+      lastFrameTime = time
+      const frameInterval = level === 'lite' ? 66 : mobileQuery.matches ? 50 : 33
       if (time - previousFrame >= frameInterval) {
+        const startedAt = performance.now()
         draw(time)
+        drawSamples.push(performance.now() - startedAt)
+        if (drawSamples.length > 30) drawSamples.shift()
         previousFrame = time
+      }
+      if (time - lastEvaluation >= 2000) {
+        lastEvaluation = time
+        evaluateQuality(time)
       }
       animationFrame = window.requestAnimationFrame(animate)
     }
@@ -205,11 +285,19 @@ export function SceneBackdrop() {
         draw(0)
         return
       }
+      fpsSamples = []
+      drawSamples = []
+      lastFrameTime = 0
+      lastEvaluation = performance.now()
+      levelChangedAt = performance.now()
+      previousFrame = 0
       animationFrame = window.requestAnimationFrame(animate)
     }
 
     const resize = () => {
-      const pixelRatio = Math.min(window.devicePixelRatio || 1, mobileQuery.matches ? 1.25 : 1.5)
+      const pixelRatio = level === 'lite'
+        ? 1
+        : Math.min(window.devicePixelRatio || 1, mobileQuery.matches ? 1.25 : 1.5)
       width = window.innerWidth
       height = window.innerHeight
       for (const [canvas, context] of [[backCanvas, back], [frontCanvas, front]] as const) {
@@ -225,8 +313,10 @@ export function SceneBackdrop() {
         centerY: bounds.top + bounds.height / 2,
         radius: bounds.width / 2,
       }
-      stars = createStars(mobileQuery.matches ? 130 : 320)
-      debris = createDebris(mobileQuery.matches ? 28 : 88)
+      const counts = particleCounts()
+      stars = createStars(counts.stars)
+      debris = createDebris(counts.debris)
+      scene.dataset.quality = level
       draw(performance.now())
     }
 
@@ -251,6 +341,7 @@ export function SceneBackdrop() {
     resize()
     handleScroll()
     start()
+    onQualityChangeRef.current?.(level)
     window.addEventListener('resize', resize)
     window.addEventListener('pointermove', handlePointer, { passive: true })
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -269,7 +360,7 @@ export function SceneBackdrop() {
       motionQuery.removeEventListener('change', start)
       mobileQuery.removeEventListener('change', resize)
     }
-  }, [])
+  }, [qualityMode])
 
   return (
     <div ref={sceneRef} className="scene-backdrop" aria-hidden="true">
