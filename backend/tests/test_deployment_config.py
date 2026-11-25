@@ -135,8 +135,8 @@ def test_frontend_supports_sites_function_entry_without_hardcoding_it():
     assert "'/api'" in vite_config
     assert 'VITE_API_BASE_URL=/api' in read('.env.example')
     function_source = read('sites/functions/index.ts')
-    assert "'/functions/v1/app'" in function_source
-    assert "'/app'" in function_source
+    assert '/functions/v1/app' in function_source
+    assert 'app(?:-[A-Za-z0-9]+)?' in function_source
 
 
 def test_function_routes_complete_flow_and_preserves_binary_download_headers():
