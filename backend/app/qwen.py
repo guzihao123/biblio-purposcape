@@ -48,6 +48,7 @@ class ChatModel:
                 response_format={'type': 'json_object'},
                 # Thinking mode costs ~9x latency on strict JSON extraction; writing opts back in.
                 extra_body={'enable_thinking': self.thinking},
+                timeout=600 if self.thinking else 90,
             ),
             attempts=1 if self.thinking else 3,
         )
