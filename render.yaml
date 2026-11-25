@@ -2,6 +2,7 @@ services:
   - type: web
     name: landscape-web
     runtime: docker
+    plan: free
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
     envVars:
@@ -34,6 +35,7 @@ services:
   - type: worker
     name: landscape-worker
     runtime: docker
+    plan: starter
     dockerfilePath: ./Dockerfile
     dockerCommand: python worker.py
     envVars:
@@ -65,5 +67,5 @@ services:
 
   - type: redis
     name: landscape-redis
-    plan: starter
+    plan: free
     ipAllowList: []
