@@ -285,7 +285,8 @@ def test_default_writing_factory_enables_thinking_on_a_separate_chat_model(tmp_p
 
     assert isinstance(writing.model, ChatModel)
     assert writing.model is not base
-    assert writing.model.thinking is True
+    assert writing.model.thinking is False
+    assert writing.model.request_timeout == 300
     assert base.thinking is False
 
 
@@ -322,3 +323,18 @@ def test_sync_artifacts_uploads_to_web_origin(tmp_path, monkeypatch):
     assert count == 1
     assert captured[0].full_url == 'https://web.example/api/internal/artifacts/task-1/report.md'
     assert captured[0].data == b'body'
+
+
+def test_default_writing_factory_can_enable_thinking(monkeypatch, tmp_path):
+    from types import SimpleNamespace
+
+    from app.qwen import ChatModel
+
+    base = ChatModel(client=object())
+    service = Orchestrator(artifact_root=tmp_path, model=base)
+    monkeypatch.setenv('QWEN_WRITING_THINKING', 'true')
+
+    writing = service._default_writing_factory(tmp_path, base, SimpleNamespace(content={}))
+
+    assert writing.model.thinking is True
+    assert writing.model.request_timeout == 600

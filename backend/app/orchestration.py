@@ -279,7 +279,15 @@ class Orchestrator:
         from app.qwen import ChatModel
 
         if isinstance(model, ChatModel):
-            model = ChatModel(client=model._client, model=model.model, thinking=True)
+            thinking = os.environ.get('QWEN_WRITING_THINKING', 'false').strip().lower() in {
+                '1', 'true', 'yes', 'on',
+            }
+            model = ChatModel(
+                client=model._client,
+                model=model.model,
+                thinking=thinking,
+                request_timeout=600 if thinking else 300,
+            )
         return WritingService(
             workspace_root=workspace_root,
             model=model,

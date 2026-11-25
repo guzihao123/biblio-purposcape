@@ -38,3 +38,5 @@ dev/acceptance/ppt-legend-fix/
 dev/acceptance/docker-amd64/
 dev/acceptance/docker-native/
 dev/acceptance/provider-live/rls-verification-*.json
+.pytest-tmp*
+.pytest_tmp*
