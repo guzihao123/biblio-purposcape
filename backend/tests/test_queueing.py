@@ -258,3 +258,23 @@ def test_worker_entry_uses_redis_url_and_landscape_queue(monkeypatch):
         'connection': connection,
         'worked': True,
     }
+
+
+def test_finalize_success_retries_a_transient_db_error(monkeypatch):
+    from sqlalchemy.exc import OperationalError
+
+    from app import queueing
+
+    calls = []
+
+    def fake_finalize(*args, **kwargs):
+        calls.append(1)
+        if len(calls) == 1:
+            raise OperationalError('SELECT 1', {}, Exception('ssl eof'))
+        return {'ok': True}
+
+    monkeypatch.setattr(queueing, '_finalize_success', fake_finalize)
+    monkeypatch.setattr(queueing, 'engine', type('E', (), {'dispose': staticmethod(lambda: None)})())
+
+    assert queueing._finalize_success_with_retry('t', 'search', 'h', {}) == {'ok': True}
+    assert len(calls) == 2

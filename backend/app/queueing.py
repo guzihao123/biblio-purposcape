@@ -13,9 +13,12 @@ except ImportError:
     RateLimitError = ()
 
 from app.config import get_settings
+from app.db import engine
 from app.db import SessionLocal
 from app.models import InviteSession, Task, TaskAnswer, TaskEvent, TaskJob, TaskProgress
 from app.rate_limit import RATE_LIMIT_MESSAGE, get_rate_limiter
+from sqlalchemy.exc import DBAPIError
+import time as _time
 from app.recovery import (
     install_worker_log_redaction,
     protected_traceback,
@@ -273,6 +276,66 @@ def _duplicate_checkpoint(db, task_id, stage, input_hash):
     return False, None
 
 
+def _write_finalization(db, task_id, stage, input_hash, result):
+    message = result.get('message') or _message(stage, 'completed')
+    result_state = (
+        TaskState(result['state']).value
+        if result.get('state') is not None
+        else None
+    )
+    next_card = (
+        CardId(result['next_card']).value
+        if result.get('next_card') is not None
+        else None
+    )
+    checkpoint = dict(result.get('checkpoint') or {})
+    checkpoint.update(_event_details(stage, input_hash))
+    task = db.get(Task, task_id)
+    if task is None:
+        raise LookupError('Task not found')
+    record_event(db, task_id, 'checkpoint', checkpoint)
+    progress = _progress_for(db, task_id)
+    progress.stage = stage
+    progress.input_hash = input_hash
+    progress.message = message
+    progress.checkpoint = checkpoint
+    progress.traceback = None
+    if result_state is not None:
+        task.state = result_state
+        task.next_card = next_card
+    _set_job_status(db, task_id, stage, 'completed')
+    completed = _event_details(stage, input_hash)
+    completed['message'] = message
+    record_event(db, task_id, 'completed', completed)
+    db.commit()
+    return checkpoint
+
+
+def _finalize_success(task_id, stage, input_hash, result, session=None):
+    if session is not None:
+        return _write_finalization(session, task_id, stage, input_hash, result)
+    with SessionLocal() as db:
+        return _write_finalization(db, task_id, stage, input_hash, result)
+
+
+def _finalize_success_with_retry(task_id, stage, input_hash, result, session=None, attempts=2):
+    last_error = None
+    for attempt in range(attempts):
+        try:
+            return _finalize_success(task_id, stage, input_hash, result, session=session)
+        except DBAPIError as error:
+            last_error = error
+            try:
+                if session is not None:
+                    session.rollback()
+                engine.dispose()
+            except Exception:
+                pass
+            session = None
+            _time.sleep(0.5 * (attempt + 1))
+    raise last_error
+
+
 def run_stage(task_id, stage, session_id=None, job_id=None, input_hash=None):
     """Execute a registered stage and persist its recoverable progress."""
     if get_settings().task_store_authority == 'sites':
@@ -314,38 +377,9 @@ def run_stage(task_id, stage, session_id=None, job_id=None, input_hash=None):
                 raise LookupError('No execution service is registered for this stage')
             _consume_stage_quotas(db, task, stage, input_hash)
             result = service(task, stage_input) or {}
-            message = result.get('message') or _message(stage, 'completed')
-            result_state = (
-                TaskState(result['state']).value
-                if result.get('state') is not None
-                else None
-            )
-            next_card = (
-                CardId(result['next_card']).value
-                if result.get('next_card') is not None
-                else None
-            )
-            checkpoint = dict(result.get('checkpoint') or {})
-            checkpoint.update(_event_details(stage, input_hash))
-
-            # Checkpoint and completion share one transaction. Any serialization,
-            # flush or commit failure is converted to a real retryable failure.
-            record_event(db, task_id, 'checkpoint', checkpoint)
-            progress = _progress_for(db, task_id)
-            progress.stage = stage
-            progress.input_hash = input_hash
-            progress.message = message
-            progress.checkpoint = checkpoint
-            progress.traceback = None
-            if result_state is not None:
-                task.state = result_state
-                task.next_card = next_card
-            _set_job_status(db, task_id, stage, 'completed')
-            completed = _event_details(stage, input_hash)
-            completed['message'] = message
-            record_event(db, task_id, 'completed', completed)
-            db.commit()
-            return checkpoint
+            # Checkpoint and completion use a fresh session so a pooled TLS
+            # connection that died during the stage can be replaced and retried.
+            return _finalize_success_with_retry(task_id, stage, input_hash, result, session=db)
         except StageRateLimitError as error:
             db.rollback()
             message = redact_sensitive_text(error.result.message)
