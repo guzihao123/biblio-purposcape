@@ -1279,12 +1279,26 @@ def _backfill_c2_row_evidence(data, papers):
             scored.append((len(words & tokens), sentence))
         return max(scored, key=lambda item: item[0])[1]
 
+    def evidence_refs(row):
+        refs = set()
+        for item in row.get('evidence') or []:
+            if not isinstance(item, dict):
+                continue
+            for ref in (item.get('refs') or []):
+                try:
+                    refs.add(int(ref))
+                except (TypeError, ValueError):
+                    continue
+        return refs
+
     for key in ('comparison', 'gaps'):
         rows = data.get(key)
         if not isinstance(rows, list):
             continue
         for row in rows:
-            if not isinstance(row, dict) or row.get('evidence'):
+            if not isinstance(row, dict):
+                continue
+            if evidence_refs(row):
                 continue
             refs = sorted({
                 int(ref)
