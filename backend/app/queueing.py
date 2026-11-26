@@ -391,6 +391,11 @@ def run_stage(task_id, stage, session_id=None, job_id=None, input_hash=None):
             if service is None:
                 raise LookupError('No execution service is registered for this stage')
             _consume_stage_quotas(db, task, stage, input_hash)
+            # Long model calls can outlive Supabase's idle connection timeout.
+            # Detach the task and release the pooled connection before the call.
+            db.refresh(task)
+            db.expunge(task)
+            db.close()
             # Fine-grained phases are reported through an injected reporter;
             # stage services keep their two-argument signature.
             from app.progress_reporter import TaskProgressReporter, stage_reporting
@@ -415,9 +420,10 @@ def run_stage(task_id, stage, session_id=None, job_id=None, input_hash=None):
                 result = service(task, stage_input) or {}
             # Checkpoint and completion use a fresh session so a pooled TLS
             # connection that died during the stage can be replaced and retried.
-            return _finalize_success_with_retry(task_id, stage, input_hash, result, session=db)
+            return _finalize_success_with_retry(task_id, stage, input_hash, result)
         except StageRateLimitError as error:
-            db.rollback()
+            if db.is_active:
+                db.rollback()
             message = redact_sensitive_text(error.result.message)
             _record_failure_in_new_session(
                 task_id,
@@ -432,7 +438,8 @@ def run_stage(task_id, stage, session_id=None, job_id=None, input_hash=None):
         except Exception as error:
             protected = protected_traceback(error)
             retry_after = _provider_retry_after(error)
-            db.rollback()
+            if db.is_active:
+                db.rollback()
             if retry_after is not None:
                 _record_failure_in_new_session(
                     task_id,

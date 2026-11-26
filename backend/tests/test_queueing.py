@@ -199,6 +199,37 @@ def test_production_adapter_allows_a_longer_stage_job_timeout(db, task, monkeypa
     assert job.timeout == 7200
 
 
+def test_worker_releases_session_before_long_service_and_finalizes_fresh(
+    db, task, fake_queue, monkeypatch
+):
+    from sqlalchemy import inspect
+
+    import app.queueing as queueing
+
+    captured = {}
+    original_finalize = queueing._finalize_success_with_retry
+
+    def capture_finalize(task_id, stage, input_hash, result, session=None):
+        captured['session'] = session
+        return original_finalize(task_id, stage, input_hash, result, session=session)
+
+    monkeypatch.setattr(queueing, '_finalize_success_with_retry', capture_finalize)
+
+    def service(stage_task, stage_input):
+        assert inspect(stage_task).detached
+        return {
+            'message': '检索与论文池整理完成',
+            'state': TaskState.DASHBOARD_READY.value,
+            'next_card': CardId.ADJUSTMENT.value,
+        }
+
+    monkeypatch.setitem(STAGE_SERVICES, 'search', service)
+    fake_queue.enqueue_stage(task.id, 'search')
+    fake_queue.work_once()
+
+    assert captured['session'] is None
+
+
 def test_worker_failure_persists_safe_progress_and_redacted_traceback(
     db, task, fake_queue, monkeypatch
 ):
