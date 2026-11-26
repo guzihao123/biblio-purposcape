@@ -2153,6 +2153,8 @@ class WritingService:
                     text = _ensure_a_dialogue_intro(text, task)
                     text = _pad_a_dialogue_body(text, task)
                     evidence = _ensure_pool_ledger(evidence, task.papers, text)
+                if model_backed and task.mode.upper() == 'D':
+                    evidence = _ensure_pool_ledger(evidence, task.papers, text)
                 _validate_citation_coverage(text, evidence)
                 _validate_material_citations(text, task.materials)
                 text = _label_abstract_citations(text, evidence)
@@ -2224,8 +2226,10 @@ class WritingService:
             and 'no evidence ledger entry' in str(last_error)
         ):
             try:
-                evidence = EvidenceAuditor(task.papers).audit_items(
-                    last_result.get('evidence') or []
+                evidence = _audit_items_with_quote_repair(
+                    EvidenceAuditor(task.papers),
+                    last_result.get('evidence') or [],
+                    task.papers,
                 )
                 repaired_text, removed = _strip_unsupported_citations(
                     last_result['text'], {item['ref'] for item in evidence}
