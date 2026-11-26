@@ -749,6 +749,24 @@ def test_template_override_is_used_for_both_model_calls(tmp_path):
     assert model.templates == ['PINNED VERSION TEMPLATE', 'PINNED VERSION TEMPLATE']
 
 
+def test_body_prompt_requests_json_mode(tmp_path):
+    class PromptModel:
+        def __init__(self):
+            self.prompts = []
+
+        def complete_json(self, system_prompt, payload):
+            self.prompts.append(system_prompt)
+            if payload['stage'] == 'components':
+                return {'components': component_data('A')}
+            return {'body': '领域格局正文 [1]。', 'evidence': [EVIDENCE]}
+
+    model = PromptModel()
+    task = make_task('A', tmp_path, component_data=None)
+    WritingService(workspace_root=tmp_path, model=model).produce(task)
+
+    assert 'JSON' in model.prompts[-1]
+
+
 def test_body_citation_without_a_ledger_entry_is_rejected(tmp_path):
     task = make_task('A', tmp_path)
 

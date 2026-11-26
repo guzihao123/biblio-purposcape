@@ -1078,7 +1078,9 @@ class WritingService:
         if model_backed:
             def body_writer(context):
                 response = self.model.complete_json(
-                    '你是科研正文写作器。先读已完成的构件、提纲和样章，再写连贯正文。每个文献事实必须在 evidence 中给出 refs 与逐字摘要 quotes；'
+                    '你是科研正文写作器。先读已完成的构件、提纲和样章，再写连贯正文。'
+                    '只返回一个 JSON 对象，包含 body 与 evidence 字段。'
+                    '每个文献事实必须在 evidence 中给出 refs 与逐字摘要 quotes；'
                     'quote 必须是该篇摘要中逐字复制的一个连续片段（含原标点），不得改写、翻译或拼接；'
                     '分析判断标明“分析”，不得虚构用户结果、全文细节或参考文献；'
                     '正文 CJK 字数必须落在 length_target 区间，并严格遵守 format_rules。'
