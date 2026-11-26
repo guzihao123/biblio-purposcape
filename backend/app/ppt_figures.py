@@ -750,6 +750,9 @@ def _write_log(output_dir, bundle):
     return log_path
 
 
+FRAMEWORK_PREFERRED_REFS = (4, 2, 3)
+
+
 def prepare_d_figures(
     papers,
     reading_cards,
@@ -781,6 +784,7 @@ def prepare_d_figures(
             continue
         if ref and ref not in refs:
             refs.append(ref)
+    reading_count = len(refs)
     if include_supporting:
         for paper in papers:
             try:
@@ -789,7 +793,9 @@ def prepare_d_figures(
                 continue
             if ref and ref not in refs:
                 refs.append(ref)
-    refs = refs[:max_refs]
+    framework = [ref for ref in FRAMEWORK_PREFERRED_REFS if ref in paper_by_ref and ref not in refs[:reading_count]]
+    refs = refs[:reading_count] + framework + [ref for ref in refs[reading_count:] if ref not in framework]
+    refs = refs[:max(max_refs, reading_count + len(framework))]
     bundle = FigureBundle()
     if not refs:
         _write_log(output_dir, bundle)
@@ -952,40 +958,44 @@ def decorate_d_slides(slides, bundle):
     trend_page = _find_slide(slides, lambda slide: slide.get("title") == "发展趋势｜不足→潜在突破")
     progress_pages = [slide for slide in slides if str(slide.get("title", "")).startswith("研究进展｜")]
 
-    concept = bundle.pick("concept", preferred_ref=4, exclude=used)
+    concept = bundle.pick("concept", preferred_ref=FRAMEWORK_PREFERRED_REFS[0], exclude=used)
     if concept_page and concept:
         concept_page.setdefault("figures", []).append(concept)
         used.add(concept.path)
     elif concept_page:
-        attempt = next((item for item in bundle.attempts if item.get("title")), {})
+        attempt = next((item for item in bundle.attempts if item.get("ref_no") == FRAMEWORK_PREFERRED_REFS[0]), {})
+        if not attempt:
+            attempt = {"failures": [f"ref{FRAMEWORK_PREFERRED_REFS[0]} 无采集记录（超出采集集或未取得全文）"], "status": "未获取"}
         concept_page.setdefault("degraded_figures", []).append(
-            _degraded_entry(4, attempt, "概念框架页未取得可用 OA 原图，保留研究链条示意并标【待核实】。")
+            _degraded_entry(FRAMEWORK_PREFERRED_REFS[0], attempt, "概念框架页未取得可用 OA 原图，保留研究链条示意并标【待核实】。")
         )
 
     overview_page = next(
         (slide for slide in progress_pages if "微环境" in slide.get("title", "") or "总览" in slide.get("title", "")),
         None,
     )
-    comparison = bundle.pick("comparison", preferred_ref=4, exclude=used)
+    comparison = bundle.pick("comparison", preferred_ref=FRAMEWORK_PREFERRED_REFS[0], exclude=used)
     if overview_page and comparison:
         overview_page.setdefault("figures", []).append(comparison)
         used.add(comparison.path)
 
-    method = bundle.pick("method", preferred_ref=2, exclude=used) or bundle.pick("architecture", exclude=used)
+    method = bundle.pick("method", preferred_ref=FRAMEWORK_PREFERRED_REFS[1], exclude=used) or bundle.pick("architecture", exclude=used)
     if method_page and method:
         method_page.setdefault("figures", []).append(method)
         used.add(method.path)
     elif method_page:
-        attempt = next((item for item in bundle.attempts if item.get("ref_no") == 2), {})
+        attempt = next((item for item in bundle.attempts if item.get("ref_no") == FRAMEWORK_PREFERRED_REFS[1]), {})
+        if not attempt:
+            attempt = {"failures": [f"ref{FRAMEWORK_PREFERRED_REFS[1]} 无采集记录（超出采集集或未取得全文）"], "status": "未获取"}
         method_page.setdefault("degraded_figures", []).append(
-            _degraded_entry(2, attempt, "技术路线页未取得可用 OA 原图，保留方法对比表并标【待核实】。")
+            _degraded_entry(FRAMEWORK_PREFERRED_REFS[1], attempt, "技术路线页未取得可用 OA 原图，保留方法对比表并标【待核实】。")
         )
 
     mechanism_page = next(
         (slide for slide in progress_pages if "乳酸化" in slide.get("title", "") or "稳定性" in slide.get("title", "")),
         None,
     )
-    architecture = bundle.pick("architecture", preferred_ref=3, exclude=used)
+    architecture = bundle.pick("architecture", preferred_ref=FRAMEWORK_PREFERRED_REFS[2], exclude=used)
     if mechanism_page and architecture:
         mechanism_page.setdefault("figures", []).append(architecture)
         used.add(architecture.path)

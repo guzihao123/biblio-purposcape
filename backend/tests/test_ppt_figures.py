@@ -409,3 +409,50 @@ def test_deck_embeds_image_and_manifest_records_source(tmp_path):
         for slide in presentation.slides
         for shape in slide.shapes
     )
+
+
+def test_framework_refs_survive_max_refs_truncation(tmp_path):
+    from app.ppt_figures import FRAMEWORK_PREFERRED_REFS
+
+    papers = [{"ref_no": ref, "title": f"paper {ref}"} for ref in range(1, 13)]
+    service = _FakeService(_Result(source_path=None, failures=["无全文"]), b"")
+    bundle = prepare_d_figures(
+        papers,
+        [{"ref": ref} for ref in (1, 4, 6, 7, 10)],
+        tmp_path,
+        service=service,
+    )
+    attempted = {attempt["ref_no"] for attempt in bundle.attempts}
+    assert {1, 4, 6, 7, 10} <= attempted
+    assert set(FRAMEWORK_PREFERRED_REFS) <= attempted
+
+
+def test_degraded_entries_use_target_ref_not_first_attempt():
+    from app.ppt_figures import decorate_d_slides
+
+    bundle = FigureBundle()
+    bundle.attempts = [
+        {"ref_no": 1, "title": "ref1", "failures": ["ref1 裁切失败"], "oa_url": "https://example.org/1"},
+    ]
+    slides = [
+        {"title": "研究背景与科学问题", "layout": "bullets"},
+        {"title": "核心方法与技术路线", "layout": "bullets"},
+    ]
+    decorate_d_slides(slides, bundle)
+    concept_entry = slides[0]["degraded_figures"][0]
+    assert concept_entry["ref_no"] == 4
+    assert "ref1 裁切失败" not in concept_entry["reason"]
+    assert "ref4 无采集记录" in concept_entry["reason"]
+    method_entry = slides[1]["degraded_figures"][0]
+    assert method_entry["ref_no"] == 2
+    assert "ref2 无采集记录" in method_entry["reason"]
+
+    bundle.attempts.append(
+        {"ref_no": 4, "failures": ["ref4 无可靠图形对象"], "oa_url": "https://example.org/4", "status": "已定位全文"},
+    )
+    slides = [{"title": "研究背景与科学问题", "layout": "bullets"}]
+    decorate_d_slides(slides, bundle)
+    entry = slides[0]["degraded_figures"][0]
+    assert entry["ref_no"] == 4
+    assert "ref4 无可靠图形对象" in entry["reason"]
+    assert entry["oa_url"] == "https://example.org/4"

@@ -177,7 +177,7 @@ def retraction_updates(updates):
 
 
 def compare(p, m, src):
-    issues, fills = [], []
+    issues, fills, notices = [], [], []
     if norm(m['title']) and norm(m['title']) != norm(p.get('title', '')):
         issues.append('标题不一致：%s「%s」vs 本地「%s」' % (src, m['title'], p.get('title')))
     local_authors = p.get('authors') or []
@@ -204,11 +204,14 @@ def compare(p, m, src):
         if abs(int(m['year']) - int(p['year'])) > 1:
             issues.append('年份不一致：%s %s vs 本地 %s' % (src, m['year'], p['year']))
     if m['container'] and p.get('venue') and not venue_compatible(m['container'], p.get('venue')):
-        issues.append('期刊/来源不一致：%s「%s」vs 本地「%s」' % (src, m['container'], p.get('venue')))
+        if re.search(r'arxiv|biorxiv|medrxiv|ssrn|preprint|research square', str(p['venue']), re.I):
+            notices.append('预印本与正式发表版本来源不同（同一 DOI，版本待人工确认）：%s「%s」vs 本地「%s」' % (src, m['container'], p['venue']))
+        else:
+            issues.append('期刊/来源不一致：%s「%s」vs 本地「%s」' % (src, m['container'], p.get('venue')))
     for k, label in (('volume', '卷'), ('issue', '期'), ('page', '页码')):
         if m[k]:
             fills.append('%s=%s' % (label, m[k]))
-    return issues, fills
+    return issues, fills, notices
 
 
 def main():
@@ -244,7 +247,7 @@ def main():
             print('[%s] 两个注册库均未收录' % ref)
             continue
         m = parse_record(msg, src)
-        issues, fills = compare(p, m, src)
+        issues, fills, notices = compare(p, m, src)
         lines.append('- DOI：%s｜核验通道：%s｜记录类型：%s｜出版方：%s' % (doi, src, m['type'] or '(未标注)', m['publisher'] or '(未标注)'))
         if m['cited'] is not None:
             lines.append('- Crossref 被引数（is-referenced-by-count）：%s' % m['cited'])
@@ -266,6 +269,11 @@ def main():
                              % json.dumps(m['updates'], ensure_ascii=False))
         else:
             lines.append('- 撤稿/更正关联：无（update-to / updated-by / relatedIdentifiers 为空）')
+        if notices:
+            n_notice += 1
+            notice = True
+            for nt in notices:
+                lines.append('- 提示（非阻断，供人工参考）：%s' % nt)
         if issues:
             for it in issues:
                 lines.append('- 核对问题：%s' % it)

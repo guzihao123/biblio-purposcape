@@ -257,7 +257,7 @@ def test_truncated_local_author_list_matches_registry_prefix():
         'year': 2024, 'container': 'Journal',
         'volume': '', 'issue': '', 'page': '',
     }
-    issues, _ = verify_references.compare(paper, metadata, 'crossref')
+    issues, _, _ = verify_references.compare(paper, metadata, 'crossref')
     assert not any('作者' in issue for issue in issues)
 
 
@@ -271,7 +271,7 @@ def test_middle_name_variant_is_not_an_author_mismatch():
         'year': 2024, 'container': 'Journal',
         'volume': '', 'issue': '', 'page': '',
     }
-    issues, _ = verify_references.compare(paper, metadata, 'crossref')
+    issues, _, _ = verify_references.compare(paper, metadata, 'crossref')
     assert not any('作者' in issue for issue in issues)
 
 
@@ -317,7 +317,7 @@ def test_local_author_list_longer_than_registry_is_flagged():
         'year': 2024, 'container': 'Journal',
         'volume': '', 'issue': '', 'page': '',
     }
-    issues, _ = verify_references.compare(paper, metadata, 'crossref')
+    issues, _, _ = verify_references.compare(paper, metadata, 'crossref')
     assert any('作者人数不一致' in issue for issue in issues)
 
 
@@ -327,7 +327,7 @@ def test_cjk_title_and_author_mismatches_are_not_silently_equal():
         'title': '另一标题', 'authors': ['李四'], 'year': 2024, 'container': '期刊',
         'volume': '', 'issue': '', 'page': '',
     }
-    issues, _ = verify_references.compare(paper, metadata, 'crossref')
+    issues, _, _ = verify_references.compare(paper, metadata, 'crossref')
     assert any('标题不一致' in issue for issue in issues)
     assert any('作者名不一致' in issue for issue in issues)
 
@@ -417,3 +417,21 @@ def test_pptx_text_falls_back_when_slidep_service_is_unavailable(tmp_path, monke
     assert '## 参考文献' in text
     assert '[1] SMITH J. Offline extraction[J]. Fixture Journal, 2024.' in text
     assert 'extractor=python-pptx-fallback' in capfd.readouterr().out
+
+
+def test_preprint_venue_difference_is_notice_not_issue():
+    paper = {'title': '真实标题', 'authors': ['张伟'], 'year': 2022, 'venue': 'arXiv preprint'}
+    metadata = {
+        'title': '真实标题', 'authors': ['张伟'], 'year': 2022,
+        'container': '2022 IEEE International Conference on Software Testing, Verification and Validation Workshops (ICSTW)',
+        'volume': '', 'issue': '', 'page': '',
+    }
+    issues, _fills, notices = verify_references.compare(paper, metadata, 'crossref')
+    assert issues == []
+    assert notices and '预印本' in notices[0]
+
+    paper['venue'] = '某期刊'
+    metadata['container'] = '另一期刊'
+    issues, _fills, notices = verify_references.compare(paper, metadata, 'crossref')
+    assert any('期刊/来源不一致' in issue for issue in issues)
+    assert notices == []
