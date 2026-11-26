@@ -288,6 +288,31 @@ def test_landscape_pool_refs_are_not_treated_as_evidence_citations(tmp_path):
     assert '[3]' not in output.markdown.split('空白证据表')[0]
 
 
+def test_unsupported_prose_citation_is_repaired_after_strict_retries(tmp_path):
+    class InvalidCitationModel:
+        def __init__(self):
+            self.calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            self.calls += 1
+            data = component_data('A')
+            data['directions'][0]['core_question'] = '无证据的正文引用 [3] 如何保留？'
+            return {'components': data}
+
+    model = InvalidCitationModel()
+    task = make_task('A', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=model).produce_components(task)
+
+    assert model.calls == 2
+    assert '[3]' not in output.markdown
+    assert '引用修复：已移除 1 处无证据编号' in output.markdown
+    assert any(
+        event.kind == 'citation_repair' and event.payload.get('stage') == 'components'
+        for event in task.events
+    )
+    assert all(item['ref'] != 3 for item in output.evidence)
+
+
 def test_a_components_include_ranked_direction_cards_and_real_evidence(tmp_path):
     service = WritingService(workspace_root=tmp_path)
     output = service.produce_components(make_task('A', tmp_path))

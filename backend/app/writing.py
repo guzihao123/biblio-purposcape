@@ -710,6 +710,53 @@ def _validate_citation_coverage(text, evidence):
         raise WritingInputError(f'citation {missing[0]} has no evidence ledger entry')
 
 
+def _strip_unsupported_citations(value, available):
+    """Remove citation markers that have no audited evidence entry.
+
+    The model occasionally cites a pool number in prose without emitting an
+    evidence object for it. Retrying strict JSON is preferred; this repair is a
+    last resort that preserves the prose but never invents a ledger entry.
+    """
+    available = {int(ref) for ref in available}
+    removed = 0
+
+    def clean(node):
+        nonlocal removed
+        if isinstance(node, dict):
+            result = {}
+            for key, child in node.items():
+                if key == 'evidence':
+                    result[key] = child
+                elif key in {'refs', 'paper_refs'} and isinstance(child, list):
+                    kept = []
+                    for ref in child:
+                        try:
+                            normalized = int(ref)
+                        except (TypeError, ValueError):
+                            normalized = None
+                        if normalized in available:
+                            kept.append(normalized)
+                        else:
+                            removed += 1
+                    result[key] = kept
+                else:
+                    result[key] = clean(child)
+            return result
+        if isinstance(node, list):
+            return [clean(item) for item in node]
+        if isinstance(node, str):
+            def replace(match):
+                nonlocal removed
+                if int(match.group(1)) in available:
+                    return match.group(0)
+                removed += 1
+                return ''
+            return re.sub(r'\[(\d+)\]', replace, node)
+        return node
+
+    return clean(value), removed
+
+
 def _validate_material_citations(text, materials):
     """[M] is a separate channel: validate only the explicit material marker."""
     if not materials:
@@ -945,13 +992,39 @@ class WritingService:
         if task.component_data is not None:
             return self._build_components(task, mode)
         last_error = None
+        last_candidate = None
         for attempt in range(2):
             try:
                 task.component_data = self._generate_components(task, strict=attempt > 0)
                 return self._build_components(task, mode)
             except (WritingInputError, ValueError) as error:
                 last_error = error
+                last_candidate = task.component_data
                 task.component_data = None
+        if (
+            last_candidate is not None
+            and last_error is not None
+            and 'no evidence ledger entry' in str(last_error)
+        ):
+            try:
+                evidence = EvidenceAuditor(task.papers).audit_data(last_candidate)
+                repaired, removed = _strip_unsupported_citations(
+                    last_candidate, {item['ref'] for item in evidence}
+                )
+                if removed:
+                    task.component_data = repaired
+                    components = self._build_components(task, mode)
+                    task.events.append(WritingEvent(
+                        kind='citation_repair',
+                        payload={'removed': removed, 'stage': 'components'},
+                    ))
+                    components.markdown = (
+                        f'> 引用修复：已移除 {removed} 处无证据编号，相关表述请人工复核。\n\n'
+                        + components.markdown
+                    )
+                    return components
+            except WritingInputError:
+                pass
         raise last_error
 
     def produce_outline_and_sample(self, task, components):
