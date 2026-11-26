@@ -1,5 +1,8 @@
 import io
 import json
+import os
+import subprocess
+import sys
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -115,6 +118,22 @@ def _synthetic_pdf(path, body_references=(), figures=None, extra_text=(), extra_
     if extra_objects:
         objects.update(extra_objects)
     return _write_pdf(path, objects)
+
+
+def test_pdf_figures_pdfium_backend_crops_without_macos(tmp_path):
+    pdf = _synthetic_pdf(tmp_path / "pdfium.pdf")
+    out = tmp_path / "pdfium-crop.png"
+    script = Path(__file__).resolve().parents[2] / "skill_runtime" / "scripts" / "pdf_figures.py"
+    env = dict(os.environ)
+    env["PDF_FIGURES_BACKEND"] = "pdfium"
+    completed = subprocess.run(
+        [sys.executable, str(script), str(pdf), "crop",
+         "--page", "0", "--scale", "1", "--px", "10,10,120,90", "--out", str(out)],
+        capture_output=True, text=True, env=env,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "backend=pypdfium2" in completed.stdout
+    assert out.read_bytes().startswith(b"\x89PNG")
 
 
 def test_pdf_crop_writes_named_png_and_records_original_page(tmp_path):

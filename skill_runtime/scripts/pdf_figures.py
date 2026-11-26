@@ -38,6 +38,14 @@ def have_fitz():
         return False
 
 
+def have_pdfium():
+    try:
+        import pypdfium2  # noqa: F401
+        return True
+    except Exception:
+        return False
+
+
 def ensure_swift():
     if not os.path.exists(SWIFT_BIN) or os.path.getmtime(SWIFT_SRC) > os.path.getmtime(SWIFT_BIN):
         r = subprocess.run(["swiftc", "-O", SWIFT_SRC, "-o", SWIFT_BIN],
@@ -94,8 +102,10 @@ def main():
             len(txt), txt.count("=== sec "), a.out))
         return
 
-    fitz = have_fitz()
-    backend = "PyMuPDF" if fitz else "PDFKit(Swift)"
+    forced = os.environ.get('PDF_FIGURES_BACKEND', '').strip().lower()
+    fitz = have_fitz() and forced != 'pdfium'
+    pdfium = have_pdfium() and forced != 'swift' and not fitz
+    backend = "PyMuPDF" if fitz else ("pypdfium2" if pdfium else "PDFKit(Swift)")
     print("backend=" + backend)
 
     if fitz:
@@ -147,6 +157,43 @@ def main():
                     print("saved %s (%dx%d)" % (fn, d["width"], d["height"]))
                     n += 1
             print("images=%d（矢量图未含，请用 render+crop）" % n)
+        return
+
+    elif pdfium:
+        import pypdfium2 as pdfium_lib
+        doc = pdfium_lib.PdfDocument(a.pdf)
+        if a.command == "info":
+            print("pages=%d" % len(doc))
+            for i, page in enumerate(doc):
+                width, height = page.get_size()
+                print("page %d: %dx%d pt" % (i, int(width), int(height)))
+        elif a.command == "render":
+            image = doc[a.page].render(scale=a.scale).to_pil()
+            image.save(a.out)
+            print("ok %dx%d page=%d -> %s" % (image.width, image.height, a.page, a.out))
+        elif a.command == "crop":
+            x, y, w, h = parse_px(a.px)
+            image = doc[a.page].render(scale=a.scale).to_pil()
+            image.crop((x, y, x + w, y + h)).save(a.out)
+            print("ok %dx%d page=%d -> %s" % (w, h, a.page, a.out))
+        elif a.command == "text":
+            if a.all:
+                parts = []
+                for page in doc:
+                    parts.append(page.get_textpage().get_text_range())
+                if a.no_page_marks:
+                    txt = "\n\n".join(parts)
+                else:
+                    txt = "\n\n".join("=== page %d ===\n%s" % (i + 1, part)
+                                      for i, part in enumerate(parts))
+            else:
+                txt = doc[a.page].get_textpage().get_text_range()
+            with open(a.out, "w", encoding="utf-8") as f:
+                f.write(txt)
+            print("ok chars=%d -> %s" % (len(txt), a.out))
+        elif a.command == "images":
+            sys.exit("images 需 PyMuPDF（python3 -m pip install --user pymupdf）；"
+                     "矢量框架图请用 render+crop 拿。")
         return
 
     # PDFKit 回退
