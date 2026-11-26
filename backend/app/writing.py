@@ -1167,6 +1167,48 @@ class WritingService:
                 last_error = error
         if (
             model_backed
+            and task.mode.upper() in {'C1', 'C2'}
+            and isinstance(last_result, dict)
+            and isinstance(last_result.get('text'), str)
+            and last_error is not None
+        ):
+            try:
+                valid_evidence = []
+                dropped_refs = set()
+                auditor = EvidenceAuditor(task.papers)
+                for item in last_result.get('evidence') or []:
+                    try:
+                        valid_evidence.extend(auditor.audit_items([item]))
+                    except WritingInputError:
+                        for ref in (item.get('refs') or []):
+                            try:
+                                dropped_refs.add(int(ref))
+                            except (TypeError, ValueError):
+                                pass
+                repaired_text, removed = _strip_unsupported_citations(
+                    last_result['text'], {item['ref'] for item in valid_evidence}
+                )
+                _validate_citation_coverage(repaired_text, valid_evidence)
+                _validate_material_citations(repaired_text, task.materials)
+                repaired_text = _label_abstract_citations(repaired_text, valid_evidence)
+                task.events.append(WritingEvent(
+                    kind='evidence_repair',
+                    payload={
+                        'removed_citations': removed,
+                        'dropped_refs': sorted(dropped_refs),
+                        'stage': 'body',
+                    },
+                ))
+                repaired_text = (
+                    f'> 证据修复：已丢弃 {len(dropped_refs)} 个不合法引用并移除 {removed} 处编号，'
+                    '相关表述请人工复核。\n\n' + repaired_text
+                )
+                return BodyOutput(text=repaired_text, evidence=valid_evidence)
+            except WritingInputError:
+                pass
+
+        if (
+            model_backed
             and isinstance(last_result, dict)
             and isinstance(last_result.get('text'), str)
             and last_error is not None

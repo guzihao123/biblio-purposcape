@@ -300,6 +300,34 @@ def test_d_reading_card_structural_ref_does_not_require_evidence(tmp_path):
     assert 3 in output.structural_refs
 
 
+def test_c_body_invalid_evidence_is_dropped_after_strict_retries(tmp_path):
+    class InvalidEvidenceModel:
+        def __init__(self):
+            self.body_calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            if payload['stage'] == 'components':
+                return {'components': component_data('C1')}
+            self.body_calls += 1
+            return {
+                'body': '正文引用不合法证据 [1]。',
+                'evidence': [{
+                    'claim': 'Unsupported',
+                    'refs': [1],
+                    'quotes': {'1': 'Not present in the abstract.'},
+                }],
+            }
+
+    model = InvalidEvidenceModel()
+    task = make_task('C1', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=model).produce(task)
+
+    assert model.body_calls == 2
+    assert '[1]' not in output.body
+    assert '证据修复' in output.body
+    assert any(event.kind == 'evidence_repair' for event in task.events)
+
+
 def test_unsupported_prose_citation_is_repaired_after_strict_retries(tmp_path):
     class InvalidCitationModel:
         def __init__(self):
