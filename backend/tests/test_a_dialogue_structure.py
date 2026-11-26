@@ -181,6 +181,38 @@ class _StubModel:
         return {'body': self.body, 'evidence': [deepcopy(EVIDENCE), deepcopy(SECOND_EVIDENCE)]}
 
 
+def test_shape_flags_recommended_slot_without_citation(tmp_path):
+    data, body = dialogue_body_without_key_points()
+    task = make_task('A_DIALOGUE', tmp_path)
+    task.component_data = data
+    body = _ensure_a_dialogue_intro(body, task)
+    start = body.index('- 选题 1')
+    end = body.index('- 选题 2', start)
+    segment = re.sub(r'\[\d+\]', '', body[start:end])
+    stripped = body[:start] + segment + body[end:]
+    errors = _a_dialogue_shape_errors(stripped)
+    assert any('recommended without citation' in error for error in errors)
+
+
+def test_backfill_and_rebuild_empty_slot_evidence(tmp_path):
+    data, _ = dialogue_body_without_key_points()
+    for group in data['topic_groups']:
+        for slot in group['slots']:
+            slot['evidence'] = []
+            slot['opportunity'] = 'The calibrated model reduced urban flood loss estimation error（分析）'
+    task = make_task('A_DIALOGUE', tmp_path)
+    task.component_data = data
+
+    rebuilt = _rebuild_a_dialogue_body(task)
+    assert rebuilt is not None
+    assert _a_dialogue_shape_errors(rebuilt.text) == []
+    assert re.search(r'\[\d+\]', rebuilt.text)
+    for group in data['topic_groups']:
+        for slot in group['slots']:
+            if slot.get('recommended') is not False:
+                assert slot['evidence'] and slot['evidence'][0]['refs']
+
+
 def test_normal_path_short_body_pads_and_labels(tmp_path):
     data, _ = dialogue_body_without_key_points()
     task = make_task('A_DIALOGUE', tmp_path)

@@ -358,7 +358,20 @@ def _render_a_direction(direction):
 
 def _render_dialogue_slot(slot, index):
     if slot.get('recommended') is False:
-        return f"### 选题 {index}｜未推荐\n- 具体原因：{slot.get('reason', '现有证据不足以形成非重复且可验证的选题。')}"
+        if not slot.get('title'):
+            return f"### 选题 {index}｜未推荐\n- 具体原因：{slot.get('reason', '现有证据不足以形成非重复且可验证的选题。')}"
+        return '\n'.join([
+            f"### 选题 {index}｜未推荐（分析候选）：{slot['title']}",
+            f"- 核心研究问题：{slot.get('core_question', '')}",
+            f"- 文献依据与机会：{slot.get('opportunity', '')} {_evidence_refs(slot.get('evidence', []))}",
+            f"- 数据可得性：{slot.get('data_availability', '')}",
+            f"- 研究价值：{slot.get('research_value', '')}（分析）",
+            f"- 可行性：{slot.get('feasibility', '')}（分析）",
+            f"- 创新潜力：{slot.get('innovation_potential', '')}（分析）",
+            f"- 实施难度：{slot.get('implementation_difficulty', '')}（分析）",
+            f"- 主要风险：{slot.get('risk', '')}",
+            f"- 具体原因：{slot.get('reason', '池内无直接文献证据支持该方向，保留为分析候选，待人工核实。')}",
+        ])
     return '\n'.join([
         f"### 选题 {index}｜类内第 {slot['rank']} 推荐：{slot['title']}",
         f"- 核心研究问题：{slot['core_question']}",
@@ -435,6 +448,13 @@ def _a_dialogue_shape_errors(text):
         slots = list(slot_pat.finditer(section))
         if len(slots) != 2:
             errors.append(f'{label} slots {len(slots)} != 2')
+        for i, slot in enumerate(slots):
+            seg_end = slots[i + 1].start() if i + 1 < len(slots) else len(section)
+            segment = section[slot.start():seg_end]
+            if '未推荐' in segment[:100]:
+                continue
+            if not re.search(r'\[\d+\]', segment):
+                errors.append(f'{label} slot {i + 1} recommended without citation')
     if not 1500 <= _a_dialogue_word_count(body) <= 4000:
         errors.append(f'word count {_a_dialogue_word_count(body)} outside 1500-4000')
     return errors
@@ -554,9 +574,66 @@ def _pad_a_dialogue_body(text, task):
     return text.rstrip() + '\n\n' + '\n'.join(lines) + '\n'
 
 
+def _backfill_a_dialogue_slot_evidence(data, papers):
+    if not isinstance(data, dict):
+        return data, 0
+    by_ref = {
+        int(paper['ref_no']): paper
+        for paper in papers
+        if str(paper.get('ref_no', '')).isdigit()
+    }
+    changed = 0
+    for group in data.get('topic_groups') or []:
+        for slot in group.get('slots') or []:
+            if not isinstance(slot, dict) or slot.get('recommended') is False:
+                continue
+            if any((item.get('refs') or []) for item in slot.get('evidence') or [] if isinstance(item, dict)):
+                continue
+            text = ' '.join(str(slot.get(key) or '') for key in ('title', 'core_question', 'opportunity'))
+            words = set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', text.casefold()))
+            scored = []
+            for paper in by_ref.values():
+                abstract = str(paper.get('abstract') or '')
+                if not abstract.strip() or paper.get('claim_eligible') is False:
+                    continue
+                tokens = set(re.findall(
+                    r'[A-Za-z\u4e00-\u9fff]{3,}',
+                    (str(paper.get('title') or '') + ' ' + abstract).casefold(),
+                ))
+                overlap = len(words & tokens)
+                if overlap:
+                    scored.append((overlap, paper))
+            if not scored:
+                slot['recommended'] = False
+                slot['reason'] = '池内无直接文献证据支持该方向，保留为分析候选，待人工核实。'
+                changed += 1
+                continue
+            paper = max(scored, key=lambda item: item[0])[1]
+            sentences = [
+                sentence.strip()
+                for sentence in re.split(r'(?<=[.!?。！？])\s+', str(paper.get('abstract') or ''))
+                if len(sentence.strip()) >= 20
+            ]
+            if not sentences:
+                continue
+            quote = max(
+                sentences,
+                key=lambda sentence: len(words & set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', sentence.casefold()))),
+            )
+            ref = int(paper['ref_no'])
+            slot.setdefault('evidence', []).append({
+                'claim': str(slot.get('opportunity') or slot.get('title') or '').strip(),
+                'refs': [ref],
+                'quotes': {str(ref): quote},
+            })
+            changed += 1
+    return data, changed
+
+
 def _rebuild_a_dialogue_body(task):
     try:
         data = task.component_data if isinstance(task.component_data, dict) else {}
+        data, _ = _backfill_a_dialogue_slot_evidence(data, task.papers)
         for limit in (None, 120, 80, 50):
             compact = _compact_a_dialogue_data(data, limit)
             text = _render_a_dialogue(compact)
