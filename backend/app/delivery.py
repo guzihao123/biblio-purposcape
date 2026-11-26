@@ -235,10 +235,12 @@ def _add_flow_nodes(slide, lines):
         )
         node.text_frame.text = text
         node.text_frame.word_wrap = True
+        node.fill.solid()
+        node.fill.fore_color.rgb = RGBColor(0x9C, 0xC7, 0xF5)
         for paragraph in node.text_frame.paragraphs:
             for run in paragraph.runs:
                 run.font.size = Pt(12)
-                run.font.color.rgb = RGBColor(0x7E, 0xF0, 0xC8)
+                run.font.color.rgb = RGBColor(0x0B, 0x16, 0x26)
         if index < len(nodes) - 1:
             connector = slide.shapes.add_connector(
                 MSO_CONNECTOR.STRAIGHT,
@@ -370,10 +372,12 @@ def _add_ppt_slide(
             data.add_series(series['name'], series['values'])
         chart_type = XL_CHART_TYPE.LINE if chart_spec.get('type') == 'line' else XL_CHART_TYPE.PIE
         chart = slide.shapes.add_chart(chart_type, Inches(0.8), Inches(1.48), Inches(11.6), Inches(5.2), data).chart
+        from pptx.dml.color import RGBColor
         chart.has_legend = True
         chart.legend.position = XL_LEGEND_POSITION.BOTTOM
         chart.legend.include_in_layout = False
         chart.legend.font.size = Pt(12)
+        chart.legend.font.color.rgb = RGBColor(0x9F, 0xB0, 0xCC)
         plot = chart.plots[0]
         plot.has_data_labels = True
         labels = plot.data_labels
@@ -386,6 +390,7 @@ def _add_ppt_slide(
             else XL_DATA_LABEL_POSITION.OUTSIDE_END
         )
         labels.font.size = Pt(11)
+        labels.font.color.rgb = RGBColor(0xEA, 0xF1, 0xFF)
     elif layout == 'table':
         rows = [line.split('｜') for line in lines]
         table = slide.shapes.add_table(len(rows) + 1, 6, Inches(0.55), Inches(1.45), Inches(12.2), Inches(4.9)).table
