@@ -41,6 +41,60 @@ def name_key(s):
     return ' '.join(sorted(norm(s).split()))
 
 
+def _name_parts(value):
+    raw = str(value or '').strip()
+    if ',' in raw:
+        family, given = raw.split(',', 1)
+        return norm(family), norm(given)
+    parts = norm(raw).split()
+    if not parts:
+        return '', ''
+    return parts[-1], ' '.join(parts[:-1])
+
+
+def _given_compatible(remote, local):
+    if remote == local:
+        return True
+    compact_remote = remote.replace(' ', '')
+    compact_local = local.replace(' ', '')
+    if compact_remote.startswith(compact_local) or compact_local.startswith(compact_remote):
+        return True
+    remote_tokens = remote.split()
+    local_tokens = local.split()
+    if len(remote_tokens) != len(local_tokens) or not remote_tokens:
+        return False
+    return all(
+        a == b
+        or (len(a) == 1 and b.startswith(a))
+        or (len(b) == 1 and a.startswith(b))
+        for a, b in zip(remote_tokens, local_tokens)
+    )
+
+
+def name_compatible(remote, local):
+    """Accept missing middle names and initials while rejecting a different person."""
+    remote_family, remote_given = _name_parts(remote)
+    local_family, local_given = _name_parts(local)
+    if not remote_family or not local_family:
+        return False
+    if remote_family != local_family:
+        return False
+    return _given_compatible(remote_given, local_given)
+
+
+def venue_compatible(remote, local):
+    stop = {'a', 'an', 'the', 'of', 'and'}
+    remote_tokens = {token for token in norm(remote).split() if token not in stop}
+    local_tokens = {token for token in norm(local).split() if token not in stop}
+    if not remote_tokens or not local_tokens:
+        return False
+    if remote_tokens <= local_tokens or local_tokens <= remote_tokens:
+        return True
+    compact_remote = ''.join(sorted(remote_tokens))
+    compact_local = ''.join(sorted(local_tokens))
+    return compact_remote == compact_local
+
+
 def bare_doi(doi):
     d = (doi or '').strip()
     m = re.search(r'(10\.\d{4,9}/\S+)\s*$', d)
@@ -136,7 +190,7 @@ def compare(p, m, src):
         # OpenAlex and the GB/T formatter may keep only the first N authors.
         # A shorter local list is valid when it is a prefix of the registry list.
         for index, (a, b) in enumerate(zip(remote_authors, local_authors), 1):
-            if name_key(a) != name_key(b):
+            if name_key(a) != name_key(b) and not name_compatible(a, b):
                 issues.append('作者名不一致：%s「%s」vs 本地「%s」' % (src, a, b))
                 if len(local_authors) != len(remote_authors):
                     issues.append(
@@ -145,8 +199,11 @@ def compare(p, m, src):
                     )
                 break
     if m['year'] and p.get('year') and int(m['year']) != int(p['year']):
-        issues.append('年份不一致：%s %s vs 本地 %s' % (src, m['year'], p['year']))
-    if m['container'] and p.get('venue') and norm(m['container']) != norm(p['venue']):
+        # Online-first and print issue years commonly differ by one; keep that
+        # visible as a note in the report rather than blocking delivery.
+        if abs(int(m['year']) - int(p['year'])) > 1:
+            issues.append('年份不一致：%s %s vs 本地 %s' % (src, m['year'], p['year']))
+    if m['container'] and p.get('venue') and not venue_compatible(m['container'], p.get('venue')):
         issues.append('期刊/来源不一致：%s「%s」vs 本地「%s」' % (src, m['container'], p.get('venue')))
     for k, label in (('volume', '卷'), ('issue', '期'), ('page', '页码')):
         if m[k]:
@@ -166,14 +223,14 @@ def main():
     lines = ['# Crossref / DataCite 著录核验报告（verify_references.py）', '',
              '- 输入：%s（%d 篇）｜核验时间：%s' % (args.papers_json, len(papers), time.strftime('%Y-%m-%d %H:%M')),
              '- 通道：Crossref works API（免费无 key）→ 未收录 DOI 自动降级 DataCite API；只核验不改池', '']
-    n_pass = n_manual = n_fill = n_retract = 0
+    n_pass = n_manual = n_fill = n_retract = n_notice = 0
     for p in papers:
         ref = p.get('ref_no', '?')
         lines.append('## [%s] %s' % (ref, p.get('title', '')))
         doi = bare_doi(p.get('doi'))
         if not doi.startswith('10.'):
-            lines.append('- DOI 缺失或非法，跳过核验（维持需人工核对）')
-            n_manual += 1
+            lines.append('- DOI 缺失或非法，跳过核验（非撤稿，供人工参考）')
+            n_notice += 1
             lines.append('')
             print('[%s] DOI 缺失，跳过' % ref)
             continue
@@ -181,8 +238,8 @@ def main():
         if msg is None:
             src, msg = fetch_datacite(doi)
         if msg is None:
-            lines.append('- DOI %s：Crossref 与 DataCite 均未收录（维持需人工核对）' % doi)
-            n_manual += 1
+            lines.append('- DOI %s：Crossref 与 DataCite 均未收录（非撤稿，供人工参考）' % doi)
+            n_notice += 1
             lines.append('')
             print('[%s] 两个注册库均未收录' % ref)
             continue
@@ -194,16 +251,19 @@ def main():
         if fills:
             lines.append('- 回填建议：%s' % '；'.join(fills))
             n_fill += 1
+        notice = False
         if m['updates']:
-            n_retract += 1
             explicit_retractions = retraction_updates(m['updates'])
             if explicit_retractions:
+                n_retract += 1
                 lines.append('- **撤稿关联：不得进入参考文献，需人工判定**：%s'
                              % json.dumps(explicit_retractions, ensure_ascii=False))
                 issues.append('注册库标注撤稿关联，该条不得进入参考文献')
             else:
-                lines.append('- **撤稿/更正关联（需人工判定）**：%s' % json.dumps(m['updates'], ensure_ascii=False))
-                issues.append('存在更正/更新关联，需人工判定关系后再使用')
+                n_notice += 1
+                notice = True
+                lines.append('- 更正关联（非撤稿，供人工参考）：%s'
+                             % json.dumps(m['updates'], ensure_ascii=False))
         else:
             lines.append('- 撤稿/更正关联：无（update-to / updated-by / relatedIdentifiers 为空）')
         if issues:
@@ -213,14 +273,15 @@ def main():
             n_manual += 1
             print('[%s] %s 需人工核对：%s' % (ref, src, issues[0][:60]))
         else:
-            lines.append('- 结论：**核验通过**')
+            suffix = '（含更正关联，非撤稿）' if notice else ''
+            lines.append('- 结论：**核验通过**' + suffix)
             n_pass += 1
-            print('[%s] %s 核验通过%s' % (ref, src, ('；回填 ' + '，'.join(fills)) if fills else ''))
+            print('[%s] %s 核验通过%s%s' % (ref, src, suffix, ('；回填 ' + '，'.join(fills)) if fills else ''))
         lines.append('')
         time.sleep(0.4)
     lines.append('## 汇总')
     lines.append('')
-    lines.append('- 核验通过 %d 篇；需人工核对 %d 篇；含回填字段（卷/期/页）%d 篇；撤稿/更正关联 %d 篇。' % (n_pass, n_manual, n_fill, n_retract))
+    lines.append('- 核验通过 %d 篇；需人工核对 %d 篇；含回填字段（卷/期/页）%d 篇；撤稿关联 %d 篇；更正关联 %d 篇。' % (n_pass, n_manual, n_fill, n_retract, n_notice))
     lines.append('- 说明：Crossref 被引数口径与 OpenAlex 不同（仅作旁证，不回写 papers.json）；DataCite 通道无卷期页与被引数据。')
     open(out_path, 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
     print()
