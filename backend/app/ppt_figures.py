@@ -1019,6 +1019,13 @@ def decorate_d_slides(slides, bundle):
             next((asset for asset in assets if asset.path not in used), None),
         )
         if first is None:
+            attempt = bundle.degraded_for_ref(ref_no) or {}
+            method_slide.setdefault("degraded_figures", []).append(
+                _degraded_entry(
+                    ref_no, attempt,
+                    f"[{ref_no}] 可用原图已用于其他页，本页未嵌入；OA 链接与文字描述见 ppt_asset_manifest.json，不把摘要示意图当作原文图。",
+                )
+            )
             continue
         method_slide.setdefault("figures", []).append(first)
         used.add(first.path)

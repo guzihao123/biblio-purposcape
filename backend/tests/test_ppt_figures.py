@@ -456,3 +456,23 @@ def test_degraded_entries_use_target_ref_not_first_attempt():
     assert entry["ref_no"] == 4
     assert "ref4 无可靠图形对象" in entry["reason"]
     assert entry["oa_url"] == "https://example.org/4"
+
+
+def test_reading_page_gets_degraded_when_assets_consumed(tmp_path):
+    from app.ppt_figures import FigureBundle, FigureAsset, decorate_d_slides
+
+    asset = FigureAsset(
+        ref_no=4, fig_no='1', name='n', path=tmp_path / 'x.png', caption='c',
+        description='d', source_url='u', version='v', original_page='1',
+        acquisition='a', slot='concept',
+    )
+    bundle = FigureBundle()
+    bundle.assets = [asset]
+    slides = [
+        {'title': '研究背景与科学问题', 'layout': 'flow_diagram'},
+        {'title': '代表作精读 [4]｜方法与数据', 'layout': 'reading'},
+        {'title': '代表作精读 [4]｜发现与启发', 'layout': 'reading'},
+    ]
+    decorate_d_slides(slides, bundle)
+    assert slides[0].get('figures')
+    assert slides[1].get('degraded_figures')
