@@ -42,7 +42,7 @@ OUTLINE_HEADINGS = {
     'A_DIALOGUE': ['领域格局与 5–8 条要点', '七类方向选题（每类两个槽位）', '综合第 1 推荐', '代表文献'],
     'B': ['项目名称与目标', '背景与重大需求', '按技术路线组织的进展', '关键不足', '关键科学问题', '研究内容与技术路线', '创新对应与可行性', '预期成果', '六段论证链'],
     'C1': ['引言逻辑框架', '段落卡', 'Research Gap 分析表', '完整引言', '写作逻辑和学术质量检查'],
-    'C2': ['研究范围与检索策略', '分类框架', '综合分析', '文献比较表', '研究空白分析表', '未来方向', '完整综述'],
+    'C2': ['研究主题与检索范围', '关键词和检索策略', '代表性文献清单', '文献分类框架', '不同研究方向的综合分析', '主要技术路线比较', '文献比较表', '现有研究不足', '研究空白分析表', '未来研究方向', '完整综述文本', '衔接与重复检查'],
     'D': ['背景与科学问题', '检索概况', '研究进展', '方法对比', '代表作精读', '研究不足', '趋势', '选题排序', '总结与讨论问题'],
     'E': ['按用户用途定制的提纲'],
 }
@@ -57,6 +57,11 @@ B_PROJECT_GENERATION_RULE = (
     '必须由你基于项目主题与本次论文池生成实质内容，不得留空、不得只写占位符或复述用户输入。'
     'project.theme 中给出的研究对象、方法与预期产出是本次项目主题的组成部分，研究内容与技术路线必须与之对应。'
     'B 正文必须完整保留「研究内容（3–4 项）」「技术路线」「可行性」「预期成果」章节。'
+)
+B_BODY_RULE = (
+    'B 正文的固定节名必须是「已有研究对本项目技术路线的支撑」，标题不得附加“（强制构件…）”等括注；'
+    '正文 CJK 字数必须落在 2000–3000，按约 2500 字写作，超过 3000 视为不合格整篇压缩，'
+    '宁可精简论述也不得删除必需章节、对解表、六段链或参考文献编号。'
 )
 B_DRAFT_RULE = (
     'B 模式若提供 project_draft，草稿是项目论证的分析依据：逐项核对草稿的研究内容、技术路线、可行性与预期成果'
@@ -89,6 +94,7 @@ LENGTH_TARGETS = {
 FORMAT_RULES = {
     'A': '研究空白证据表每行必须以「空白1：」「空白2：」…开头，并在同一行写 [n] 引用与理由类型；方向卡保留「第 N 推荐」「核心研究问题」「数据可得性」。',
     'A_DIALOGUE': '每类选题的两张卡与综合第 1 推荐必须保留推荐理由与主要风险。',
+    'B': '固定节名「已有研究对本项目技术路线的支撑」不带括注；必须保留「若不开展本项目」刚性需求段、对解表、六段论证链与「研究内容（一/二/三）」支撑清单；正文 CJK 目标 2300–2800，硬上限 3000。',
     'E': '先用「## 用途落实」逐条说明如何落实 custom_purpose，再给综述要点、空白点清单与 3 个可做方向；空白证据与引用要求同 A 基线。',
 }
 
@@ -659,6 +665,425 @@ def _c2_sample(data):
     ])
 
 
+C2_BODY_COMPONENTS = (
+    '研究主题与检索范围', '关键词和检索策略', '代表性文献清单',
+    '文献分类框架', '完整综述文本', '未来研究方向',
+)
+C2_CLASSIFICATION_DIMS = ('理论基础', '研究对象', '研究问题', '技术方法', '数据与实验', '研究结论', '研究局限')
+C2_COMPARISON_COLUMNS = ('文献', '研究问题', '数据', '核心方法', '主要发现', '局限性')
+C2_GAP_COLUMNS = ('研究方向', '已有进展', '现有不足', '文献证据', '可深入研究的问题')
+C2_WORD_RANGE = (800, 1200)
+
+
+def _c2_word_count(text):
+    """与 verify_delivery.py ⑤字数同口径：正文（不含参考文献）CJK 汉字+英文词。"""
+    body = text.split('## 参考文献')[0]
+    cjk = len(re.findall(r'[\u4e00-\u9fff]', body))
+    english = len(re.findall(r"\b[A-Za-z]+(?:[-'][A-Za-z]+)*\b", body))
+    return cjk + english
+
+
+def _c2_named_section(text, title):
+    match = re.search(r'^#{1,6}\s*' + re.escape(title) + r'\s*$', text, flags=re.M)
+    if not match:
+        return ''
+    next_heading = re.search(r'^#{1,6}\s+', text[match.end():], flags=re.M)
+    end = match.end() + next_heading.start() if next_heading else len(text)
+    return text[match.end():end].strip()
+
+
+def _c2_has_filled_table(text, columns, evidence_column=None):
+    """镜像 verify_delivery.py --mode C2 的 has_filled_table：精确表头 + 至少一行完整数据。"""
+    lines = text.split('\n')
+
+    def cells(line):
+        return [c.strip() for c in line.strip().strip('|').split('|')]
+
+    for i, line in enumerate(lines):
+        if cells(line) != list(columns):
+            continue
+        for row in lines[i + 1:]:
+            if not row.strip().startswith('|'):
+                break
+            values = cells(row)
+            if len(values) != len(columns):
+                continue
+            if all(re.fullmatch(r':?-{3,}:?', v.replace(' ', '')) for v in values):
+                continue
+            if all(v and '【' not in v and '】' not in v for v in values):
+                if evidence_column is not None:
+                    evidence = values[columns.index(evidence_column)]
+                    if not re.search(r'\[\d+\]', evidence):
+                        continue
+                return True
+    return False
+
+
+def _b_word_count(text):
+    body = text.split('## 参考文献')[0]
+    return len(re.findall(r'[\u4e00-\u9fff]', body))
+
+
+def _normalize_b_headings(text):
+    """Keep the fixed support section exactly matchable by verify_delivery."""
+    lines = []
+    fixed = re.compile(
+        r'^(#{2,4}\s*)((?:\d+\s+)?)(已有研究对本项目技术路线的支撑)'
+        r'(?:\s*（[^）]*）)?\s*$'
+    )
+    for line in text.split('\n'):
+        match = fixed.match(line.strip())
+        if match:
+            lines.append(f"{match.group(1)}{match.group(2)}{match.group(3)}")
+            continue
+        if re.match(r'^#{2,4}\s+', line):
+            line = re.sub(r'\s*（强制构件[^）]*）\s*$', '', line)
+        lines.append(line)
+    return '\n'.join(lines)
+
+
+def _b_body_shape_errors(text):
+    """Mirror verify_delivery.py --mode B and enforce the project word budget."""
+    errors = []
+    body = text.split('## 参考文献')[0]
+    head = body[:800]
+    paras = [line for line in body.split('\n') if line.strip()]
+    if '若不开展本项目' not in body:
+        errors.append('missing 刚性需求段（若不开展本项目）')
+    if not any(
+        line.strip().startswith('|')
+        and all(key in line for key in ('不足', '科学问题', '研究内容'))
+        for line in paras
+    ):
+        errors.append('missing 对解表（不足/科学问题/研究内容）')
+    for key in ('研究需求', '已有进展', '现有不足', '科学问题', '切入点', '预期贡献'):
+        if key not in body:
+            errors.append(f'missing 六段链链节「{key}」')
+    if not any(
+        re.match(r'^#{2,4}\s*(?:\d+\s+)?已有研究对本项目技术路线的支撑\s*$', line.strip())
+        for line in paras
+    ):
+        errors.append('missing 固定节名（已有研究对本项目技术路线的支撑）')
+    if '可复用资产清单' in body:
+        errors.append('legacy heading 可复用资产清单')
+    if sum(
+        1 for line in paras if line.strip().startswith('-') and '研究内容（' in line
+    ) < 3:
+        errors.append('技术路线支撑清单行（研究内容（N））<3')
+    if '本项目' not in head:
+        errors.append('first paragraph must mention 本项目')
+    for word in ('研究空白', '值得做', '建议方向', '亟待'):
+        for line in paras:
+            if word in line and not re.search(r'缺项|补齐|如实', line):
+                errors.append(f'A 口吻禁词「{word}」')
+                break
+    cited = [s for s in re.split(r'[。；\n]', body) if re.search(r'\[\d+\]', s)]
+    pointed = [
+        s for s in cited
+        if any(key in s for key in ('本项目', '本研究', '研究内容', '拟', '将'))
+    ]
+    if cited and len(pointed) / len(cited) < 0.2:
+        errors.append('项目指向句占引用句 <20%')
+    count = _b_word_count(body)
+    if not 2000 <= count <= 3000:
+        errors.append(f'word count {count} outside 2000-3000')
+    return errors
+
+
+def _validate_b_body(text):
+    text = _normalize_b_headings(text)
+    errors = _b_body_shape_errors(text)
+    if errors:
+        raise WritingInputError('B body structure: ' + '; '.join(errors))
+    return text
+
+
+def _c2_body_shape_errors(text, check_count=True):
+    """镜像 verify_delivery.py --mode C2 的机械结构口径（不含引文台账类检查）。
+
+    返回错误描述列表；空列表表示结构与字数均合格。
+    """
+    errors = []
+    body = text.split('## 参考文献')[0]
+    for title in C2_BODY_COMPONENTS:
+        if title not in body:
+            errors.append(f'missing section「{title}」')
+    classification = _c2_named_section(body, '文献分类框架')
+    for dim in C2_CLASSIFICATION_DIMS:
+        if dim not in classification:
+            errors.append(f'classification dim「{dim}」')
+    if '综合分析' not in body:
+        errors.append('missing 综合分析')
+    if '技术路线' not in body or '比较' not in body:
+        errors.append('missing 技术路线比较')
+    if '现有研究不足' not in body and '现有研究局限' not in body:
+        errors.append('missing 现有研究不足/局限')
+    review = _c2_named_section(body, '完整综述文本')
+    plain = re.sub(r'[#*`\s|【】\[\]]', '', review)
+    if len(plain) < 20 or re.search(r'\[\d+\]', review) is None:
+        errors.append('完整综述文本缺少实质引用内容')
+    if not any(k in review for k in ('研究空白', '现有不足', '现有局限', '关键问题')):
+        errors.append('完整综述文本未纳入研究空白')
+    if not _c2_has_filled_table(body, C2_COMPARISON_COLUMNS):
+        errors.append('六列文献比较表缺精确表头或完整数据行')
+    if not _c2_has_filled_table(body, C2_GAP_COLUMNS, evidence_column='文献证据'):
+        errors.append('五列研究空白分析表缺精确表头、完整数据行或 [n] 证据')
+    if re.search(r'^#{1,4}\s*.*(?:讨论|discussion).*$', body, flags=re.M | re.I):
+        errors.append('C2 正文不得写成讨论')
+    if any(k in body for k in ('必须提供本文结果', '先亮本文主要发现', '本文结果后才能写综述')):
+        errors.append('C2 正文不得要求本文结果')
+    if check_count:
+        count = _c2_word_count(body)
+        lo, hi = C2_WORD_RANGE
+        if not lo <= count <= hi:
+            errors.append(f'word count {count} outside {lo}-{hi}')
+    return errors
+
+
+def _render_c2_body(data, task, keyword=None, rep=None, synthesis=None, route=None,
+                    comparison=None, gap=None, future=None, cell=None):
+    """从构件数据确定性重建 C2 正文，结构对齐 verify_delivery.py --mode C2 机械口径。
+
+    内容全部来自 component_data（已逐条证据审计）与 search_overview，不新增任何
+    文献事实；cap 参数控制各类行数与单元格截断长度，用于把字数压回 1200 以内，
+    绝不通过删章节/表头来规避结构要求。
+    """
+    def cap(items, limit):
+        return items if limit is None else items[:max(1, limit)]
+
+    def clip(value, protect_cite=False):
+        s = str(value if value is not None else '').strip()
+        if cell and len(s) > cell and not (protect_cite and re.search(r'\[\d+\]', s)):
+            return s[:cell] + '…'
+        return s
+
+    overview = getattr(task, 'search_overview', {}) or {}
+    scope = data.get('scope') if isinstance(data.get('scope'), dict) else {}
+    strategy = data.get('search_strategy') if isinstance(data.get('search_strategy'), dict) else {}
+    comparison_rows = cap(list(data.get('comparison') or []), comparison)
+    gap_rows = cap(list(data.get('gaps') or []), gap)
+
+    time_label = f"{overview.get('from_year')} 起" if overview.get('from_year') else '不限起始年'
+    boundary_label = (
+        f"检索池 {overview.get('pool_count', 0)} 篇，摘要深度；未覆盖数据库见 search_log.md"
+    )
+    title = str(getattr(task, 'direction', '') or '').strip() or scope.get('topic') or '文献综述'
+
+    lines = [f'# {title}', '', '## 研究主题与检索范围', '']
+    lines.extend([
+        f"- 综述主题与核心概念：{clip(scope.get('topic') or title)}",
+        f"- 研究对象与应用场景：{clip(scope.get('objects') or '按文献分类框架归纳')}",
+        f"- 时间范围与学科范围：{clip(scope.get('time_range') or time_label)}；{clip(scope.get('disciplines') or '学科范围见检索日志')}",
+        f"- 检索时间、数据库、时间范围与筛选标准：{clip(strategy.get('screening') or '按 search_log.md 实写')}",
+        f"- 证据边界：{clip(scope.get('evidence_boundary') or boundary_label)}",
+    ])
+
+    lines.extend(['', '## 关键词和检索策略', '',
+                  '| 概念 | 中文词 | 英文词/同义词 | 组合与布尔逻辑 | 实际用途 |',
+                  '|---|---|---|---|---|'])
+    keyword_rows = cap(list(data.get('keywords') or []), keyword)
+    if not keyword_rows:
+        keyword_rows = [
+            {'concept': query, 'en_synonyms': query, 'boolean': '本次实际检索式见 search_log.md', 'use': '本次实际检索'}
+            for query in (overview.get('queries') or [])[:1]
+        ]
+    if not keyword_rows:
+        keyword_rows = [{'concept': '未记录', 'boolean': '未记录', 'use': '未记录'}]
+    for row in keyword_rows:
+        lines.append(
+            f"| {clip(row.get('concept', ''))} | {clip(row.get('cn', ''))} | {clip(row.get('en_synonyms', ''))} | "
+            f"{clip(row.get('boolean', ''))} | {clip(row.get('use', ''))} |"
+        )
+    databases = strategy.get('databases') or '、'.join(overview.get('databases') or []) or '未记录'
+    queries = strategy.get('queries') or overview.get('queries') or []
+    lines.extend([
+        '', f"- 实际接入并执行的数据库：{clip(databases)}",
+        f"- 实际检索式：{clip('；'.join(clip(str(query)) for query in queries) or '未记录')}",
+    ])
+
+    lines.extend(['', '## 代表性文献清单', ''])
+    if comparison_rows:
+        lines.extend(
+            f"- {clip(row.get('literature', ''))}：{clip(row.get('findings', ''))}"
+            for row in cap(comparison_rows, rep)
+        )
+    else:
+        lines.append('- 未记录')
+
+    lines.extend(['', '## 文献分类框架', ''])
+    classification = list(data.get('classification') or [])
+    for index, dim in enumerate(C2_CLASSIFICATION_DIMS):
+        item = clip(classification[index]) if index < len(classification) else '未记录'
+        for sep in ('：', ':'):
+            if item.startswith(dim + sep):
+                item = item[len(dim) + len(sep):].strip()
+        lines.append(f'- {dim}：{item or "未记录"}')
+    for extra in classification[len(C2_CLASSIFICATION_DIMS):]:
+        lines.append(f'- {clip(extra)}')
+
+    synthesis_rows = list(data.get('synthesis') or [])
+    if not synthesis_rows:
+        synthesis_rows = [
+            {
+                'direction': row.get('research_question') or row.get('method') or '研究方向',
+                'progress': row.get('findings', ''),
+                'representative_methods': row.get('method', ''),
+                'scenarios': '适用场景由文献比较表归纳，未取得全文的细节标未确认',
+                'limit': row.get('limitation', ''),
+            }
+            for row in comparison_rows[:4]
+        ]
+    if not synthesis_rows:
+        synthesis_rows = [{'direction': '未记录研究方向', 'progress': '未记录',
+                           'representative_methods': '未记录', 'scenarios': '未记录', 'limit': '未记录'}]
+    lines.extend(['', '## 不同研究方向的综合分析', ''])
+    for item in cap(synthesis_rows, synthesis):
+        lines.append(
+            f"- {clip(item.get('direction', '未记录研究方向'))}：已有进展 {clip(item.get('progress', ''))}；"
+            f"代表方法 {clip(item.get('representative_methods', ''))}；适用场景 {clip(item.get('scenarios', ''))}；"
+            f"局限 {clip(item.get('limit', ''))}"
+        )
+
+    route_rows = list(data.get('route_comparison') or [])
+    if not route_rows:
+        route_rows = [
+            {
+                'route': row.get('method', '未记录路线'),
+                'problem': row.get('research_question', ''),
+                'performance': '摘要未报告可核对的性能指标，标未确认',
+                'conditions': '适用条件由文献比较表归纳',
+                'limitation': row.get('limitation', ''),
+                'complementarity': '与其他路线的互补性见综合分析',
+            }
+            for row in comparison_rows[:4]
+        ]
+    if not route_rows:
+        route_rows = [{'route': '未记录路线', 'problem': '未记录', 'performance': '未记录',
+                       'conditions': '未记录', 'limitation': '未记录', 'complementarity': '未记录'}]
+    lines.extend(['', '## 主要技术路线比较', '',
+                  '| 技术路线 | 解决的问题 | 性能/适用条件 | 局限 | 互补或融合可能 |',
+                  '|---|---|---|---|---|'])
+    for row in cap(route_rows, route):
+        lines.append(
+            f"| {clip(row.get('route', ''))} | {clip(row.get('problem', ''))} | {clip(row.get('performance', ''))} | "
+            f"{clip(row.get('limitation', ''))} | {clip(row.get('complementarity', ''))} |"
+        )
+
+    lines.extend(['', '## 文献比较表', '',
+                  '| ' + ' | '.join(C2_COMPARISON_COLUMNS) + ' |',
+                  '|' + '---|' * len(C2_COMPARISON_COLUMNS)])
+    for row in comparison_rows:
+        lines.append('| ' + ' | '.join(
+            clip(row.get(key, '')) for key in ('literature', 'research_question', 'data', 'method', 'findings', 'limitation')
+        ) + ' |')
+
+    gap_ref_lines = []
+    for row in gap_rows:
+        refs = sorted({int(ref) for item in (row.get('evidence') or []) for ref in (item.get('refs') or [])})
+        evidence_text = str(row.get('evidence_text') or '').strip()
+        if refs and not re.search(r'\[\d+\]', evidence_text):
+            evidence_text = ''.join(f'[{ref}]' for ref in refs)
+        gap_ref_lines.append((row, evidence_text))
+
+    lines.extend(['', '## 现有研究不足', ''])
+    if gap_ref_lines:
+        summary = '；'.join(
+            f"{clip(row.get('direction', ''))}方向{clip(row.get('limitation', ''))}" for row, _ in gap_ref_lines
+        )
+        evidence_marks = ''.join(
+            f'[{ref}]' for ref in sorted({int(m.group(1)) for _, et in gap_ref_lines for m in re.finditer(r"\[(\d+)\]", et)})
+        )
+        lines.append(f'现有研究不足：{summary} {evidence_marks}'.strip())
+    else:
+        lines.append('现有研究不足：未记录')
+
+    lines.extend(['', '## 研究空白分析表', '',
+                  '| ' + ' | '.join(C2_GAP_COLUMNS) + ' |',
+                  '|' + '---|' * len(C2_GAP_COLUMNS)])
+    for row, evidence_text in gap_ref_lines:
+        lines.append('| ' + ' | '.join(clip(row.get(key, ''), protect_cite=(key == 'evidence_text'))
+                                       if key != 'evidence_text' else clip(evidence_text, protect_cite=True)
+                                       for key in ('direction', 'progress', 'limitation', 'evidence_text', 'future_question')) + ' |')
+
+    future_rows = list(data.get('future_directions') or [])
+    if not future_rows:
+        future_rows = [
+            {'direction': row.get('direction', ''), 'basis': f"{row.get('progress', '')}；{row.get('limitation', '')}",
+             'question': row.get('future_question', '')}
+            for row in gap_rows
+        ]
+    if not future_rows:
+        future_rows = [{'direction': '未记录方向', 'basis': '未记录', 'question': '未记录'}]
+    lines.extend(['', '## 未来研究方向', ''])
+    for row in cap(future_rows, future):
+        lines.append(
+            f"- {clip(row.get('direction', ''))}：依据 {clip(row.get('basis', ''))}；待研究问题 {clip(row.get('question', ''))}"
+        )
+
+    review_refs = ''.join(
+        f'[{ref}]' for ref in sorted({int(m.group(1)) for _, et in gap_ref_lines for m in re.finditer(r"\[(\d+)\]", et)})
+    )
+    first_synthesis = synthesis_rows[0]
+    gap_summary = '、'.join(clip(row.get('direction', '')) for row, _ in gap_ref_lines) or '未记录方向'
+    lines.extend(['', '## 完整综述文本', ''])
+    lines.append(
+        f"综合池内文献，{clip(first_synthesis.get('direction', ''))}方向已有进展："
+        f"{clip(first_synthesis.get('progress', ''))}；其他方向的进展、方法与局限见文献比较表。"
+    )
+    lines.append(
+        f"现有研究不足集中于{gap_summary}，研究空白与可深入研究的问题见研究空白分析表 {review_refs}。"
+    )
+    lines.append(clip('上述归纳均基于池内文献证据，未覆盖全文细节处以摘要为准。', protect_cite=True))
+
+    return '\n'.join(lines).strip()
+
+
+_C2_TRIM_PROFILES = (
+    # 行数上限依次为：关键词/代表文献/综合分析/技术路线/文献比较/研究空白/未来方向，cell 为单元格截断长度
+    {'keyword': None, 'rep': None, 'synthesis': None, 'route': None, 'comparison': None, 'gap': None, 'future': None, 'cell': None},
+    {'keyword': 3, 'rep': 6, 'synthesis': 3, 'route': 3, 'comparison': 6, 'gap': 5, 'future': 4, 'cell': None},
+    {'keyword': 2, 'rep': 4, 'synthesis': 2, 'route': 2, 'comparison': 4, 'gap': 3, 'future': 3, 'cell': 80},
+    {'keyword': 1, 'rep': 2, 'synthesis': 1, 'route': 1, 'comparison': 2, 'gap': 2, 'future': 2, 'cell': 30},
+    {'keyword': 1, 'rep': 2, 'synthesis': 1, 'route': 1, 'comparison': 2, 'gap': 2, 'future': 2, 'cell': 16},
+    {'keyword': 1, 'rep': 1, 'synthesis': 1, 'route': 1, 'comparison': 1, 'gap': 1, 'future': 1, 'cell': 30},
+    {'keyword': 1, 'rep': 1, 'synthesis': 1, 'route': 1, 'comparison': 1, 'gap': 1, 'future': 1, 'cell': 16},
+)
+
+
+def _render_c2_body_in_range(data, task, evidence):
+    """按档位收紧行数/截断长度重渲染，直到标注后的字数回到 1200 以内；结构行永不删。"""
+    text = ''
+    for profile in _C2_TRIM_PROFILES:
+        text = _label_abstract_citations(_render_c2_body(data, task, **profile), evidence)
+        if _c2_word_count(text) <= C2_WORD_RANGE[1]:
+            break
+    return text
+
+
+def _rebuild_c2_body(task):
+    """构件驱动的确定性兜底：重建 C2 正文。结构必须成立；字数对证据过少的退化
+    池只能尽力而为（不虚构内容凑字数），此时返回 None 让上层保留原始错误。"""
+    try:
+        evidence = EvidenceAuditor(task.papers).audit_data(task.component_data)
+        text = _render_c2_body_in_range(task.component_data, task, evidence)
+        text, removed = _strip_unsupported_citations(
+            text, {item['ref'] for item in evidence}
+        )
+        if removed:
+            task.events.append(WritingEvent(
+                kind='citation_repair',
+                payload={'removed': removed, 'stage': 'c2_body_rebuild'},
+            ))
+        structure_errors = _c2_body_shape_errors(text, check_count=False)
+        if structure_errors:
+            raise WritingInputError('rebuilt C2 body invalid: ' + '; '.join(structure_errors))
+        _validate_citation_coverage(text, evidence)
+        _validate_material_citations(text, task.materials)
+        return BodyOutput(text=text, evidence=evidence)
+    except WritingInputError:
+        return None
+
+
 def _validate_component_shape(task, mode):
     data = task.component_data
     if mode == 'A_DIALOGUE':
@@ -701,6 +1126,23 @@ def _validate_component_shape(task, mode):
         for key in ('synthesis', 'route_comparison', 'future_directions'):
             if key in data and len(data[key]) < 2:
                 raise WritingInputError(f'mode C2 requires at least two {key} rows')
+        for label, rows in (('comparison', data.get('comparison') or []), ('gaps', data.get('gaps') or [])):
+            for index, row in enumerate(rows, 1):
+                if not isinstance(row, dict):
+                    raise WritingInputError(f'mode C2 {label} row {index} must be an object')
+                refs = set()
+                for item in (row.get('evidence') or []):
+                    if not isinstance(item, dict):
+                        continue
+                    for ref in (item.get('refs') or []):
+                        try:
+                            refs.add(int(ref))
+                        except (TypeError, ValueError):
+                            continue
+                if not refs:
+                    raise WritingInputError(
+                        f'mode C2 {label} row {index} requires evidence refs'
+                    )
     elif mode == 'D':
         if not 3 <= len(data.get('reading_cards', [])) <= 5:
             raise WritingInputError('mode D requires 3–5 reading cards')
@@ -1163,6 +1605,7 @@ class WritingService:
                     + (C1_STYLE_RULE if task.mode.upper() == 'C1' and str(task.target_journal or '').strip() else '')
                     + (C2_BODY_RULE if task.mode.upper() == 'C2' else '')
                     + (B_PROJECT_GENERATION_RULE if task.mode.upper() == 'B' else '')
+                    + (B_BODY_RULE if task.mode.upper() == 'B' else '')
                     + (B_DRAFT_RULE if task.mode.upper() == 'B' and task.project_draft else '')
                     + (B_MATERIAL_RULE if task.mode.upper() == 'B' and task.materials else '')
                     + (E_CUSTOM_PURPOSE_RULE if task.mode.upper() == 'E' else ''),
@@ -1180,6 +1623,7 @@ class WritingService:
                         'project_generation_rules': (
                             B_PROJECT_GENERATION_RULE if task.mode.upper() == 'B' else ''
                         ),
+                        'b_body_rules': B_BODY_RULE if task.mode.upper() == 'B' else '',
                         'project_draft': task.project_draft if task.mode.upper() == 'B' else '',
                         'project_input_path': task.project_input_path if task.mode.upper() == 'B' else 'direction',
                         'project_draft_rules': (
@@ -1240,6 +1684,12 @@ class WritingService:
                 _validate_citation_coverage(text, evidence)
                 _validate_material_citations(text, task.materials)
                 text = _label_abstract_citations(text, evidence)
+                if model_backed and task.mode.upper() == 'C2':
+                    shape_errors = _c2_body_shape_errors(text)
+                    if shape_errors:
+                        raise WritingInputError('C2 body structure: ' + '; '.join(shape_errors))
+                if model_backed and task.mode.upper() == 'B':
+                    text = _validate_b_body(text)
                 return BodyOutput(text=text, evidence=evidence)
             except WritingInputError as error:
                 last_error = error
@@ -1281,6 +1731,10 @@ class WritingService:
                     f'> 证据修复：已丢弃 {len(dropped_refs)} 个不合法引用并移除 {removed} 处编号，'
                     '相关表述请人工复核。\n\n' + repaired_text
                 )
+                if task.mode.upper() == 'C2':
+                    shape_errors = _c2_body_shape_errors(repaired_text)
+                    if shape_errors:
+                        raise WritingInputError('C2 body structure: ' + '; '.join(shape_errors))
                 return BodyOutput(text=repaired_text, evidence=valid_evidence)
             except WritingInputError:
                 pass
@@ -1311,10 +1765,84 @@ class WritingService:
                         f'> 引用修复：已移除 {removed} 处无证据编号，相关表述请人工复核。\n\n'
                         + repaired_text
                     )
+                    if task.mode.upper() == 'C2':
+                        shape_errors = _c2_body_shape_errors(repaired_text)
+                        if shape_errors:
+                            raise WritingInputError('C2 body structure: ' + '; '.join(shape_errors))
+                    if task.mode.upper() == 'B':
+                        repaired_text = _validate_b_body(repaired_text)
                     return BodyOutput(text=repaired_text, evidence=evidence)
             except WritingInputError:
                 pass
+        if (
+            model_backed
+            and task.mode.upper() == 'B'
+            and isinstance(last_result, dict)
+            and isinstance(last_result.get('text'), str)
+        ):
+            try:
+                evidence = EvidenceAuditor(task.papers).audit_items(
+                    last_result.get('evidence') or []
+                )
+                text = _normalize_b_headings(last_result['text'])
+                text, removed = _strip_unsupported_citations(
+                    text, {item['ref'] for item in evidence}
+                )
+                shape_errors = _b_body_shape_errors(text)
+                if shape_errors and _b_word_count(text) > 3000:
+                    compacted = self._compact_b_body(task, text, shape_errors)
+                    if not compacted:
+                        raise WritingInputError('B body compaction returned no body')
+                    text = _normalize_b_headings(compacted)
+                    text, removed = _strip_unsupported_citations(
+                        text, {item['ref'] for item in evidence}
+                    )
+                _validate_citation_coverage(text, evidence)
+                _validate_material_citations(text, task.materials)
+                text = _label_abstract_citations(text, evidence)
+                text = _validate_b_body(text)
+                task.events.append(WritingEvent(
+                    kind='b_body_compacted',
+                    payload={
+                        'errors': shape_errors,
+                        'removed_citations': removed,
+                        'stage': 'body',
+                    },
+                ))
+                return BodyOutput(text=text, evidence=evidence)
+            except WritingInputError:
+                pass
+        if model_backed and task.mode.upper() == 'C2' and isinstance(task.component_data, dict):
+            rebuilt = _rebuild_c2_body(task)
+            if rebuilt is not None:
+                task.events.append(WritingEvent(
+                    kind='c2_body_rebuilt',
+                    payload={'reason': str(last_error)[:300] if last_error else ''},
+                ))
+                return rebuilt
         raise last_error
+
+    def _compact_b_body(self, task, text, errors):
+        response = self.model.complete_json(
+            '你是科研标书正文压缩编辑器。只返回一个 JSON 对象，格式为 {"body":"完整正文"}。'
+            '必须保留全部 Markdown 标题、对解表、六段论证链六个节点、研究内容条目和所有 [n] 引用编号；'
+            '不得新增文献编号、事实或用户结果，只压缩重复解释和冗余铺陈；'
+            '固定节名「已有研究对本项目技术路线的支撑」不得带括注；'
+            '正文 CJK 字数压到 2500–2850，硬上限 3000。'
+            + B_BODY_RULE,
+            {
+                'mode': 'B',
+                'direction': task.direction,
+                'body': text,
+                'validation_errors': errors,
+                'length_target': LENGTH_TARGETS['B'],
+            },
+        )
+        if isinstance(response, dict):
+            for key in ('body', 'text', 'markdown', 'document'):
+                if isinstance(response.get(key), str):
+                    return response[key]
+        return None
 
     def produce(self, task, body_writer=None):
         components = self.produce_components(task)
