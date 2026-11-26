@@ -3,6 +3,7 @@ import os
 import json
 import re
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import redis
 from redis.exceptions import RedisError
@@ -392,9 +393,16 @@ def run_stage(task_id, stage, session_id=None, job_id=None, input_hash=None):
                 raise LookupError('No execution service is registered for this stage')
             _consume_stage_quotas(db, task, stage, input_hash)
             # Long model calls can outlive Supabase's idle connection timeout.
-            # Detach the task and release the pooled connection before the call.
+            # Snapshot the scalar task fields and release the pooled connection
+            # before the call; stage services only need these fields.
             db.refresh(task)
-            db.expunge(task)
+            stage_task = SimpleNamespace(
+                id=task.id,
+                session_id=task.session_id,
+                skill_version_id=task.skill_version_id,
+                state=task.state,
+                next_card=task.next_card,
+            )
             db.close()
             # Fine-grained phases are reported through an injected reporter;
             # stage services keep their two-argument signature.
@@ -417,7 +425,7 @@ def run_stage(task_id, stage, session_id=None, job_id=None, input_hash=None):
             with stage_reporting(reporter), StageWatchdog(
                 stage, task_id, on_timeout=persist_timeout
             ):
-                result = service(task, stage_input) or {}
+                result = service(stage_task, stage_input) or {}
             # Checkpoint and completion use a fresh session so a pooled TLS
             # connection that died during the stage can be replaced and retried.
             return _finalize_success_with_retry(task_id, stage, input_hash, result)

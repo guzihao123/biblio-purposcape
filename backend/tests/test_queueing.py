@@ -202,8 +202,6 @@ def test_production_adapter_allows_a_longer_stage_job_timeout(db, task, monkeypa
 def test_worker_releases_session_before_long_service_and_finalizes_fresh(
     db, task, fake_queue, monkeypatch
 ):
-    from sqlalchemy import inspect
-
     import app.queueing as queueing
 
     captured = {}
@@ -216,7 +214,9 @@ def test_worker_releases_session_before_long_service_and_finalizes_fresh(
     monkeypatch.setattr(queueing, '_finalize_success_with_retry', capture_finalize)
 
     def service(stage_task, stage_input):
-        assert inspect(stage_task).detached
+        assert stage_task.id == task.id
+        assert stage_task.session_id == task.session_id
+        assert stage_task.skill_version_id == task.skill_version_id
         return {
             'message': '检索与论文池整理完成',
             'state': TaskState.DASHBOARD_READY.value,
