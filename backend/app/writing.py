@@ -492,6 +492,25 @@ def _ensure_a_dialogue_intro(text, task):
     return block + cleaned.strip() + '\n\n' + text[first_heading.start():]
 
 
+def _rebuild_a_dialogue_body(task):
+    try:
+        data = task.component_data if isinstance(task.component_data, dict) else {}
+        text = _render_a_dialogue(data)
+        text = re.sub(
+            r'^#\s+.*$', '# ' + str(task.direction or '领域格局与七类双槽选题'),
+            text, count=1, flags=re.M,
+        )
+        text = re.sub(r'^###\s*选题\s*([12])\s*[｜|]', r'- 选题 \1｜', text, flags=re.M)
+        text = _ensure_a_dialogue_intro(text, task)
+        errors = _a_dialogue_shape_errors(text)
+        if errors:
+            return None
+        evidence = EvidenceAuditor(task.papers).audit_data(data)
+        _validate_citation_coverage(text, evidence)
+        return BodyOutput(text=text, evidence=evidence)
+    except WritingInputError:
+        return None
+
 def _render_a(data):
     lines = ['# 模式 A 构件', '', '## 领域格局速览表', '', '| 方向 | 池内篇数/占比 | 团队与期刊口径 |', '|---|---|---|']
     for row in data['landscape']:
@@ -2050,6 +2069,14 @@ class WritingService:
             if rebuilt is not None:
                 task.events.append(WritingEvent(
                     kind='c2_body_rebuilt',
+                    payload={'reason': str(last_error)[:300] if last_error else ''},
+                ))
+                return rebuilt
+        if model_backed and task.mode.upper() == 'A_DIALOGUE' and isinstance(task.component_data, dict):
+            rebuilt = _rebuild_a_dialogue_body(task)
+            if rebuilt is not None:
+                task.events.append(WritingEvent(
+                    kind='a_dialogue_rebuilt',
                     payload={'reason': str(last_error)[:300] if last_error else ''},
                 ))
                 return rebuilt
