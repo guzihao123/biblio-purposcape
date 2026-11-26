@@ -490,6 +490,55 @@ def _ensure_pool_ledger(evidence, papers, text):
     return evidence + extra
 
 
+def _audit_items_with_quote_repair(auditor, items, papers):
+    try:
+        return auditor.audit_items(items)
+    except WritingInputError as error:
+        if 'not in the abstract' not in str(error):
+            raise
+    by_ref = {
+        int(paper['ref_no']): paper
+        for paper in papers
+        if str(paper.get('ref_no', '')).isdigit()
+    }
+    repaired = []
+    for item in items:
+        if not isinstance(item, dict):
+            repaired.append(item)
+            continue
+        item = dict(item)
+        quotes = item.get('quotes') or {}
+        claim_words = set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', str(item.get('claim') or '').casefold()))
+        new_quotes = {}
+        for ref in item.get('refs') or []:
+            try:
+                ref = int(ref)
+            except (TypeError, ValueError):
+                continue
+            paper = by_ref.get(ref)
+            abstract = str((paper or {}).get('abstract') or '')
+            quote = quotes.get(str(ref), quotes.get(ref))
+            if not abstract.strip() or (quote and verbatim_quote(abstract, quote)):
+                new_quotes[str(ref)] = quote
+                continue
+            sentences = [
+                sentence.strip()
+                for sentence in re.split(r'(?<=[.!?。！？])\s+', abstract)
+                if len(sentence.strip()) >= 20
+            ]
+            if sentences:
+                quote = max(
+                    sentences,
+                    key=lambda s: len(claim_words & set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', s.casefold()))),
+                )
+            else:
+                quote = abstract.strip()
+            new_quotes[str(ref)] = quote
+        item['quotes'] = new_quotes
+        repaired.append(item)
+    return auditor.audit_items(repaired)
+
+
 def _ensure_a_dialogue_intro(text, task):
     """Deterministically add the missing 5–8 dialogue points from component evidence."""
     data = task.component_data if isinstance(task.component_data, dict) else {}
@@ -2095,7 +2144,10 @@ class WritingService:
                 if not isinstance(result, dict) or not isinstance(result.get('text'), str):
                     raise WritingInputError('body composer must return text and evidence')
                 auditor = EvidenceAuditor(task.papers)
-                evidence = auditor.audit_items(result.get('evidence') or [])
+                if task.mode.upper() == 'D':
+                    evidence = _audit_items_with_quote_repair(auditor, result.get('evidence') or [], task.papers)
+                else:
+                    evidence = auditor.audit_items(result.get('evidence') or [])
                 text = result['text']
                 if model_backed and task.mode.upper() == 'A_DIALOGUE':
                     text = _ensure_a_dialogue_intro(text, task)

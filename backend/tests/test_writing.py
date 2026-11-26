@@ -996,3 +996,12 @@ def test_b_project_theme_is_rendered_into_components(tmp_path):
     assert '- 研究对象：城市地下车库' in markdown
     assert '- 方法：联合建模与情景比较' in markdown
     assert '- 预期产出：校准方法与验证协议' in markdown
+
+
+def test_quote_repair_substitutes_verbatim_abstract_sentence():
+    from app.writing import EvidenceAuditor, _audit_items_with_quote_repair
+
+    auditor = EvidenceAuditor(PAPERS)
+    items = [{'claim': 'calibrated model loss', 'refs': [1], 'quotes': {'1': 'paraphrased not verbatim'}}]
+    out = _audit_items_with_quote_repair(auditor, items, PAPERS)
+    assert out and out[0]['quote'] in PAPERS[0]['abstract']
