@@ -1291,14 +1291,28 @@ def _backfill_c2_row_evidence(data, papers):
                 for group in re.findall(r'\[([0-9,\s]+)\]', row_text(row))
                 for ref in re.findall(r'\d+', group)
             })
+            candidates = [
+                by_ref[ref] for ref in refs
+                if ref in by_ref
+                and str(by_ref[ref].get('abstract') or '').strip()
+                and by_ref[ref].get('claim_eligible') is not False
+            ]
+            if not candidates:
+                words = set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', row_text(row).casefold()))
+                scored = []
+                for paper in by_ref.values():
+                    abstract = str(paper.get('abstract') or '')
+                    if not abstract or paper.get('claim_eligible') is False:
+                        continue
+                    title_words = set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', str(paper.get('title') or '').casefold()))
+                    scored.append((len(words & (title_words | set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', abstract.casefold())))), paper))
+                if scored:
+                    candidates = [max(scored, key=lambda item: item[0])[1]]
             items = []
             claim = str(row.get('findings') or row.get('direction') or '').strip()
-            for ref in refs:
-                paper = by_ref.get(ref)
-                abstract = str((paper or {}).get('abstract') or '')
-                if paper is None or paper.get('claim_eligible') is False or not abstract:
-                    continue
-                quote = pick_quote(abstract, row)
+            for paper in candidates:
+                ref = int(paper['ref_no'])
+                quote = pick_quote(str(paper.get('abstract') or ''), row)
                 if not quote:
                     continue
                 items.append({
@@ -1308,6 +1322,11 @@ def _backfill_c2_row_evidence(data, papers):
                 })
             if items:
                 row['evidence'] = items
+                first_ref = items[0]['refs'][0]
+                if key == 'comparison' and not re.search(r'\[\d+\]', str(row.get('literature') or '')):
+                    row['literature'] = f'[{first_ref}] ' + str(row.get('literature') or '')
+                if key == 'gaps' and not re.search(r'\[\d+\]', str(row.get('evidence_text') or '')):
+                    row['evidence_text'] = f'[{first_ref}] ' + str(row.get('evidence_text') or row.get('progress') or '')
                 changed += 1
     return data, changed
 
@@ -1570,7 +1589,15 @@ class WritingService:
         last_candidate = None
         for attempt in range(2):
             try:
-                task.component_data = self._generate_components(task, strict=attempt > 0)
+                generated = self._generate_components(task, strict=attempt > 0)
+                if mode == 'C2':
+                    generated, filled = _backfill_c2_row_evidence(generated, task.papers)
+                    if filled:
+                        task.events.append(WritingEvent(
+                            kind='evidence_backfill',
+                            payload={'filled_rows': filled, 'stage': 'components'},
+                        ))
+                task.component_data = generated
                 return self._build_components(task, mode)
             except (WritingInputError, ValueError) as error:
                 last_error = error
