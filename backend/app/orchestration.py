@@ -864,6 +864,8 @@ class Orchestrator:
         delivery_answer = answers.get('delivery', {})
         form, custom_delivery = _resolve_delivery_form(delivery_answer, mode)
         writing_mode = 'A_DIALOGUE' if mode == 'A' and form == 'B' else mode
+        if writing_mode == 'A_DIALOGUE':
+            papers = papers[:10]
         materials = []
         rejected_materials = []
         material_listing = ''

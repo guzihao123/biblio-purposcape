@@ -64,7 +64,7 @@ export function DashboardPage({ task, onTask }: DashboardPageProps) {
               key={artifactUrl(selected.url)}
               title={version === 'desktop' ? '满血版文献图谱' : '轻量版文献图谱'}
               src={artifactUrl(selected.url)}
-              sandbox="allow-scripts allow-same-origin"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
             />
           </section>
         )}

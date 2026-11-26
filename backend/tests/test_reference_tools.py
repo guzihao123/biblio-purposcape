@@ -261,6 +261,52 @@ def test_truncated_local_author_list_matches_registry_prefix():
     assert not any('作者' in issue for issue in issues)
 
 
+def test_middle_name_variant_is_not_an_author_mismatch():
+    paper = {
+        'title': 'Paper', 'authors': ['Aditya Pratap Singh'],
+        'year': 2024, 'venue': 'Journal',
+    }
+    metadata = {
+        'title': 'Paper', 'authors': ['Singh, Aditya'],
+        'year': 2024, 'container': 'Journal',
+        'volume': '', 'issue': '', 'page': '',
+    }
+    issues, _ = verify_references.compare(paper, metadata, 'crossref')
+    assert not any('作者' in issue for issue in issues)
+
+
+def test_erratum_is_reported_as_notice_not_a_delivery_failure(tmp_path, monkeypatch):
+    metadata = {
+        'title': ['Paper'], 'container-title': ['Journal'],
+        'author': [{'family': 'Smith', 'given': 'John'}],
+        'published': {'date-parts': [[2024]]},
+        'update-to': [{'type': 'erratum', 'label': 'Erratum', 'DOI': '10.1000/erratum'}],
+        'DOI': '10.1000/paper', 'type': 'journal-article', 'publisher': 'Fixture',
+    }
+    monkeypatch.setattr(
+        verify_references, 'fetch_crossref',
+        lambda doi: ('crossref', metadata),
+    )
+    papers = {'papers': [{
+        'ref_no': 1, 'doi': '10.1000/paper', 'title': 'Paper',
+        'authors': ['John Smith'], 'year': 2024, 'venue': 'Journal',
+    }]}
+    source = tmp_path / 'papers.json'
+    report_path = tmp_path / 'references_check.md'
+    source.write_text(json.dumps(papers, ensure_ascii=False), encoding='utf-8')
+    monkeypatch.setattr(
+        sys, 'argv',
+        ['verify_references.py', str(source), '--out', str(report_path)],
+    )
+
+    assert verify_references.main() == 0
+    report = report_path.read_text(encoding='utf-8')
+    assert '更正关联（非撤稿，供人工参考）' in report
+    assert '结论：**核验通过**（含更正关联，非撤稿）' in report
+    assert '结论：**需人工核对**' not in report
+    assert '更正关联 1 篇' in report
+
+
 def test_local_author_list_longer_than_registry_is_flagged():
     paper = {
         'title': 'Paper', 'authors': ['A Author', 'B Author'],
@@ -337,12 +383,12 @@ def test_offline_crossref_datacite_report_covers_fill_mismatch_missing_and_retra
     assert '标题不一致：crossref「Registry title」vs 本地「Local title」' in report
     assert '作者名不一致：crossref「Doe, Jane」vs 本地「John Smith」' in report
     assert 'DOI：10.2000/dataset｜核验通道：datacite' in report
-    assert 'DOI 10.9999/not-registered：Crossref 与 DataCite 均未收录（维持需人工核对）' in report
+    assert 'DOI 10.9999/not-registered：Crossref 与 DataCite 均未收录（非撤稿，供人工参考）' in report
     retracted_section = report.split('## [5] Retracted record', 1)[1]
     assert '不得进入参考文献' in retracted_section
     assert '结论：**需人工核对**' in retracted_section
     assert '结论：**核验通过**' not in retracted_section
-    assert '核验通过 2 篇；需人工核对 3 篇；含回填字段（卷/期/页）1 篇；撤稿/更正关联 1 篇' in report
+    assert '核验通过 2 篇；需人工核对 2 篇；含回填字段（卷/期/页）1 篇；撤稿关联 1 篇；更正关联 1 篇' in report
     assert sum('api.datacite.org' in url for url in calls) == 2
 
 

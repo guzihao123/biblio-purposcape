@@ -83,7 +83,7 @@ E_CUSTOM_PURPOSE_RULE = (
 
 LENGTH_TARGETS = {
     'A': '1500-2500',
-    'A_DIALOGUE': '1500-2500',
+    'A_DIALOGUE': '1500-4000',
     'B': '2000-3000',
     'C1': '800-1200',
     'C2': '800-1200',
@@ -436,7 +436,7 @@ def _a_dialogue_shape_errors(text):
         if len(slots) != 2:
             errors.append(f'{label} slots {len(slots)} != 2')
     if not 1500 <= _a_dialogue_word_count(body) <= 4000:
-        errors.append(f'word count {_a_dialogue_word_count(body)} outside 1500-2500')
+        errors.append(f'word count {_a_dialogue_word_count(body)} outside 1500-4000')
     return errors
 
 
@@ -531,6 +531,29 @@ def _compact_a_dialogue_data(data, limit):
     return compact
 
 
+def _pad_a_dialogue_body(text, task):
+    if _a_dialogue_word_count(text) >= 1500:
+        return text
+    data = task.component_data if isinstance(task.component_data, dict) else {}
+    def refs(evidence):
+        return ' '.join(sorted({
+            f'[{ref}]' for item in evidence or []
+            for ref in (item.get('refs') or [])
+        }))
+    lines = ['## 证据边界与待核对事项', '']
+    for gap in data.get('gaps') or []:
+        citation = refs(gap.get('evidence') or [])
+        if citation:
+            lines.append(f"- {gap.get('gap', '').strip()}：{gap.get('reason', '').strip()} {citation}。")
+    for row in data.get('landscape') or []:
+        citation = refs(row.get('evidence') or [])
+        if citation:
+            lines.append(f"- {row.get('direction', '').strip()}：{row.get('share', '').strip()} {citation}。")
+    if len(lines) <= 2:
+        return text
+    return text.rstrip() + '\n\n' + '\n'.join(lines) + '\n'
+
+
 def _rebuild_a_dialogue_body(task):
     try:
         data = task.component_data if isinstance(task.component_data, dict) else {}
@@ -543,9 +566,11 @@ def _rebuild_a_dialogue_body(task):
             )
             text = re.sub(r'^###\s*选题\s*([12])\s*[｜|]', r'- 选题 \1｜', text, flags=re.M)
             text = _ensure_a_dialogue_intro(text, task)
+            text = _pad_a_dialogue_body(text, task)
+            evidence = EvidenceAuditor(task.papers).audit_data(compact)
+            text = _label_abstract_citations(text, evidence)
             if _a_dialogue_shape_errors(text):
                 continue
-            evidence = EvidenceAuditor(task.papers).audit_data(compact)
             _validate_citation_coverage(text, evidence)
             return BodyOutput(text=text, evidence=evidence)
         return None
@@ -1975,6 +2000,8 @@ class WritingService:
                     text = _validate_b_body(text)
                 if model_backed and task.mode.upper() == 'A_DIALOGUE':
                     text = _ensure_a_dialogue_intro(text, task)
+                    text = _pad_a_dialogue_body(text, task)
+                    text = _label_abstract_citations(text, components.evidence + evidence)
                     shape_errors = _a_dialogue_shape_errors(text)
                     if shape_errors:
                         raise WritingInputError('A_DIALOGUE body structure: ' + '; '.join(shape_errors))
@@ -2061,6 +2088,8 @@ class WritingService:
                         repaired_text = _validate_b_body(repaired_text)
                     if task.mode.upper() == 'A_DIALOGUE':
                         repaired_text = _ensure_a_dialogue_intro(repaired_text, task)
+                        repaired_text = _pad_a_dialogue_body(repaired_text, task)
+                        repaired_text = _label_abstract_citations(repaired_text, components.evidence + evidence)
                         shape_errors = _a_dialogue_shape_errors(repaired_text)
                         if shape_errors:
                             raise WritingInputError('A_DIALOGUE body structure: ' + '; '.join(shape_errors))

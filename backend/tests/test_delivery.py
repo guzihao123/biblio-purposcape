@@ -114,12 +114,15 @@ def test_pending_number_confirmation_is_parsed_from_the_verifier_report():
     assert notes == ['20（句引[9]）未绑定台账原句——待人工确认是否结构性数字']
 
     reference_report = (
+        '## [11] Advisory title\n'
+        '- DOI 10.1000/advisory：Crossref 与 DataCite 均未收录（非撤稿，供人工参考）\n'
         '## [13] Sample title\n'
         '- DOI：10.1000/x｜核验通道：crossref\n'
         '- 作者名不一致：Crossref「Pachan, Molly」vs 本地「Molly K. Pachan」\n'
         '- 结论：**需人工核对**（见上）\n'
     )
     issues = _reference_issues(reference_report)
+    assert len(issues) == 1
     assert issues[0].startswith('[ref 13] 作者名不一致')
 
 
@@ -396,3 +399,20 @@ def test_e_mode_delivery_a_writes_the_survey_word_file(tmp_path):
     assert len(Document(result['综述初稿.docx']).paragraphs) > 20
     assert result['综述初稿.md'].read_text(encoding='utf-8').startswith('# 肝癌免疫治疗耐药机制')
     assert '## 参考文献' in result['综述初稿.md'].read_text(encoding='utf-8')
+
+
+def test_docx_renders_markdown_as_normal_text(tmp_path):
+    from docx import Document
+    from app.delivery import _write_docx
+
+    path = tmp_path / 'plain.docx'
+    _write_docx(
+        make_task(body=''),
+        '## 研究结论\n\n**加粗结论**与普通文本 [1]。\n\n- 列表项 [2]\n',
+        path,
+    )
+    text = '\n'.join(paragraph.text for paragraph in Document(path).paragraphs)
+    assert '研究结论' in text
+    assert '加粗结论' in text
+    assert '**' not in text
+    assert '##' not in text

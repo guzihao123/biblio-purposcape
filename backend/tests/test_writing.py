@@ -8,6 +8,9 @@ from app.writing import (
     WritingInputError,
     WritingService,
     WritingTask,
+    _b_body_shape_errors,
+    _b_word_count,
+    _normalize_b_headings,
     _render_b,
 )
 
@@ -35,6 +38,39 @@ PAPERS = [
         'claim_eligible': False,
     },
 ]
+
+def valid_b_body(filler_repeats=80):
+    filler = '本项目围绕联合校准方法开展研究，现有证据支持继续推进[1]。'
+    return '\n'.join([
+        '# 项目甲',
+        '',
+        '本项目拟建立联合校准方法，若不开展本项目，风险将持续累积 [1]。',
+        '',
+        '## 已有研究对本项目技术路线的支撑（强制构件二：逐项挂研究内容编号）',
+        '',
+        '- 研究内容（一）：资产 [1]。',
+        '- 研究内容（二）：资产 [1]。',
+        '- 研究内容（三）：资产 [1]。',
+        '',
+        '## 关键不足',
+        '',
+        '| 不足 | 科学问题 | 研究内容 |',
+        '|---|---|---|',
+        '| 证据不足 | 如何校准 | 研究内容（一） |',
+        '',
+        '## 六段论证链',
+        '',
+        '**研究需求**：需求 [1]。**已有进展**：进展 [1]。**现有不足**：不足 [1]。',
+        '**科学问题**：问题 [1]。**项目切入点**：本项目切入 [1]。**预期贡献**：贡献 [1]。',
+        '',
+        '## 研究内容',
+        '',
+        filler * filler_repeats,
+        '',
+        '## 参考文献',
+        '[1] X',
+    ])
+
 
 EVIDENCE = {
     'claim': 'The calibrated model improved loss estimation.',
@@ -390,6 +426,37 @@ def test_a_dialogue_rejects_a_category_without_two_slots(tmp_path):
         WritingService(workspace_root=tmp_path).produce_components(task)
 
 
+def test_b_support_heading_annotation_is_normalized_and_shape_passes():
+    body = valid_b_body()
+    assert any('固定节名' in error for error in _b_body_shape_errors(body))
+    normalized = _normalize_b_headings(body)
+    assert '## 已有研究对本项目技术路线的支撑' in normalized
+    assert '强制构件二' not in normalized
+    assert _b_body_shape_errors(normalized) == []
+
+
+def test_b_overlong_body_is_compacted_before_delivery(tmp_path):
+    class OverlongModel:
+        def __init__(self):
+            self.compactions = 0
+
+        def complete_json(self, system_prompt, payload):
+            if payload.get('stage') == 'components':
+                return {'components': component_data('B')}
+            if 'validation_errors' in payload:
+                self.compactions += 1
+                return {'body': valid_b_body()}
+            return {'body': valid_b_body(filler_repeats=140), 'evidence': [EVIDENCE]}
+
+    model = OverlongModel()
+    task = make_task('B', tmp_path, component_data=None, project={'name': '项目甲', 'goal': '目标乙'})
+    output = WritingService(workspace_root=tmp_path, model=model).produce(task)
+
+    assert model.compactions == 1
+    assert 2000 <= _b_word_count(output.body) <= 3000
+    assert any(event.kind == 'b_body_compacted' for event in task.events)
+
+
 def test_b_components_include_project_demand_mapping_and_six_link_chain(tmp_path):
     service = WritingService(workspace_root=tmp_path)
     output = service.produce_components(make_task('B', tmp_path))
@@ -602,7 +669,7 @@ def test_b_model_payloads_require_system_generated_plan_sections(tmp_path):
             self.calls.append((system_prompt, payload))
             if payload['stage'] == 'components':
                 return {'components': component_data('B')}
-            return {'body': '本项目拟建立联合校准方法 [1]。', 'evidence': [EVIDENCE]}
+            return {'body': valid_b_body(), 'evidence': [EVIDENCE]}
 
     model = FakeModel()
     task = make_task('B', tmp_path, component_data=None, project={'name': '项目甲', 'goal': '目标乙'})

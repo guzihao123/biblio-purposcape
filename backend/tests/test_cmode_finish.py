@@ -144,7 +144,8 @@ def test_c2_is_review_not_discussion_and_never_asks_for_this_paper_results():
     assert '"results"' not in schema
     assert '不要求本文结果' in C2_SKIP_RULE
     assert '不得写成 Discussion' in C2_SKIP_RULE
-    assert OUTLINE_HEADINGS['C2'][-1] == '完整综述'
+    assert OUTLINE_HEADINGS['C2'][-1] == '衔接与重复检查'
+    assert '完整综述文本' in OUTLINE_HEADINGS['C2']
     assert not any('讨论' in heading for heading in OUTLINE_HEADINGS['C2'])
 
 

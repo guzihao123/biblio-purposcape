@@ -19,7 +19,7 @@ from app.task_presenters import _mode_card
 from app.writing import B_MATERIAL_RULE, WritingInputError, WritingService, WritingTask
 from test_delivery import LEDGER, PAPERS, passing_reference_checker
 from test_policy_search import source as policy_source
-from test_writing import EVIDENCE, component_data
+from test_writing import EVIDENCE, component_data, valid_b_body
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -45,6 +45,14 @@ PASTED = '''标题：道路交通安全示范建设规划
 正文：
 全省事故数下降。必须加强统计口径管理。'''
 MATERIAL_BODY = '政策目标见（据材料 M1），文献事实 [1]。'
+
+
+def valid_material_body():
+    marker = '本项目拟建立联合校准方法，若不开展本项目，风险将持续累积 [1]。'
+    return valid_b_body().replace(
+        marker,
+        '政策目标见（据材料 M1）。本项目拟建立联合校准方法，若不开展本项目，风险将持续累积 [1]。',
+    )
 
 
 class MaterialModel:
@@ -150,7 +158,7 @@ def test_targeted_official_url_with_fetcher_is_accepted(tmp_path):
 
 def test_b_payloads_carry_materials_listing_and_material_rule(tmp_path):
     materials = collect_b_materials(tmp_path, PASTED).items
-    model = MaterialModel(MATERIAL_BODY)
+    model = MaterialModel(valid_material_body())
     output = WritingService(workspace_root=tmp_path, model=model).produce(
         writing_task(materials),
     )
@@ -181,7 +189,7 @@ def test_material_citations_are_checked_and_never_join_the_n_ledger(tmp_path):
         )
 
     assert '非论文材料索引' not in WritingService(
-        workspace_root=tmp_path, model=MaterialModel('文献 [1]。'),
+        workspace_root=tmp_path, model=MaterialModel(valid_b_body()),
     ).produce(writing_task()).components.markdown
 
 
@@ -263,7 +271,7 @@ def run_b_stage(tmp_path, monkeypatch, raw_materials, body):
 
 
 def test_b_stage_delivers_materials_without_polluting_n_evidence(tmp_path, monkeypatch):
-    task_id, result = run_b_stage(tmp_path, monkeypatch, PASTED, MATERIAL_BODY)
+    task_id, result = run_b_stage(tmp_path, monkeypatch, PASTED, valid_material_body())
     checkpoint = result['checkpoint']
     assert checkpoint['clean'] is True, checkpoint['failures']
     assert checkpoint['materials']['accepted'] == 2
@@ -280,7 +288,7 @@ def test_b_stage_delivers_materials_without_polluting_n_evidence(tmp_path, monke
 
 
 def test_b_stage_without_materials_declares_coverage_boundary(tmp_path, monkeypatch):
-    task_id, result = run_b_stage(tmp_path, monkeypatch, '', '文献事实 [1]。')
+    task_id, result = run_b_stage(tmp_path, monkeypatch, '', valid_b_body())
     checkpoint = result['checkpoint']
     assert checkpoint['clean'] is True, checkpoint['failures']
     assert checkpoint['materials'] == {'accepted': 0, 'rejected': []}
