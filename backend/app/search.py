@@ -506,7 +506,7 @@ class SearchService:
     # OpenAlex/arXiv/Crossref, 30/60/90s for S2) and potentially two arXiv calls.
     # Outer limits leave room for those retries; an explicit timeout overrides all.
     SOURCE_TIMEOUTS = {
-        'openalex': 120, 'arxiv': 180, 'crossref': 180, 'semantic_scholar': 300,
+        'openalex': 300, 'arxiv': 180, 'crossref': 180, 'semantic_scholar': 300,
     }
 
     def __init__(

@@ -30,6 +30,10 @@ EXTENSIONS = [
 ]
 
 
+def test_search_timeouts_allow_slow_multi_query_openalex_retrieval():
+    assert SearchService.SOURCE_TIMEOUTS['openalex'] >= 300
+
+
 def test_plan_sources_keeps_domain_only_english_topics_on_openalex():
     plan = plan_sources(
         direction='medical education research',
