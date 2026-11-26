@@ -416,3 +416,21 @@ def test_docx_renders_markdown_as_normal_text(tmp_path):
     assert '加粗结论' in text
     assert '**' not in text
     assert '##' not in text
+
+
+def test_d_compression_preserves_reading_pages():
+    from app.delivery import _compress_d_specs
+
+    slides = [{'title': '封面', 'lines': [], 'layout': 'cover', 'n': 1},
+              {'title': '汇报结构', 'lines': [], 'layout': 'toc', 'n': 2}]
+    n = 3
+    for i in range(12):
+        slides.append({'title': f'研究进展｜方向{i}', 'lines': ['x'], 'layout': 'stacked', 'n': n}); n += 1
+    for ref in (1, 3, 4, 6, 10):
+        for suffix in ('方法与数据', '发现与启发'):
+            slides.append({'title': f'代表作精读 [{ref}]｜{suffix}', 'lines': ['y'], 'layout': 'reading', 'n': n}); n += 1
+    comp = _compress_d_specs(slides, 15)
+    titles = [s['title'] for s in comp]
+    for ref in (1, 3, 4, 6, 10):
+        assert f'代表作精读 [{ref}]｜方法与数据' in titles
+    assert len(comp) <= 15

@@ -578,12 +578,22 @@ def _compress_d_specs(slides, limit):
     others = [slide for slide in slides if not slide.get('chart')]
     if limit <= len(chart_slides):
         return chart_slides
+    budget = limit - len(chart_slides) - 1
+    priority = [
+        slide for slide in others
+        if '代表作精读' in slide.get('title', '') or slide.get('layout') in ('cover', 'toc')
+    ]
+    rest = [slide for slide in others if slide not in priority]
+    kept = priority[:budget]
+    remaining = max(0, budget - len(kept))
+    kept += rest[:remaining]
+    dropped = priority[budget:] + rest[remaining:]
     merged_lines = []
-    for slide in others[max(0, limit - len(chart_slides) - 1):]:
+    for slide in dropped:
         merged_lines.append(slide['title'])
         merged_lines.extend(slide['lines'])
-    kept = others[:max(0, limit - len(chart_slides) - 1)]
-    kept.append({'title': '综合研究要点', 'lines': merged_lines, 'layout': 'stacked'})
+    if merged_lines:
+        kept.append({'title': '综合研究要点', 'lines': merged_lines, 'layout': 'stacked'})
     return sorted(chart_slides + kept, key=lambda slide: slide.get('n', 0))
 
 
