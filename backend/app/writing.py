@@ -1247,6 +1247,69 @@ def _repair_component_evidence(value, papers):
     return repaired, sorted(dropped_refs), removed
 
 
+def _backfill_c2_row_evidence(data, papers):
+    """Attach verbatim abstract evidence to C2 comparison/gap rows that cite [n]."""
+    if not isinstance(data, dict):
+        return data, 0
+    by_ref = {
+        int(paper['ref_no']): paper
+        for paper in papers
+        if str(paper.get('ref_no', '')).isdigit()
+    }
+    changed = 0
+
+    def row_text(row):
+        return ' '.join(
+            str(value) for value in row.values()
+            if isinstance(value, str)
+        )
+
+    def pick_quote(abstract, row):
+        sentences = [
+            sentence.strip()
+            for sentence in re.split(r'(?<=[.!?。！？])\s+', abstract)
+            if len(sentence.strip()) >= 20
+        ]
+        if not sentences:
+            return ''
+        words = set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', row_text(row).casefold()))
+        scored = []
+        for sentence in sentences:
+            tokens = set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', sentence.casefold()))
+            scored.append((len(words & tokens), sentence))
+        return max(scored, key=lambda item: item[0])[1]
+
+    for key in ('comparison', 'gaps'):
+        rows = data.get(key)
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict) or row.get('evidence'):
+                continue
+            refs = sorted({
+                int(ref) for ref in re.findall(r'\[(\d+)\]', row_text(row))
+            })
+            items = []
+            claim = str(row.get('findings') or row.get('direction') or '').strip()
+            for ref in refs:
+                paper = by_ref.get(ref)
+                abstract = str((paper or {}).get('abstract') or '')
+                if paper is None or paper.get('claim_eligible') is False or not abstract:
+                    continue
+                quote = pick_quote(abstract, row)
+                if not quote:
+                    continue
+                items.append({
+                    'claim': claim or quote,
+                    'refs': [ref],
+                    'quotes': {str(ref): quote},
+                })
+            if items:
+                row['evidence'] = items
+                changed += 1
+    return data, changed
+
+
 def _validate_material_citations(text, materials):
     """[M] is a separate channel: validate only the explicit material marker."""
     if not materials:
@@ -1511,6 +1574,25 @@ class WritingService:
                 last_error = error
                 last_candidate = task.component_data
                 task.component_data = None
+        if (
+            mode == 'C2'
+            and last_candidate is not None
+            and last_error is not None
+            and 'requires evidence refs' in str(last_error)
+        ):
+            try:
+                repaired, filled = _backfill_c2_row_evidence(last_candidate, task.papers)
+                if filled:
+                    task.component_data = repaired
+                    components = self._build_components(task, mode)
+                    task.events.append(WritingEvent(
+                        kind='evidence_backfill',
+                        payload={'filled_rows': filled, 'stage': 'components'},
+                    ))
+                    return components
+            except WritingInputError:
+                pass
+
         if (
             last_candidate is not None
             and last_error is not None
