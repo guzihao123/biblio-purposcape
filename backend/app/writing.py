@@ -232,6 +232,7 @@ class ComponentOutput:
     markdown: str
     evidence: list
     has_user_results: bool = False
+    structural_refs: set = field(default_factory=set)
 
     @property
     def c2(self):
@@ -703,8 +704,9 @@ def _citation_refs(text):
     return {int(ref) for ref in re.findall(r'\[(\d+)\]', text)}
 
 
-def _validate_citation_coverage(text, evidence):
+def _validate_citation_coverage(text, evidence, structural_refs=None):
     available = {item['ref'] for item in evidence}
+    available.update(int(ref) for ref in (structural_refs or set()))
     missing = sorted(_citation_refs(text) - available)
     if missing:
         raise WritingInputError(f'citation {missing[0]} has no evidence ledger entry')
@@ -974,7 +976,26 @@ class WritingService:
             markdown = _render_d(task, task.component_data)
         else:
             markdown = str(task.component_data.get('markdown') or '')
-        _validate_citation_coverage(markdown, evidence)
+        structural_refs = set()
+        if mode == 'D':
+            for card in task.component_data.get('reading_cards', []):
+                try:
+                    structural_refs.add(int(card.get('ref')))
+                except (TypeError, ValueError):
+                    pass
+            for row in task.component_data.get('method_comparison', []):
+                for ref in row.get('refs', []):
+                    try:
+                        structural_refs.add(int(ref))
+                    except (TypeError, ValueError):
+                        pass
+            for row in task.component_data.get('progress', []):
+                for ref in row.get('refs', []):
+                    try:
+                        structural_refs.add(int(ref))
+                    except (TypeError, ValueError):
+                        pass
+        _validate_citation_coverage(markdown, evidence, structural_refs)
         markdown = _label_abstract_citations(markdown, evidence)
         return ComponentOutput(
             mode=mode,
@@ -982,6 +1003,7 @@ class WritingService:
             markdown=markdown,
             evidence=evidence,
             has_user_results=bool(str(task.user_results or '').strip()),
+            structural_refs=structural_refs,
         )
 
     def produce_components(self, task):
@@ -1045,7 +1067,7 @@ class WritingService:
             sample = '# 样章：检索概况与精读页\n\n## 检索概况\n\n' + _render_search_overview(task.search_overview) + '\n\n' + _render_reading_card(components.data['reading_cards'][0])
         else:
             sample = str(components.data.get('sample') or '')
-        _validate_citation_coverage(sample, components.evidence)
+        _validate_citation_coverage(sample, components.evidence, components.structural_refs)
         outline = _label_abstract_citations(outline, components.evidence)
         sample = _label_abstract_citations(sample, components.evidence)
         return OutlineSample(outline=outline, sample=sample)

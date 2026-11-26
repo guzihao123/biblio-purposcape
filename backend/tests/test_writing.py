@@ -288,6 +288,18 @@ def test_landscape_pool_refs_are_not_treated_as_evidence_citations(tmp_path):
     assert '[3]' not in output.markdown.split('空白证据表')[0]
 
 
+def test_d_reading_card_structural_ref_does_not_require_evidence(tmp_path):
+    data = component_data('D')
+    data['reading_cards'][0]['ref'] = 3
+    data['reading_cards'][0].pop('evidence', None)
+    task = make_task('D', tmp_path, component_data=data)
+
+    output = WritingService(workspace_root=tmp_path).produce_components(task)
+
+    assert '精读页·[3]' in output.markdown
+    assert 3 in output.structural_refs
+
+
 def test_unsupported_prose_citation_is_repaired_after_strict_retries(tmp_path):
     class InvalidCitationModel:
         def __init__(self):
