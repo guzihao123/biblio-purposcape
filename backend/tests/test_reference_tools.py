@@ -246,6 +246,35 @@ def test_c1_c2_independent_maps_are_individually_reversible(tmp_path):
         assert {display: forward[display] for _, display in reverse.items()} == forward
 
 
+def test_truncated_local_author_list_matches_registry_prefix():
+    paper = {
+        'title': 'Paper', 'authors': ['Wayne Xin Zhao', 'Kun Zhou'],
+        'year': 2024, 'venue': 'Journal',
+    }
+    metadata = {
+        'title': 'Paper',
+        'authors': ['Zhao, Wayne Xin', 'Zhou, Kun', 'Li, Junyi'],
+        'year': 2024, 'container': 'Journal',
+        'volume': '', 'issue': '', 'page': '',
+    }
+    issues, _ = verify_references.compare(paper, metadata, 'crossref')
+    assert not any('作者' in issue for issue in issues)
+
+
+def test_local_author_list_longer_than_registry_is_flagged():
+    paper = {
+        'title': 'Paper', 'authors': ['A Author', 'B Author'],
+        'year': 2024, 'venue': 'Journal',
+    }
+    metadata = {
+        'title': 'Paper', 'authors': ['A Author'],
+        'year': 2024, 'container': 'Journal',
+        'volume': '', 'issue': '', 'page': '',
+    }
+    issues, _ = verify_references.compare(paper, metadata, 'crossref')
+    assert any('作者人数不一致' in issue for issue in issues)
+
+
 def test_cjk_title_and_author_mismatches_are_not_silently_equal():
     paper = {'title': '真实标题', 'authors': ['张伟'], 'year': 2024, 'venue': '期刊'}
     metadata = {

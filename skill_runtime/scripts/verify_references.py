@@ -127,14 +127,23 @@ def compare(p, m, src):
     if norm(m['title']) and norm(m['title']) != norm(p.get('title', '')):
         issues.append('标题不一致：%s「%s」vs 本地「%s」' % (src, m['title'], p.get('title')))
     local_authors = p.get('authors') or []
-    if len(m['authors']) != len(local_authors):
+    remote_authors = m['authors']
+    if len(local_authors) > len(remote_authors):
         issues.append('作者人数不一致：%s %d 人（%s）vs 本地 %d 人（%s）'
-                      % (src, len(m['authors']), '; '.join(m['authors']),
+                      % (src, len(remote_authors), '; '.join(remote_authors),
                          len(local_authors), ', '.join(local_authors)))
     else:
-        for a, b in zip(m['authors'], local_authors):
+        # OpenAlex and the GB/T formatter may keep only the first N authors.
+        # A shorter local list is valid when it is a prefix of the registry list.
+        for index, (a, b) in enumerate(zip(remote_authors, local_authors), 1):
             if name_key(a) != name_key(b):
                 issues.append('作者名不一致：%s「%s」vs 本地「%s」' % (src, a, b))
+                if len(local_authors) != len(remote_authors):
+                    issues.append(
+                        '作者前缀不一致：本地仅列前 %d 位，第 %d 位不匹配'
+                        % (len(local_authors), index)
+                    )
+                break
     if m['year'] and p.get('year') and int(m['year']) != int(p['year']):
         issues.append('年份不一致：%s %s vs 本地 %s' % (src, m['year'], p['year']))
     if m['container'] and p.get('venue') and norm(m['container']) != norm(p['venue']):

@@ -144,6 +144,8 @@ class FigureAsset:
     acquisition: str
     slot: str = "reading"
     asset_url: str = ""
+    crop_mode: str = ""
+    crop_meta: dict = field(default_factory=dict)
 
     def caption_line(self):
         page = self.original_page or "【待核实】"
@@ -243,11 +245,27 @@ def _normalize_png(source, destination, max_width=1800):
     return destination
 
 
+TABLE_CAPTION_RE = re.compile(r"^\s*(?:table|tab\.?|表)\s*[0-9]+", re.IGNORECASE)
+TABLE_HEADER_WORDS = (
+    "used dataset", "crash type", "records no", "analysis period", "severity levels",
+    "methodology", "key findings", "input factors", "age groups", "study used",
+)
+
+
+def _looks_like_table_header(text):
+    """Cheap, conservative guard against absorbing a table header into a caption."""
+
+    lowered = _normalized(text).casefold()
+    return sum(1 for word in TABLE_HEADER_WORDS if word in lowered) >= 2
+
+
 def _figure_caption_from_lines(lines, match_index):
     pieces = [lines[match_index].strip()]
     for line in lines[match_index + 1:match_index + 3]:
         stripped = line.strip()
-        if not stripped or CAPTION_RE.match(stripped):
+        if not stripped or CAPTION_RE.match(stripped) or TABLE_CAPTION_RE.match(stripped):
+            break
+        if _looks_like_table_header(stripped):
             break
         pieces.append(stripped)
     return _normalized(" ".join(pieces))
@@ -315,13 +333,46 @@ def _largest_object_bbox(pdf_path, page_index):
     return None, 0, 0
 
 
-def _caption_crop_pixels(pdf_path, page_index, caption, scale=2.0):
-    """Crop from the page's top content margin down to the caption top.
+def _page_graphic_boxes(pdf_path, page_index):
+    """Collect graphic object boxes on a page, in PDF points (y from bottom).
 
-    Review/research figure pages usually put the caption directly under the
-    artwork.  This keeps the figure title and all labels (the largest-object
-    box alone often clips the title or a table header).
+    Only image (type 3) and path (type 2) objects are considered.  Thin rules,
+    footer/header strips and sub-pixel decorations are dropped so they cannot
+    be mistaken for figure artwork.
     """
+
+    import pypdfium2 as pdfium
+
+    document = pdfium.PdfDocument(str(pdf_path))
+    try:
+        page = document[page_index]
+        try:
+            page_width, page_height = page.get_size()
+            boxes = []
+            for obj in page.get_objects():
+                if obj.type not in (2, 3):
+                    continue
+                try:
+                    x0, y0, x1, y1 = obj.get_pos()
+                except Exception:
+                    continue
+                box_width, box_height = x1 - x0, y1 - y0
+                if box_width < page_width * 0.03 or box_height < page_height * 0.01:
+                    continue
+                if box_height < 5 and box_width > page_width * 0.4:
+                    continue
+                if y0 > page_height * 0.94 and box_height < page_height * 0.05:
+                    continue
+                boxes.append((x0, y0, x1, y1))
+            return boxes, page_width, page_height
+        finally:
+            page.close()
+    finally:
+        document.close()
+
+
+def _caption_anchor_in_pdf(pdf_path, page_index, caption):
+    """Return ``(left, top, right)`` of the caption anchor, in PDF coordinates."""
 
     import pypdfium2 as pdfium
 
@@ -332,7 +383,6 @@ def _caption_crop_pixels(pdf_path, page_index, caption, scale=2.0):
     try:
         page = document[page_index]
         try:
-            page_width, page_height = page.get_size()
             text_page = page.get_textpage()
             try:
                 searcher = text_page.search(token)
@@ -340,19 +390,8 @@ def _caption_crop_pixels(pdf_path, page_index, caption, scale=2.0):
                 if occurrence is None:
                     return None
                 index, _count = occurrence
-                x0, y0, _x1, caption_top = text_page.get_charbox(index)
-                top_px = page_height * 0.055
-                bottom_px = page_height - caption_top - 3
-                left_px = page_width * 0.035
-                right_px = page_width * 0.965
-                if bottom_px - top_px < page_height * 0.18:
-                    return None
-                return (
-                    round(left_px * scale, 2),
-                    round(top_px * scale, 2),
-                    round((right_px - left_px) * scale, 2),
-                    round((bottom_px - top_px) * scale, 2),
-                )
+                x0, y0, x1, y1 = text_page.get_charbox(index)
+                return (x0, y1, x1)
             finally:
                 text_page.close()
         finally:
@@ -361,13 +400,115 @@ def _caption_crop_pixels(pdf_path, page_index, caption, scale=2.0):
         document.close()
 
 
+def _column_aware_crop_pixels(pdf_path, page_index, caption, scale=2.0):
+    """Locate a figure from its caption anchor plus nearby graphic objects.
+
+    The crop is bounded by the actual artwork: its left/right edges come from
+    the graphic cluster sharing the caption's column, and its top edge comes
+    from the cluster's top instead of a fixed page margin.  When no reliable
+    boundary exists the function degrades instead of guessing a full-width
+    band, so a right-column body text or a table above the figure can never be
+    silently pulled into the crop.
+
+    Returns ``(px, meta)`` where ``px`` is ``(x, y, w, h)`` at ``scale`` or
+    ``None``.  ``meta`` records the decision for the acquisition log.
+    """
+
+    anchor = _caption_anchor_in_pdf(pdf_path, page_index, caption)
+    if anchor is None:
+        return None, {"mode": "degraded", "reason": "图注锚点未在文本层定位"}
+    caption_left, caption_top, caption_right = anchor
+    boxes, page_width, page_height = _page_graphic_boxes(pdf_path, page_index)
+    if not boxes:
+        return None, {"mode": "degraded", "reason": "页面无可用图形对象"}
+
+    vertical_tolerance = page_height * 0.02
+    # Captions often start at the column's left edge while a wide figure is
+    # centred on the page.  A quarter-page tolerance covers that offset but
+    # still excludes graphics in the opposite column.
+    horizontal_tolerance = page_width * 0.25
+    max_gap = page_height * 0.55
+    cluster_gap = page_height * 0.08
+    candidates = [
+        box
+        for box in boxes
+        if box[1] >= caption_top - vertical_tolerance
+        and box[2] >= caption_left - horizontal_tolerance
+        and box[0] <= caption_right + horizontal_tolerance
+        and box[1] - caption_top <= max_gap
+    ]
+    if not candidates:
+        return None, {
+            "mode": "degraded",
+            "reason": "图注上方同列无可靠图形对象",
+            "caption_top": round(caption_top, 1),
+        }
+
+    # Seed with the artwork closest above the caption, then merge graphic
+    # objects that touch it vertically and overlap horizontally.  This keeps
+    # a multi-panel vector figure in one cluster while excluding a table that
+    # sits well above the artwork or a second figure in the other column.
+    seed = min(candidates, key=lambda box: box[1])
+    cluster = [seed]
+    cx0, cy0, cx1, cy1 = seed
+    changed = True
+    while changed:
+        changed = False
+        for box in boxes:
+            if box in cluster:
+                continue
+            x0, y0, x1, y1 = box
+            if x1 < cx0 - horizontal_tolerance or x0 > cx1 + horizontal_tolerance:
+                continue
+            if y0 > cy1 + cluster_gap or y1 < cy0 - cluster_gap:
+                continue
+            cluster.append(box)
+            cx0, cx1 = min(cx0, x0), max(cx1, x1)
+            cy0, cy1 = min(cy0, y0), max(cy1, y1)
+            changed = True
+
+    left = max(0.0, cx0 - 3.0)
+    right = min(page_width, cx1 + 3.0)
+    top_pdf = min(page_height, cy1 + 3.0)
+    bottom_pdf = max(0.0, caption_top - 2.0)
+    if (top_pdf - bottom_pdf) < page_height * 0.06 or (right - left) < page_width * 0.12:
+        return None, {
+            "mode": "degraded",
+            "reason": "图区高度或宽度不足，拒绝整栏裁切",
+            "caption_top": round(caption_top, 1),
+        }
+    px = (
+        round(left * scale, 2),
+        round((page_height - top_pdf) * scale, 2),
+        round((right - left) * scale, 2),
+        round((top_pdf - bottom_pdf) * scale, 2),
+    )
+    meta = {
+        "mode": "column_aware",
+        "graphic_box": [round(value, 1) for value in (cx0, cy0, cx1, cy1)],
+        "caption_top": round(caption_top, 1),
+        "caption_gap": round(cy0 - caption_top, 1),
+        "cluster_objects": len(cluster),
+    }
+    return px, meta
+
+
 def _figures_from_pdf(source_path, ref_no, figure_dir, oa_url="", version="正式版", acquisition=None):
-    """Render+crop the figure region on each caption page."""
+    """Render+crop the artwork for every accepted caption, including same-page figures.
+
+    Each caption is an independent anchor: multiple captions on one page now
+    yield multiple assets.  The crop region is derived from the graphic objects
+    that share the caption's column, so a neighbouring column or a table above
+    the artwork is not swept into the image.  Duplicated figure numbers are
+    still cropped once, and a caption without a reliable graphic boundary is
+    recorded as a degradation rather than cropped by a page-wide fallback.
+    """
 
     figure_dir = Path(figure_dir)
     figure_dir.mkdir(parents=True, exist_ok=True)
     assets = []
     failures = []
+    seen_figs = set()
     page_texts = read_pdf_pages(source_path)
     for index, text in enumerate(page_texts):
         lines = text.splitlines()
@@ -376,40 +517,20 @@ def _figures_from_pdf(source_path, ref_no, figure_dir, oa_url="", version="正�
             if not match:
                 continue
             fig_no = match.group(1)
+            if fig_no in seen_figs:
+                continue
             rest = match.group(2).lstrip()
             if rest.startswith((')', ',', ';')) or re.match(r'^[a-z]', rest):
                 continue
             caption = _figure_caption_from_lines(lines, line_index)
             if not caption:
                 continue
-            bbox, page_width, page_height = _largest_object_bbox(source_path, index)
-            crop_page = index
-            if bbox is None:
-                for offset in (1, -1):
-                    candidate = index + offset
-                    if 0 <= candidate < len(page_texts):
-                        bbox, page_width, page_height = _largest_object_bbox(source_path, candidate)
-                        if bbox is not None:
-                            crop_page = candidate
-                            break
             scale = 2.0
-            px = _caption_crop_pixels(source_path, index, caption, scale) if crop_page == index else None
-            if px is None and bbox is not None:
-                x0, y0, x1, y1 = bbox
-                margin = 4.0
-                x0 = max(0.0, x0 - margin)
-                y0 = min(page_height, y0 + margin)
-                x1 = min(page_width, x1 + margin)
-                y1 = max(0.0, y1 - margin)
-                px = (
-                    round(x0 * scale, 2),
-                    round((page_height - y1) * scale, 2),
-                    round((x1 - x0) * scale, 2),
-                    round((y1 - y0) * scale, 2),
-                )
+            px, crop_meta = _column_aware_crop_pixels(source_path, index, caption, scale)
             if px is None:
-                failures.append(f"page {index + 1} Fig.{fig_no}: 未定位到图对象")
+                failures.append(f"page {index + 1} Fig.{fig_no}: {crop_meta.get('reason', '未定位到可靠图区')}")
                 continue
+            seen_figs.add(fig_no)
             name = _short_name(caption, fig_no)
             destination = figure_dir / f"ref{ref_no}_fig{fig_no}_{name}.png"
             temporary = figure_dir / f".ref{ref_no}_fig{fig_no}.tmp.png"
@@ -420,7 +541,7 @@ def _figures_from_pdf(source_path, ref_no, figure_dir, oa_url="", version="正�
                     str(source_path),
                     "crop",
                     "--page",
-                    str(crop_page),
+                    str(index),
                     "--scale",
                     str(scale),
                     "--px",
@@ -448,15 +569,16 @@ def _figures_from_pdf(source_path, ref_no, figure_dir, oa_url="", version="正�
                     name=name,
                     path=destination,
                     caption=caption,
-                    description=f"原文 p{index + 1} 图区渲染裁切（页顶至图注上沿）。",
+                    description=f"原文 p{index + 1} 图区渲染裁切（图注锚点 + 同列图形块边界）。",
                     source_url=oa_url or str(source_path),
                     version=version or "正式版",
-                    original_page=str(crop_page + 1),
+                    original_page=str(index + 1),
                     acquisition=acquisition or "OA PDF 渲染裁切（pdf_figures.py crop，Swift/PDFKit 或 PyMuPDF）",
                     slot=_slot_for_caption(caption),
+                    crop_mode=crop_meta.get("mode", ""),
+                    crop_meta=crop_meta,
                 )
             )
-            break
     return assets, failures
 
 

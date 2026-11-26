@@ -7,7 +7,13 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 from app.delivery import DeliveryTask, _reference_entries, _write_pptx
-from app.ppt_figures import FigureAsset, FigureBundle, _figures_from_pdf, prepare_d_figures
+from app.ppt_figures import (
+    FigureAsset,
+    FigureBundle,
+    _figure_caption_from_lines,
+    _figures_from_pdf,
+    prepare_d_figures,
+)
 
 
 def _fake_png(path, color="lightblue"):
@@ -22,42 +28,22 @@ def _fake_png(path, color="lightblue"):
     return path
 
 
-def _synthetic_pdf(path):
-    """A one-page PDF with a JPEG image and a searchable figure caption."""
-
+def _jpeg_bytes(color="lightblue"):
     image = Image.new("RGB", (400, 300), "white")
     draw = ImageDraw.Draw(image)
     draw.rectangle((10, 10, 390, 290), outline="black", width=4)
-    draw.ellipse((100, 80, 300, 220), fill="lightblue")
+    draw.ellipse((100, 80, 300, 220), fill=color)
     draw.text((150, 140), "FAKE FIG", fill="black")
     buffer = io.BytesIO()
     image.save(buffer, format="JPEG", quality=90)
-    jpeg = buffer.getvalue()
+    return buffer.getvalue()
 
-    objects = {
-        1: b"<< /Type /Catalog /Pages 2 0 R >>",
-        2: b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-        3: (
-            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
-            b"/Resources << /XObject << /Im1 4 0 R >> /Font << /F1 5 0 R >> >> "
-            b"/Contents 6 0 R >>"
-        ),
-        4: (
-            b"<< /Type /XObject /Subtype /Image /Width 400 /Height 300 "
-            b"/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length "
-            + str(len(jpeg)).encode()
-            + b" >>\nstream\n"
-            + jpeg
-            + b"\nendstream"
-        ),
-        5: b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    }
-    content = (
-        b"q 400 0 0 300 100 400 cm /Im1 Do Q\n"
-        b"BT /F1 14 Tf 100 350 Td (Figure 1. Synthetic caption) Tj ET\n"
-    )
-    objects[6] = b"<< /Length " + str(len(content)).encode() + b" >>\nstream\n" + content + b"\nendstream"
 
+def _escape_pdf_text(text):
+    return str(text).replace("\\", r"\\").replace("(", r"\(").replace(")", r"\)")
+
+
+def _write_pdf(path, objects):
     output = bytearray(b"%PDF-1.4\n")
     offsets = {}
     for number in sorted(objects):
@@ -75,6 +61,62 @@ def _synthetic_pdf(path):
     return path
 
 
+def _synthetic_pdf(path, body_references=(), figures=None, extra_text=(), extra_objects=None):
+    """Build a one-page PDF with searchable captions and image objects.
+
+    ``figures`` is a list of dicts with ``x0, y0, width, height, caption`` in
+    PDF points (y from bottom).  ``extra_text`` entries are ``(text, x, y)``
+    tuples (e.g. a right-column body block).  ``extra_objects`` maps object
+    numbers to raw PDF object bodies.  Defaults preserve the original single
+    centred figure used by the earlier tests.
+    """
+
+    jpeg = _jpeg_bytes()
+    figures = list(figures or [{"x0": 100, "y0": 400, "width": 400, "height": 300,
+                                "caption": "Figure 1. Synthetic caption"}])
+    xobjects = " ".join(f"/Im{index} {4 + index} 0 R" for index in range(len(figures)))
+    objects = {
+        1: b"<< /Type /Catalog /Pages 2 0 R >>",
+        2: b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        3: (
+            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+            b"/Resources << /XObject << " + xobjects.encode() + b" >> /Font << /F1 5 0 R >> >> "
+            b"/Contents 6 0 R >>"
+        ),
+        5: b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    }
+    for index in range(len(figures)):
+        objects[4 + index] = (
+            b"<< /Type /XObject /Subtype /Image /Width 400 /Height 300 "
+            b"/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length "
+            + str(len(jpeg)).encode()
+            + b" >>\nstream\n"
+            + jpeg
+            + b"\nendstream"
+        )
+
+    content = b""
+    for offset, text in enumerate(body_references):
+        content += (
+            f"BT /F1 10 Tf 100 {500 - offset * 20} Td ({_escape_pdf_text(text)}) Tj ET\n".encode()
+        )
+    for index, figure in enumerate(figures):
+        content += (
+            f"q {figure['width']} 0 0 {figure['height']} {figure['x0']} {figure['y0']} cm "
+            f"/Im{index} Do Q\n".encode()
+        )
+        content += (
+            f"BT /F1 14 Tf {figure['x0']} {figure['y0'] - 24} Td "
+            f"({_escape_pdf_text(figure['caption'])}) Tj ET\n".encode()
+        )
+    for text, x, y in extra_text:
+        content += f"BT /F1 11 Tf {x} {y} Td ({_escape_pdf_text(text)}) Tj ET\n".encode()
+    objects[6] = b"<< /Length " + str(len(content)).encode() + b" >>\nstream\n" + content + b"\nendstream"
+    if extra_objects:
+        objects.update(extra_objects)
+    return _write_pdf(path, objects)
+
+
 def test_pdf_crop_writes_named_png_and_records_original_page(tmp_path):
     pdf = _synthetic_pdf(tmp_path / "synthetic.pdf")
     assets, failures = _figures_from_pdf(pdf, 7, tmp_path / "figures")
@@ -88,6 +130,109 @@ def test_pdf_crop_writes_named_png_and_records_original_page(tmp_path):
     assert asset.path.read_bytes().startswith(b"\x89PNG")
     with Image.open(asset.path) as image:
         assert image.width > 200 and image.height > 200
+
+
+def test_caption_guard_skips_body_reference_lines(tmp_path):
+    pdf = _synthetic_pdf(
+        tmp_path / "synthetic.pdf",
+        body_references=(
+            "Fig. 2b). Furthermore, the trend continued in later cohorts.",
+            "Fig. 4d, e). The panels show the same pattern.",
+        ),
+    )
+
+    assets, failures = _figures_from_pdf(pdf, 7, tmp_path / "figures")
+
+    assert failures == []
+    assert [asset.fig_no for asset in assets] == ["1"]
+    assert assets[0].caption.startswith("Figure 1.")
+
+
+def test_two_captions_on_one_page_produce_two_figures(tmp_path):
+    """Same-page figures must be cropped per caption, not only the first one."""
+
+    figures = [
+        {"x0": 90, "y0": 500, "width": 200, "height": 150,
+         "caption": "Figure 1. Upper conceptual framework for the study."},
+        {"x0": 90, "y0": 180, "width": 200, "height": 150,
+         "caption": "Figure 2. Lower results of the same experiment."},
+    ]
+    pdf = _synthetic_pdf(tmp_path / "two_figs.pdf", figures=figures)
+
+    assets, failures = _figures_from_pdf(pdf, 7, tmp_path / "figures")
+
+    assert failures == []
+    assert [asset.fig_no for asset in assets] == ["1", "2"]
+    assert all(asset.original_page == "1" for asset in assets)
+    assert all(asset.crop_mode == "column_aware" for asset in assets)
+    assert len({asset.path for asset in assets}) == 2
+    for asset in assets:
+        assert asset.caption.startswith(f"Figure {asset.fig_no}.")
+        assert asset.path.read_bytes().startswith(b"\x89PNG")
+
+
+def test_right_column_body_text_is_excluded_from_left_figure_crop(tmp_path):
+    """A two-column page must not sweep the right column into the left figure."""
+
+    figures = [
+        {"x0": 60, "y0": 430, "width": 220, "height": 200,
+         "caption": "Figure 3. Left column artwork for the vulnerability model."},
+    ]
+    right_column = [
+        ("allocate population data at the building level, assuming a uniform", 320, 610),
+        ("total population is then distributed among statistical units; it is", 320, 590),
+        ("used to estimate the exposure of buildings to the flood hazard.", 320, 570),
+        ("3.1.3 Hazard", 320, 540),
+        ("In this study, we consider urban pluvial flooding as the hazard.", 320, 510),
+        ("We define water level thresholds based on existing regulations.", 320, 490),
+        ("The following paragraphs contain no figure caption at all.", 320, 470),
+    ]
+    pdf = _synthetic_pdf(tmp_path / "two_columns.pdf", figures=figures, extra_text=right_column)
+
+    assets, failures = _figures_from_pdf(pdf, 7, tmp_path / "figures")
+
+    assert failures == []
+    assert [asset.fig_no for asset in assets] == ["3"]
+    asset = assets[0]
+    assert asset.crop_mode == "column_aware"
+    graphic_box = asset.crop_meta["graphic_box"]
+    # The crop is bounded by the left-column image (x0..x0+width), never the
+    # full page width (612 pt) that would include the right-column paragraph.
+    assert graphic_box[0] < 100 and graphic_box[2] < 300
+    assert graphic_box[2] - graphic_box[0] <= 230
+    with Image.open(asset.path) as image:
+        assert image.width < 600  # full page at scale 2 is 1224 px
+
+
+def test_caption_continuation_and_table_header_are_not_treated_as_captions(tmp_path):
+    """A table header must not be absorbed into a figure caption."""
+
+    assert _figure_caption_from_lines(
+        ["Figure 4. Real caption about the model.",
+         "Study Used dataset Crash type Records no Analysis period in years",
+         "More genuine caption text."],
+        0,
+    ) == "Figure 4. Real caption about the model."
+
+    figures = [
+        {"x0": 90, "y0": 500, "width": 200, "height": 150,
+         "caption": "Figure 4. Real caption about the model."},
+    ]
+    pdf = _synthetic_pdf(
+        tmp_path / "table_header.pdf",
+        figures=figures,
+        extra_text=[
+            ("Study Used dataset Crash type Records no", 90, 466),
+            ("Table 1 (continued)", 90, 700),
+        ],
+    )
+
+    assets, failures = _figures_from_pdf(pdf, 7, tmp_path / "figures")
+
+    assert failures == []
+    assert [asset.fig_no for asset in assets] == ["4"]
+    assert "Crash type" not in assets[0].caption
+    assert "Table 1" not in assets[0].caption
 
 
 def test_prepare_degrades_without_oa_hint_without_network(tmp_path):
