@@ -294,9 +294,8 @@ test('05 C 的用途、C模式任务、本文信息三选一固定卡与 C1+C2 �
   await expect(page.getByRole('button', { name: '确认选择', exact: true })).toBeDisabled()
   await page.getByRole('button', { name: /已有论文初稿，提供文件/ }).click()
   await page.getByLabel('本文材料（粘贴题目、摘要、方法、结果、创新）', { exact: true }).fill(
-    '题目：空间免疫微环境与耐药\n摘要：研究耐药分层\n方法：单细胞与空间转录组\n结果：待补充\n创新：动态分型',
+    '题目：空间免疫微环境与耐药\n摘要：研究耐药分层\n方法：单细胞与空间转录组\n结果：待补充\n创新：动态分型\n目标期刊：Journal of Hepatology',
   )
-  await page.getByLabel('目标期刊（可跳过）', { exact: true }).fill('Journal of Hepatology')
   const waiting = page.waitForRequest((request) => request.url().includes('/answers/mode') && request.method() === 'POST')
   await screenshot(page, '05-c-info')
   await page.getByRole('button', { name: '确认选择', exact: true }).click()
@@ -306,7 +305,8 @@ test('05 C 的用途、C模式任务、本文信息三选一固定卡与 C1+C2 �
   expect(value.c_route).toBe('C1+C2')
   expect(value.c_info_route).toBe('upload')
   expect(value.c_material).toContain('空间转录组')
-  expect(value.target_journal).toBe('Journal of Hepatology')
+  expect(value.target_journal).toBeUndefined()
+  expect(value.c_material).toContain('目标期刊：Journal of Hepatology')
   await expect(page.getByRole('heading', { name: '以下候选学术术语，选 1 个或多个用于检索。', exact: true })).toBeVisible()
 })
 

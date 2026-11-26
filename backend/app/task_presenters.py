@@ -59,6 +59,18 @@ def _mode_card():
                 {'name': 'goal', 'label': '一句话目标', 'group': 'project', 'required': True},
                 {'name': 'funding', 'label': '资助类别/学科属性（可跳过）', 'group': 'project'},
                 {
+                    'name': 'b_input_path', 'label': '标书输入路径', 'kind': 'select',
+                    'options': [
+                        {'value': 'direction', 'label': '仅方向/主题，由系统凝练项目'},
+                        {'value': 'draft', 'label': '已有申请书/研究方案草稿'},
+                    ],
+                },
+                {
+                    'name': 'project_draft', 'label': '申请书/研究方案草稿（可粘贴核心内容）',
+                    'kind': 'textarea',
+                    'placeholder': '粘贴研究内容、技术路线、可行性、预期成果等核心段落；选择草稿路径时必填',
+                },
+                {
                     'name': 'policy_materials',
                     'label': '政策/报告/统计材料（可粘贴全文或链接，可跳过）',
                     'kind': 'textarea',
@@ -94,10 +106,9 @@ def _mode_card():
                 {
                     'name': 'c_material',
                     'label': '本文材料（粘贴题目、摘要、方法、结果、创新）',
-                    'placeholder': '按题目/摘要/方法/结果/创新分段粘贴；现场口述时写研究问题与方法',
+                    'placeholder': '按题目/摘要/方法/结果/创新分段粘贴；目标期刊可写“目标期刊：名称”；现场口述时写研究问题与方法',
                     'kind': 'textarea',
                 },
-                {'name': 'target_journal', 'label': '目标期刊（可跳过）', 'placeholder': '输入目标期刊'},
             ],
             'D': [
                 {'name': 'team_context', 'label': '团队目前的研究方向/在研问题（可跳过）', 'kind': 'textarea'},
@@ -168,9 +179,9 @@ def _adjustment_card():
 
 def _delivery_card(mode):
     forms = {
-        'A': ('A 正式调研报告（Word，含文献依据）', '带参考文献与复核边界的 Word 报告', 'Word'),
-        'B': ('B 仅对话中给要点和代表文献', '5–8 条要点与不超过 10 篇代表文献', '对话'),
-        'C': ('C 展示 PPT', '8–12 页；D 模式为 20–30 页组会汇报', 'PPT'),
+        'A': ('A 正式调研报告（Word，含文献依据）', '带参考文献、复核边界与可下载 Word 文件', 'Word'),
+        'B': ('B 仅对话中给要点和代表文献', '5–8 条要点与不超过 10 篇代表文献', 'A 模式含七类各 2 个选题槽位及未推荐原因；其他模式 5–8 条要点'),
+        'C': ('C 展示 PPT', '8–12 页；D 模式约 20–30 页组会汇报', 'D 模式约 20–30 页，含真实图表与团队讨论；其他模式 8–12 页'),
     }
     order = ['A', 'B', 'C']
     if mode == 'D':
@@ -181,13 +192,26 @@ def _delivery_card(mode):
     for form in order:
         label, description, preview = forms[form]
         options.append(_option(form, label, description, preview))
-    return {
+    card = {
         'id': 'delivery',
         'eyebrow': '交付形式确认',
         'title': '希望得到的交付形式',
         'description': '这是最后一问；答完后直接生成，不再插入确认。',
         'options': options,
     }
+    if mode == 'D':
+        card['options'].append(_option(
+            'OTHER', 'D 其他（自定义交付形态）',
+            '说明期望形态；无法生成时使用最接近的替代',
+            '其他形态',
+        ))
+        card['custom'] = {
+            'label': '自定义交付形态',
+            'placeholder': '例如：一页纸决策简报 + 附录、可打印长图等',
+            'required': True,
+        }
+        card['custom_for'] = ['OTHER']
+    return card
 
 
 def card_for(db, task, answers=None, candidate_event=None, version_content=None):

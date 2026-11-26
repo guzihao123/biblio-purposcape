@@ -110,9 +110,8 @@ export async function chooseMode(page: Page, mode: 'A' | 'B' | 'C' | 'D', testIn
     await expect(page.getByRole('button', { name: /现场口述研究问题与方法/ })).toBeVisible()
     await page.getByRole('button', { name: /已有论文初稿，提供文件/ }).click()
     await page.getByLabel('本文材料（粘贴题目、摘要、方法、结果、创新）').fill(
-      '题目：三条耐药机制比较\n方法：分层机制验证\n创新：可追溯研究框架',
+      '题目：三条耐药机制比较\n方法：分层机制验证\n创新：可追溯研究框架\n目标期刊：Hepatology',
     )
-    await page.getByLabel('目标期刊（可跳过）').fill('Hepatology')
     if (testInfo) {
       await auditLayout(page, testInfo, '390-c-info')
       await capture(page, testInfo, '390-c-info')

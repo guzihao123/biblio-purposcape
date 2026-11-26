@@ -58,6 +58,12 @@ B_PROJECT_GENERATION_RULE = (
     'project.theme 中给出的研究对象、方法与预期产出是本次项目主题的组成部分，研究内容与技术路线必须与之对应。'
     'B 正文必须完整保留「研究内容（3–4 项）」「技术路线」「可行性」「预期成果」章节。'
 )
+B_DRAFT_RULE = (
+    'B 模式若提供 project_draft，草稿是项目论证的分析依据：逐项核对草稿的研究内容、技术路线、可行性与预期成果'
+    '是否得到本次论文/材料证据支撑；在「关键不足」或「创新对应与可行性」章节内增加一段'
+    '“草稿支撑度与修改建议”，指出证据缺口和具体修改方向。不得把草稿内容当作已证实事实，'
+    '不得虚构评审意见、预实验或团队基础；未提供 project_draft 时按项目主题正常生成。'
+)
 B_MATERIAL_RULE = (
     'B 模式非论文材料按 [M] 分通道著录：只能使用 materials 与 material_index 中给出的逐字摘录支撑'
     '政策/报告/统计事实；正文引用写成「（据材料 M1）」，不得把 [M] 写成论文 [n] 编号，'
@@ -212,6 +218,8 @@ class WritingTask:
     c_info_route: str = ''
     target_journal: str = ''
     team_context: str = ''
+    project_draft: str = ''
+    project_input_path: str = 'direction'
     materials: list = field(default_factory=list)
     custom_purpose: str = ''
     events: list = field(default_factory=list)
@@ -869,6 +877,10 @@ class WritingService:
         }
         if task.mode.upper() == 'B':
             payload['project_generation_rules'] = B_PROJECT_GENERATION_RULE
+            if task.project_draft:
+                payload['project_draft'] = task.project_draft
+                payload['project_input_path'] = task.project_input_path
+                payload['project_draft_rules'] = B_DRAFT_RULE
             payload['materials'] = list(task.materials or [])
             payload['material_index'] = _render_material_index(task.materials) if task.materials else ''
             payload['material_rules'] = B_MATERIAL_RULE
@@ -888,6 +900,7 @@ class WritingService:
             + c_writing_rule(task)
             + (C1_STYLE_RULE if task.mode.upper() == 'C1' and str(task.target_journal or '').strip() else '')
             + (B_PROJECT_GENERATION_RULE if task.mode.upper() == 'B' else '')
+            + (B_DRAFT_RULE if task.mode.upper() == 'B' and task.project_draft else '')
             + (B_MATERIAL_RULE if task.mode.upper() == 'B' and task.materials else '')
             + (E_CUSTOM_PURPOSE_RULE if task.mode.upper() == 'E' else ''),
             payload,
@@ -977,6 +990,7 @@ class WritingService:
                     + c_writing_rule(task)
                     + (C1_STYLE_RULE if task.mode.upper() == 'C1' and str(task.target_journal or '').strip() else '')
                     + (B_PROJECT_GENERATION_RULE if task.mode.upper() == 'B' else '')
+                    + (B_DRAFT_RULE if task.mode.upper() == 'B' and task.project_draft else '')
                     + (B_MATERIAL_RULE if task.mode.upper() == 'B' and task.materials else '')
                     + (E_CUSTOM_PURPOSE_RULE if task.mode.upper() == 'E' else ''),
                     {
@@ -992,6 +1006,11 @@ class WritingService:
                         'project': task.project,
                         'project_generation_rules': (
                             B_PROJECT_GENERATION_RULE if task.mode.upper() == 'B' else ''
+                        ),
+                        'project_draft': task.project_draft if task.mode.upper() == 'B' else '',
+                        'project_input_path': task.project_input_path if task.mode.upper() == 'B' else 'direction',
+                        'project_draft_rules': (
+                            B_DRAFT_RULE if task.mode.upper() == 'B' and task.project_draft else ''
                         ),
                         'materials': list(task.materials or []) if task.mode.upper() == 'B' else [],
                         'material_index': (

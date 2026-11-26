@@ -151,7 +151,7 @@ def test_conflicting_late_answer_returns_409_with_zero_new_storage(db, task, ses
     task_before_conflict = db.query(Task).filter_by(id=task.id).one().state
 
     with pytest.raises(HTTPException) as exc_info:
-        answer_card(task.id, CardId.MODE, {'mode': 'B', 'theme': {'name': '主题'}, 'project': {'name': '项目', 'goal': '目标'}}, session)
+        answer_card(task.id, CardId.MODE, {'mode': 'B', 'theme': {'name': '主题', 'custom': '主题'}, 'project': {'name': '项目', 'goal': '目标'}}, session)
 
     assert exc_info.value.status_code == 409
     assert exc_info.value.detail['code'] == 'answer_conflict'

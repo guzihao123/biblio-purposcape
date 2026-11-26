@@ -73,14 +73,42 @@ export function artifactUrl(url: string) {
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+const pendingControllers = new Set<AbortController>()
 
-async function request<T>(url: string, init: RequestInit = {}, retries = 0): Promise<T> {
+export function cancelPendingRequests() {
+  for (const controller of pendingControllers) controller.abort()
+  pendingControllers.clear()
+}
+
+export type ConnectionNotice = {
+  phase: 'retrying' | 'online' | 'failed'
+  attempt?: number
+  delayMs?: number
+}
+
+export const CONNECTION_EVENT = 'pl-connection'
+
+function notifyConnection(detail: ConnectionNotice) {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent<ConnectionNotice>(CONNECTION_EVENT, { detail }))
+  }
+}
+
+async function request<T>(url: string, init: RequestInit = {}, retries = 0, timeoutMs = 30000): Promise<T> {
   let attempt = 0
   while (true) {
+    const controller = new AbortController()
+    pendingControllers.add(controller)
+    let timedOut = false
+    const timer = window.setTimeout(() => {
+      timedOut = true
+      controller.abort()
+    }, timeoutMs)
     try {
       const response = await fetch(url, {
         ...init,
         credentials: 'include',
+        signal: controller.signal,
         headers: init.body
           ? { 'Content-Type': 'application/json', ...(init.headers ?? {}) }
           : init.headers,
@@ -88,17 +116,33 @@ async function request<T>(url: string, init: RequestInit = {}, retries = 0): Pro
       if (!response.ok) {
         if (RETRYABLE_STATUSES.has(response.status) && attempt < retries) {
           attempt += 1
-          await sleep(500 * attempt)
+          const delayMs = 500 * attempt
+          notifyConnection({ phase: 'retrying', attempt, delayMs })
+          await sleep(delayMs)
           continue
         }
         throw new ApiError(response.status)
       }
-      return await response.json() as T
+      const payload = await response.json() as T
+      notifyConnection({ phase: 'online' })
+      return payload
     } catch (error) {
       if (error instanceof ApiError) throw error
-      if (attempt >= retries) throw error
+      if (!timedOut && error instanceof DOMException && error.name === 'AbortError') {
+        notifyConnection({ phase: 'failed' })
+        throw error
+      }
+      if (attempt >= retries) {
+        notifyConnection({ phase: 'failed' })
+        throw error
+      }
       attempt += 1
-      await sleep(500 * attempt)
+      const delayMs = 500 * attempt
+      notifyConnection({ phase: 'retrying', attempt, delayMs })
+      await sleep(delayMs)
+    } finally {
+      window.clearTimeout(timer)
+      pendingControllers.delete(controller)
     }
   }
 }
@@ -108,15 +152,15 @@ export function createTask(idempotencyKey: string) {
     method: 'POST',
     headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify({}),
-  }, 2)
+  }, 2, 30000)
 }
 
 export function getTask(taskId: string) {
-  return request<TaskView>(endpoint(`/tasks/${taskId}`), {}, 2)
+  return request<TaskView>(endpoint(`/tasks/${taskId}`), {}, 2, 30000)
 }
 
 export function listTasks() {
-  return request<{ tasks: TaskView[] }>(endpoint('/tasks'), {}, 2)
+  return request<{ tasks: TaskView[] }>(endpoint('/tasks'), {}, 2, 30000)
 }
 
 export async function answerTask(taskId: string, cardId: string, value: TaskAnswer) {
@@ -124,7 +168,7 @@ export async function answerTask(taskId: string, cardId: string, value: TaskAnsw
     return await request<TaskView>(endpoint(`/tasks/${taskId}/answers/${cardId}`), {
       method: 'POST',
       body: JSON.stringify({ value }),
-    }, 2)
+    }, 2, 60000)
   } catch (error) {
     const retryable = !(error instanceof ApiError) || error.status >= 500
     if (retryable) {
@@ -153,11 +197,11 @@ export function getProjectThemeCandidates(taskId: string) {
 }
 
 export function getDashboard(taskId: string) {
-  return request<DashboardPayload>(endpoint(`/tasks/${taskId}/dashboard`), {}, 2)
+  return request<DashboardPayload>(endpoint(`/tasks/${taskId}/dashboard`), {}, 2, 60000)
 }
 
 export function getReport(taskId: string) {
-  return request<ReportPayload>(endpoint(`/tasks/${taskId}/report`), {}, 2)
+  return request<ReportPayload>(endpoint(`/tasks/${taskId}/report`), {}, 2, 60000)
 }
 
 function adminHeaders(token: string) {

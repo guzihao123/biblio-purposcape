@@ -377,3 +377,85 @@ code,
     transition: none;
   }
 }
+
+
+.connection-banner {
+  position: fixed;
+  z-index: 80;
+  left: 50%;
+  bottom: 22px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 10px 16px;
+  color: #d9f4ff;
+  font-size: 12px;
+  border: 1px solid rgba(126, 196, 231, 0.28);
+  border-radius: 999px;
+  background: rgba(6, 16, 29, 0.92);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+  transform: translateX(-50%);
+  backdrop-filter: blur(12px);
+  animation: connection-banner-in 0.2s ease-out;
+}
+
+.connection-banner__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7ef0c8;
+  box-shadow: 0 0 10px rgba(126, 240, 200, 0.7);
+}
+
+.connection-banner--failed {
+  border-color: rgba(255, 166, 166, 0.3);
+  color: #ffdada;
+}
+
+.connection-banner--failed .connection-banner__dot {
+  background: #ff9d9d;
+  box-shadow: 0 0 10px rgba(255, 120, 120, 0.6);
+}
+
+@keyframes connection-banner-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+
+.connection-banner button {
+  padding: 2px 8px;
+  color: #9fb0cc;
+  font-size: 11px;
+  border: 1px solid rgba(159, 176, 204, 0.25);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.app-skeleton {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 14px;
+  width: min(760px, calc(100vw - 40px));
+  margin: 120px auto 0;
+}
+
+.app-skeleton__line,
+.app-skeleton__card {
+  border: 1px solid rgba(135, 181, 215, 0.14);
+  background: linear-gradient(100deg, rgba(16, 30, 48, 0.65), rgba(26, 49, 72, 0.35), rgba(16, 30, 48, 0.65));
+  background-size: 220% 100%;
+  animation: skeleton-sheen 1.6s ease-in-out infinite;
+}
+
+.app-skeleton__line { height: 18px; width: 38%; border-radius: 6px; }
+.app-skeleton__card { height: 128px; border-radius: 14px; }
+.app-skeleton__label { color: #9fb0cc; font-size: 12px; text-align: center; }
+
+@keyframes skeleton-sheen {
+  from { background-position: 120% 0; }
+  to { background-position: -120% 0; }
+}

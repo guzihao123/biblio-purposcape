@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from app.recovery import protected_traceback
 from app.schemas import CardId, TaskState
+from app.stage_watchdog import StageWatchdog
 from app.task_store_sync import configured_task_store_sync
 
 
@@ -161,7 +162,7 @@ def run_remote_stage(task_id, stage, session_id=None, job_id=None, input_hash=No
         # reporting is a no-op here; lifecycle messages stay authoritative.
         from app.progress_reporter import NullReporter, stage_reporting
 
-        with stage_reporting(NullReporter()):
+        with stage_reporting(NullReporter()), StageWatchdog(stage, task_id):
             result = service(task, stage_input) or {}
         message = result.get('message') or _message(stage, 'completed')
         result_state = TaskState(result['state']).value if result.get('state') is not None else None

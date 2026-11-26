@@ -59,7 +59,6 @@ const cConditionalFields = [
     name: 'c_material', label: '本文材料（粘贴题目、摘要、方法、结果、创新）',
     placeholder: '分段粘贴', kind: 'textarea' as const,
   },
-  { name: 'target_journal', label: '目标期刊（可跳过）', placeholder: '输入期刊名' },
 ]
 
 describe('TaskWizard', () => {
@@ -231,15 +230,13 @@ describe('TaskWizard', () => {
     expect(screen.getByRole('button', { name: '确认选择' })).toBeDisabled()
     await user.click(screen.getByRole('button', { name: /已有论文初稿，提供文件/ }))
     expect(screen.getByRole('button', { name: '确认选择' })).toBeDisabled()
-    await user.type(screen.getByLabelText('本文材料（粘贴题目、摘要、方法、结果、创新）'), '题目：区域迁移机制\n方法：空间滞后模型\n创新：动态分型')
-    await user.type(screen.getByLabelText('目标期刊（可跳过）'), 'Journal of Hepatology')
+    await user.type(screen.getByLabelText('本文材料（粘贴题目、摘要、方法、结果、创新）'), '题目：区域迁移机制\n方法：空间滞后模型\n创新：动态分型\n目标期刊：Journal of Hepatology')
     await user.click(screen.getByRole('button', { name: '确认选择' }))
     expect(cSubmit).toHaveBeenCalledWith({
       mode: 'C',
       c_route: 'C1+C2',
       c_info_route: 'upload',
-      c_material: '题目：区域迁移机制\n方法：空间滞后模型\n创新：动态分型',
-      target_journal: 'Journal of Hepatology',
+      c_material: '题目：区域迁移机制\n方法：空间滞后模型\n创新：动态分型\n目标期刊：Journal of Hepatology',
     })
   })
 
@@ -268,7 +265,6 @@ describe('TaskWizard', () => {
         c_route: 'C2',
         c_info_route: route,
         c_material: material,
-        target_journal: '',
       })
       unmount()
     }

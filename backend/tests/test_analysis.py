@@ -564,7 +564,9 @@ def test_chat_model_disables_thinking_for_structured_json_calls():
 
     request = client.chat.completions.calls[0]
     assert request.get('extra_body') == {'enable_thinking': False}
-    assert request.get('timeout') == 90
+    timeout = request.get('timeout')
+    assert timeout.read == 90
+    assert timeout.connect == 10
 
 
 def test_chat_model_sets_a_long_timeout_on_thinking_requests():
@@ -573,7 +575,9 @@ def test_chat_model_sets_a_long_timeout_on_thinking_requests():
     model = ChatModel(client=client, thinking=True)
     model.complete_json('Return JSON.', {})
 
-    assert client.chat.completions.calls[0].get('timeout') == 600
+    timeout = client.chat.completions.calls[0].get('timeout')
+    assert timeout.read == 600
+    assert timeout.connect == 10
 
 
 def test_chat_model_uses_a_longer_timeout_for_thinking_writes(monkeypatch):

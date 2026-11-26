@@ -199,9 +199,10 @@ def test_postgres_engine_probes_and_recycles_pooled_connections():
     from app.db import engine_kwargs
 
     postgres = engine_kwargs('postgresql+psycopg://user:pass@pooler.example/postgres')
-    assert postgres['connect_args'] == {'prepare_threshold': None}
+    assert postgres['connect_args'] == {'prepare_threshold': None, 'connect_timeout': 10}
     assert postgres['pool_pre_ping'] is True
     assert postgres['pool_recycle'] == 300
+    assert postgres['pool_timeout'] == 30
 
     sqlite = engine_kwargs('sqlite:///./test.db')
     assert sqlite == {'connect_args': {'check_same_thread': False}}

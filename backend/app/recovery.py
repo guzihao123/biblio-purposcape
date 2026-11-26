@@ -319,12 +319,14 @@ def _seconds(now, then):
 
 def recover_interrupted_tasks(
     session_factory=SessionLocal,
-    stale_after=3600,
+    stale_after=None,
     now=None,
     enqueue=None,
 ):
     del enqueue
     current = _now(now)
+    if stale_after is None:
+        stale_after = int(os.environ.get('STAGE_STALE_SECONDS', '1800'))
     results = []
     with session_factory() as db:
         jobs = db.query(TaskJob).filter_by(status='started').all()

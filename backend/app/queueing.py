@@ -18,6 +18,7 @@ from app.db import engine
 from app.db import SessionLocal
 from app.models import InviteSession, Task, TaskAnswer, TaskEvent, TaskJob, TaskProgress
 from app.rate_limit import RATE_LIMIT_MESSAGE, get_rate_limiter
+from app.stage_watchdog import StageWatchdog
 from sqlalchemy.exc import DBAPIError
 import time as _time
 from app.recovery import (
@@ -386,7 +387,7 @@ def run_stage(task_id, stage, session_id=None, job_id=None, input_hash=None):
             reporter = TaskProgressReporter(
                 task_id, stage, session_factory=SessionLocal
             )
-            with stage_reporting(reporter):
+            with stage_reporting(reporter), StageWatchdog(stage, task_id):
                 result = service(task, stage_input) or {}
             # Checkpoint and completion use a fresh session so a pooled TLS
             # connection that died during the stage can be replaced and retried.

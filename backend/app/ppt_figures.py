@@ -35,7 +35,7 @@ EUROPEPMC_API = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 XLINK_HREF = "{http://www.w3.org/1999/xlink}href"
 
 CAPTION_RE = re.compile(
-    r"^\s*(?:figure|fig\.?)\s*([0-9]+[A-Za-z]?)\s*[\.:：]?\s*(.*)$",
+    r"^\s*(?:figure|fig\.?|图)\s*([0-9]+[A-Za-z]?)\s*[\.:：|]?\s*(.*)$",
     re.IGNORECASE,
 )
 PAGE_ANCHOR_RE = re.compile(r"(?m)^=== page\s+(\d+)\s+===\s*$")
@@ -280,6 +280,34 @@ def _largest_object_bbox(pdf_path, page_index):
                     best = (x0, y0, x1, y1)
             if best:
                 return best, page_width, page_height
+            try:
+                import fitz
+            except ImportError:
+                fitz = None
+            if fitz is not None:
+                pdf = fitz.open(str(pdf_path))
+                try:
+                    pdf_page = pdf[page_index]
+                    best_area = 0
+                    best_rect = None
+                    for image in pdf_page.get_images(full=True):
+                        try:
+                            rect = pdf_page.get_image_bbox(image)
+                        except Exception:
+                            continue
+                        area = rect.width * rect.height
+                        if area > best_area:
+                            best_area = area
+                            best_rect = rect
+                    if best_rect is not None:
+                        return (
+                            best_rect.x0,
+                            page_height - best_rect.y1,
+                            best_rect.x1,
+                            page_height - best_rect.y0,
+                        ), page_width, page_height
+                finally:
+                    pdf.close()
         finally:
             page.close()
     finally:
@@ -348,12 +376,24 @@ def _figures_from_pdf(source_path, ref_no, figure_dir, oa_url="", version="正�
             if not match:
                 continue
             fig_no = match.group(1)
+            rest = match.group(2).lstrip()
+            if rest.startswith((')', ',', ';')) or re.match(r'^[a-z]', rest):
+                continue
             caption = _figure_caption_from_lines(lines, line_index)
             if not caption:
                 continue
             bbox, page_width, page_height = _largest_object_bbox(source_path, index)
+            crop_page = index
+            if bbox is None:
+                for offset in (1, -1):
+                    candidate = index + offset
+                    if 0 <= candidate < len(page_texts):
+                        bbox, page_width, page_height = _largest_object_bbox(source_path, candidate)
+                        if bbox is not None:
+                            crop_page = candidate
+                            break
             scale = 2.0
-            px = _caption_crop_pixels(source_path, index, caption, scale)
+            px = _caption_crop_pixels(source_path, index, caption, scale) if crop_page == index else None
             if px is None and bbox is not None:
                 x0, y0, x1, y1 = bbox
                 margin = 4.0
@@ -380,7 +420,7 @@ def _figures_from_pdf(source_path, ref_no, figure_dir, oa_url="", version="正�
                     str(source_path),
                     "crop",
                     "--page",
-                    str(index),
+                    str(crop_page),
                     "--scale",
                     str(scale),
                     "--px",
@@ -411,7 +451,7 @@ def _figures_from_pdf(source_path, ref_no, figure_dir, oa_url="", version="正�
                     description=f"原文 p{index + 1} 图区渲染裁切（页顶至图注上沿）。",
                     source_url=oa_url or str(source_path),
                     version=version or "正式版",
-                    original_page=str(index + 1),
+                    original_page=str(crop_page + 1),
                     acquisition=acquisition or "OA PDF 渲染裁切（pdf_figures.py crop，Swift/PDFKit 或 PyMuPDF）",
                     slot=_slot_for_caption(caption),
                 )

@@ -83,7 +83,8 @@ def test_mode_b_requires_theme_and_project_name_goal():
         })
 
     validate_answer_value('mode', {
-        'mode': 'B', 'theme': {'name': '主题'}, 'project': {'name': '项目', 'goal': '目标'},
+        'mode': 'B', 'theme': {'name': '主题', 'custom': '主题'},
+        'project': {'name': '项目', 'goal': '目标'},
     })
 
 
@@ -96,3 +97,34 @@ def test_mode_c_requires_route_and_information_choice():
         validate_answer_value('mode', {'mode': 'C', 'c_route': 'C2'})
 
     validate_answer_value('mode', {'mode': 'C', 'c_route': 'C2', 'c_info_route': 'skip'})
+
+
+def test_mode_rejects_fields_from_other_modes():
+    cases = [
+        {'mode': 'A', 'project': {'name': '项目', 'goal': '目标'}},
+        {'mode': 'B', 'theme': {'name': '主题', 'custom': '主题'}, 'project': {'name': '项目', 'goal': '目标'}, 'c_route': 'C2'},
+        {'mode': 'C', 'c_route': 'C2', 'c_info_route': 'skip', 'team_context': '团队'},
+        {'mode': 'D', 'team_context': '团队', 'custom': '其他用途'},
+    ]
+    for value in cases:
+        with pytest.raises(HTTPException) as error:
+            validate_answer_value('mode', value)
+        assert 'not valid for mode' in error.value.detail['message']
+
+
+def test_mode_b_draft_path_requires_draft_text():
+    base = {
+        'mode': 'B', 'theme': {'name': '主题', 'custom': '主题'},
+        'project': {'name': '项目', 'goal': '目标'}, 'b_input_path': 'draft',
+    }
+    with pytest.raises(HTTPException) as error:
+        validate_answer_value('mode', base)
+    assert 'project_draft' in error.value.detail['message']
+    validate_answer_value('mode', {**base, 'project_draft': '研究内容与技术路线草稿'})
+
+
+def test_delivery_other_requires_custom_text():
+    with pytest.raises(HTTPException) as error:
+        validate_answer_value('delivery', {'form': 'OTHER'})
+    assert 'custom' in error.value.detail['message']
+    validate_answer_value('delivery', {'form': 'OTHER', 'custom': '一页纸决策简报 + 附录'})

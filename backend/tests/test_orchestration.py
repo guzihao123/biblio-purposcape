@@ -550,3 +550,22 @@ def test_writing_task_carries_selected_b_theme_and_e_custom_purpose(task, tmp_pa
     )
     assert e_task.custom_purpose == '为政策制定写证据简报'
     assert e_task.mode == 'E'
+
+
+def test_requirements_ledger_covers_b_d_e_and_delivery_shape():
+    from app.orchestration import _requirements_ledger_text
+
+    b = _requirements_ledger_text({
+        'mode': {'mode': 'B', 'theme': {'name': '主题'}, 'project': {'name': '项目', 'goal': '目标', 'funding': '面上'}},
+        'delivery': {'form': 'A'},
+    })
+    assert '用途模式：B' in b and '交付形式：正式调研报告（Word）' in b
+
+    d = _requirements_ledger_text({
+        'mode': {'mode': 'D', 'team_context': ''},
+        'delivery': {'form': 'C'},
+    })
+    assert '未提供团队背景' in d and '交付形式：展示 PPT' in d
+
+    e = _requirements_ledger_text({'mode': {'mode': 'E', 'custom': '政策简报'}, 'delivery': {'form': 'B'}})
+    assert '自定义用途：政策简报' in e and '交付形式：仅对话要点与代表文献' in e

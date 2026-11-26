@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { createTask, getTask } from './api'
+import { ConnectionBanner } from './components/ConnectionBanner'
+import { LoadingSkeleton } from './components/LoadingSkeleton'
 import { SceneBackdrop } from './components/SceneBackdrop'
 import { nextQualityMode, qualityModeLabel, readQualityMode, writeQualityMode } from './quality'
 import type { QualityLevel, QualityMode } from './quality'
@@ -102,6 +104,7 @@ export function App() {
     return (
       <div className="app-root">
         <SceneBackdrop qualityMode={qualityMode} onQualityChange={setEffectiveQuality} />
+        <ConnectionBanner />
         <InvitePage onSuccess={() => setSessionReady(true)} />
       </div>
     )
@@ -110,6 +113,7 @@ export function App() {
   return (
     <div className="app-root">
       <SceneBackdrop qualityMode={qualityMode} onQualityChange={setEffectiveQuality} />
+      <ConnectionBanner />
       <nav className="app-nav" aria-label="应用导航">
         <span className="app-nav__brand">研究图谱</span>
         <button type="button" onClick={() => {
@@ -132,7 +136,7 @@ export function App() {
         <button type="button" onClick={() => void startTask(true)}>新建研究</button>
       </nav>
       {error && <p className="app-message app-message--error" role="alert">{error}</p>}
-      {loading && <p className="app-message" role="status">正在创建研究任务…</p>}
+      {loading && <LoadingSkeleton label="正在创建研究任务…" />}
       {route.type === 'history' && <HistoryPage onOpen={(id) => void openTask(id)} />}
       {route.type === 'admin' && <AdminSkillPage />}
       {route.type === 'task' && task?.id === route.id && <TaskPage task={task} onTask={updateTask} />}

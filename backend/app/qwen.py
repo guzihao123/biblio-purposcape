@@ -10,6 +10,18 @@ try:
 except ImportError:  # Keep fake/offline analysis usable before production deps install.
     OpenAI = None
 
+try:
+    import httpx
+except ImportError:  # openai normally installs httpx; keep fakes usable without it.
+    httpx = None
+
+
+def _request_timeout(seconds):
+    """Bound connection setup separately from the long generation read budget."""
+    if httpx is None:
+        return seconds
+    return httpx.Timeout(float(seconds), connect=min(10.0, float(seconds)))
+
 
 class ChatModel:
     """Small synchronous Qwen adapter; credentials come only from the environment."""
@@ -50,7 +62,7 @@ class ChatModel:
                 response_format={'type': 'json_object'},
                 # Thinking mode costs ~9x latency on strict JSON extraction; writing opts back in.
                 extra_body={'enable_thinking': self.thinking},
-                timeout=self.request_timeout,
+                timeout=_request_timeout(self.request_timeout),
             ),
             attempts=self.attempts,
             base_delay=1.0,

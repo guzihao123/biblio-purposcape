@@ -102,7 +102,7 @@ def validate_answer_value(card_id, value):
         _keys(value, {
             'mode', 'c_route', 'c_info_route', 'c_material', 'user_results',
             'target_journal', 'team_context', 'project', 'policy_materials',
-            'custom', 'theme',
+            'custom', 'theme', 'b_input_path', 'project_draft',
         })
         _string(value.get('mode'), 'mode', 10, required=True)
         if value['mode'] not in {'A', 'B', 'C', 'D', 'E'}:
@@ -119,7 +119,7 @@ def validate_answer_value(card_id, value):
         for field, maximum in (
             ('user_results', 16_000), ('c_material', 16_000),
             ('target_journal', 500), ('team_context', 8_000),
-            ('policy_materials', 16_000), ('custom', 2_000),
+            ('policy_materials', 16_000), ('custom', 2_000), ('project_draft', 16_000),
         ):
             if field in value:
                 _string(value[field], field, maximum)
@@ -142,6 +142,18 @@ def validate_answer_value(card_id, value):
             ):
                 if field in project:
                     _string(project[field], f'project.{field}', maximum)
+        mode_fields = {
+            'B': {'project', 'theme', 'policy_materials', 'b_input_path', 'project_draft'},
+            'C': {'c_route', 'c_info_route', 'c_material', 'target_journal', 'user_results'},
+            'D': {'team_context'},
+            'E': {'custom'},
+        }
+        for field in value:
+            if field in {'mode'}:
+                continue
+            owners = [mode for mode, fields in mode_fields.items() if field in fields]
+            if owners and value['mode'] not in owners:
+                _error(422, 'invalid_answer', f'{field} is not valid for mode {value["mode"]}')
         if value['mode'] == 'B':
             if 'theme' not in value:
                 _error(422, 'invalid_answer', 'mode B requires a selected project theme')
@@ -152,6 +164,17 @@ def validate_answer_value(card_id, value):
                 _error(422, 'invalid_answer', 'mode B requires a nonblank project name')
             if not str(project.get('goal') or '').strip():
                 _error(422, 'invalid_answer', 'mode B requires a nonblank project goal')
+            path = str(value.get('b_input_path') or 'direction')
+            if path not in {'direction', 'draft'}:
+                _error(422, 'invalid_answer', 'unsupported B input path')
+            if path == 'draft' and not str(value.get('project_draft') or '').strip():
+                _error(422, 'invalid_answer', 'B draft path requires project_draft')
+        if value['mode'] == 'B':
+            theme = value.get('theme')
+            if isinstance(theme, dict) and not str(theme.get('custom') or '').strip():
+                for field in ('name', 'goal', 'object', 'method', 'expected_output'):
+                    if not str(theme.get(field) or '').strip():
+                        _error(422, 'invalid_answer', f'theme.{field} must not be blank')
         if value['mode'] == 'C':
             if 'c_route' not in value:
                 _error(422, 'invalid_answer', 'mode C requires the C-mode task selection')
@@ -213,13 +236,15 @@ def validate_answer_value(card_id, value):
         return
 
     if card_id == 'delivery':
-        _keys(value, {'form', 'delivery'})
+        _keys(value, {'form', 'delivery', 'custom'})
         field = 'form' if 'form' in value else 'delivery'
         if field not in value:
             _error(422, 'invalid_answer', 'delivery form is required')
         _string(value[field], field, 10, required=True)
-        if value[field] not in {'A', 'B', 'C'}:
+        if value[field] not in {'A', 'B', 'C', 'OTHER'}:
             _error(422, 'invalid_answer', 'unsupported delivery form')
+        if value[field] == 'OTHER':
+            _string(value.get('custom'), 'custom', 2_000, required=True)
         return
 
     _error(422, 'invalid_answer', 'unknown card')

@@ -81,9 +81,9 @@
 | 本地 D visual polish 提交 | **已验证（提交层）** | `git show --no-patch --format='%H %s' d29203e d1fdf73 03e9646`：本地 `d29203eb201b28629e89c1282545c32160fcffec`（merge）、`d1fdf730bc7138c36ed46efe6622bef529ca6945`（部署补丁）；远端重复补丁为 `03e9646b9a81ab305db3f7044e51a5c50f591251` |
 | Render 首页 | **已验证（HTTP 层）** | `curl -L --max-time 90 ... https://biblio-purposcape.onrender.com/` → `200`，响应存 `/tmp/render-home-20261125.html` |
 | Render health | **已验证（HTTP/JSON 层）** | `curl ... https://biblio-purposcape.onrender.com/api/health` → `200`；`/tmp/render-health-20261125.json` 为 `{"status":"ok","database":"ok","worker":"ready"}` |
-| Qoder 首页 | **已验证（HTTP 层）** | `curl ... https://purpose-landscape-w28zuuplkjz.qoder.zone/` → `200`，HTML 存 `/tmp/qoder-home-20261125.html`；HTMLParser 提取到 `/assets/index-ByB3KEqp.js` |
-| Qoder 入口资源 `index-ByB3KEqp.js` | **未验证（资源不可取）** | 对首页提取出的精确地址 `https://purpose-landscape-w28zuuplkjz.qoder.zone/assets/index-ByB3KEqp.js` 执行 GET → `404`、`size_download=0`；空响应存 `/tmp/qoder-index-ByB3KEqp-20261125.js` |
-| UI D visual polish 线上视觉 | **历史资源 404，当前 Qoder 资源已复验 200** | 本地/远端部署补丁提交存在；归档时 Qoder 首页引用的 `index-ByB3KEqp.js` 返回 404，本会话未做浏览器视觉复验。2026-11-25 23:52 GMT+8 更正复验：Qoder 当前首页引用 `index-Bxn32REQ.js`，直接 GET 返回 200；Render 当前资源 `index-PUNMBFkc.js` 因 TLS 中断未取得现场成功响应，详见文末更正段 |
+| Qoder 首页（历史归档） | **已验证（历史 HTTP 层）** | `curl ... https://purpose-landscape-w28zuuplkjz.qoder.zone/` → `200`，HTML 存 `/tmp/qoder-home-20261125.html`；HTMLParser 当时提取到 `/assets/index-ByB3KEqp.js`，不代表当前入口 |
+| Qoder 入口资源 `index-ByB3KEqp.js`（仅历史） | **历史资源 404（非当前状态）** | 对当时首页提取出的精确地址 `https://purpose-landscape-w28zuuplkjz.qoder.zone/assets/index-ByB3KEqp.js` 执行 GET → `404`、`size_download=0`；空响应存 `/tmp/qoder-index-ByB3KEqp-20261125.js`。当前入口为 `index-Bxn32REQ.js` 200 |
+| UI D visual polish 线上视觉 | **历史资源 404；当前 Qoder/Render 资源均已复验 200** | 本地/远端部署补丁提交存在；归档时 Qoder 首页引用的 `index-ByB3KEqp.js` 返回 404，本会话未做浏览器视觉复验。2026-11-25 23:52 GMT+8 Qoder 当前资源 `index-Bxn32REQ.js` 复验 200；2026-11-26 00:22 GMT+8 再次复验 Qoder 当前资源 200，并取得 Render 当前资源 `index-PUNMBFkc.js` 200。当前 Qoder action `0f3811c8`，描述文件提交 `64bf6ef`，详见文末更正段 |
 
 ### 2. 制品链路
 
@@ -101,7 +101,7 @@
 | Deno 类型检查 | **通过** | `deno check --import-map=dev/import_map.json sites/functions/index.ts sites/functions/task_store.ts`；日志 `/tmp/deno_check_20261125.log` |
 | dfigure 离线回归 | **4 passed in 0.81s** | `.venv/bin/python -m pytest backend/tests/test_ppt_figures.py -q -p no:cacheprovider`；日志 `/tmp/pytest_dfigure_20261125.log` |
 | 挂死复现 | **超时 exit=124** | 起点 `26bc850` 执行指定全量命令，日志 `/tmp/pytest_full.log`；最后完成到 `test_c2_real_offline_delivery_is_not_discussion`，下一项 D 离线交付未完成 |
-| 根因 | **D 离线回归漏传 figure loader，默认触发真实 OA 取图** | `dfigure` 后 `DeliveryService` 默认使用 `prepare_d_figures`；旧 `test_mode_delivery_regression.py` 未注入离线 loader。并发提交 `a101e5f` 已补 `offline_figure_loader` 及显式注入 |
+| 根因 | **D 离线回归漏传 figure loader，默认触发真实 OA 取图** | `dfigure` 后 `DeliveryService` 默认使用 `prepare_d_figures`；旧 `test_mode_delivery_regression.py` 未注入离线 loader。`a101e5f` 修复 A 验收夹具，`ec14abf` 随后补齐 `offline_figure_loader` 及显式注入 |
 | 回归守卫 | **旧基线失败、当前通过** | 新守卫在 `26bc850` 临时归档上 `1 failed in 0.32s`（`/tmp/pytest_d_guard_red.log`）；当前分支 `1 passed in 0.50s`（`/tmp/pytest_d_guard_green.log`）；提交 `ec14abf` |
 | 最终全量 pytest | **622 passed / 5 skipped / 5 warnings in 21.44s，exit=0** | `timeout 420 .venv/bin/python -m pytest backend/tests -v -p no:cacheprovider`；日志 `/tmp/pytest_full_final_20261125.log` |
 
@@ -118,5 +118,44 @@
 - 更正时间由 `date -Iseconds` 现场记录为 `2026-11-25T23:52:11+08:00`。
 - **历史**：归档时 Qoder 首页引用 `/assets/index-ByB3KEqp.js`，对该地址执行 GET 返回 `404`、`size_download=0`；原证据保留在上方表格及 `/tmp/qoder-index-ByB3KEqp-20261125.js`，不改写。
 - **当前 Qoder**：`curl -L --max-time 90 --retry 1 --retry-delay 5 -sS https://purpose-landscape-w28zuuplkjz.qoder.zone/` 返回 `200`，HTML 存 `/tmp/qoder-home-correction-20261125.html`；HTMLParser 提取到当前入口 `/assets/index-Bxn32REQ.js`。随后执行 `curl -L --max-time 90 --retry 1 --retry-delay 5 -sS https://purpose-landscape-w28zuuplkjz.qoder.zone/assets/index-Bxn32REQ.js`，返回 `http_code=200`、`size_download=260779`，资源存 `/tmp/qoder-index-Bxn32REQ-20261125.js`，SHA-256 为 `37f1d5fc16605fd06332a12b0413f44d625eab162c72e4595bedb40669f2cbea`。据此将 UI D visual polish 结论更正为：**历史资源 404，当前资源已复验 200**；按主线说明，UI 已随 `integration3` 发布。
-- **当前 Render**：主线说明当前入口资源为 `index-PUNMBFkc.js`。本次对 Render 首页重试两次、对 `https://biblio-purposcape.onrender.com/assets/index-PUNMBFkc.js` 直接 GET 一次，均在本机 TLS 握手阶段失败（`curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL`、`http_code=000`），因此 Render 当前资源本轮**未现场复验**，不以主线说明替代成功响应。
+- **当时 Render**：主线说明当前入口资源为 `index-PUNMBFkc.js`。本次对 Render 首页重试两次、对 `https://biblio-purposcape.onrender.com/assets/index-PUNMBFkc.js` 直接 GET 一次，均在本机 TLS 握手阶段失败（`curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL`、`http_code=000`），因此 23:52 当时**未现场复验**，不以主线说明替代成功响应。该临时失败已在 2026-11-26 00:22:36 GMT+8 复验为 200，见下节；历史失败记录保留，不改写为当时成功。
 - 本次更正只做公开资源只读复验与报告追加；未 push、未部署、未改产品代码，未修改 `push-state.json`，未读取临时 token。
+
+---
+
+## 2026-11-26 00:22 GMT+8 现场复核与最新回归基线
+
+> 本节只更正文档并引用现场只读 `curl` 与本轮回归日志；未改产品代码、未 push、未部署。历史 404、历史 TLS 失败与此处当前 200 分开保留，不互相覆盖。
+
+### 1. 历史/当前公开资源
+
+| 证据时点 | 对象 | 命令/动作 | 结果 |
+|---|---|---|---|
+| 历史归档，2026-11-25 23:41:58 GMT+8（提交 `b44a2e6`） | Qoder `/assets/index-ByB3KEqp.js` | 原报告记录 `GET https://purpose-landscape-w28zuuplkjz.qoder.zone/assets/index-ByB3KEqp.js`；完整 curl 参数未留存 | HTTP `404`、`size_download=0`。这是旧资源证据，不代表当前入口 |
+| 2026-11-25 23:52:11 GMT+8 | Qoder 当前 `/assets/index-Bxn32REQ.js` | `curl -L --max-time 90 --retry 1 --retry-delay 5 -sS https://purpose-landscape-w28zuuplkjz.qoder.zone/assets/index-Bxn32REQ.js` | HTTP `200`、`size_download=260779`；SHA-256 `37f1d5fc16605fd06332a12b0413f44d625eab162c72e4595bedb40669f2cbea` |
+| 2026-11-26 00:22:42 GMT+8 | Qoder 首页及当前入口 | `curl -L --max-time 90 --retry 1 --retry-delay 5 -sS -w '\n__CURL__%{http_code} %{size_download}' https://purpose-landscape-w28zuuplkjz.qoder.zone/`，再从 HTML 提取 `/assets/index-Bxn32REQ.js` 并对该 URL 执行同参数 GET | 首页 `200`、57655 bytes；当前资源 `200`、260779 bytes；SHA-256 与 23:52 相同。当前 action `0f3811c8`，描述文件提交 `64bf6ef`；`index-ByB3KEqp.js` 404 仅为历史记录 |
+| 2026-11-26 00:22:36 GMT+8 | Render 首页及当前入口 | `curl -L --max-time 90 --retry 1 --retry-delay 5 -sS -w '\n__CURL__%{http_code} %{size_download}' https://biblio-purposcape.onrender.com/`，再从 HTML 提取 `/assets/index-PUNMBFkc.js` 并对该 URL 执行同参数 GET | 首页 `200`、613 bytes；当前资源 `200`、260688 bytes；SHA-256 `51bb8816e32168013d650ac75a704d2fd88a83ea9b91892ce490726e0bbbe8dd` |
+| 2026-11-26 00:22:36 GMT+8 | Render health | `curl -L --max-time 90 --retry 1 --retry-delay 5 -sS -w '\n__CURL__%{http_code} %{size_download}' https://biblio-purposcape.onrender.com/api/health` | HTTP `200`、48 bytes；响应 `{"status":"ok","database":"ok","worker":"ready"}` |
+
+以上 HTTP 200 仅证明公开首页、入口 JS 与 health 可访问，不等于已完成浏览器视觉验收或 Word 下载验收。
+
+### 2. 最新回归基线
+
+基线为 **integration3 `0b83b2f`（5xx 回读修复）**；桌面描述修正提交 `64bf6ef` 不影响测试结果。基于 `030a443` 的旧 738 条基线及前端 40 条结果已过期，以 `dev/acceptance/regression-20261126-post-api.md` 为准。
+
+| 范围 | 命令 | 最新结果 |
+|---|---|---|
+| 后端 | `.venv/bin/python -m pytest backend/tests -q -p no:cacheprovider` | **622 passed / 5 skipped** |
+| 前端单测 | `cd frontend && npm test` | **41 passed** |
+| Deno 函数 | `deno test --allow-all --import-map=dev/import_map.json sites/functions/*.test.mjs` | **65 passed** |
+| Playwright 主流程 | `node node_modules/playwright/cli.js test --config=playwright.config.ts` | **11 passed** |
+| 合计 | — | **739 passed / 5 skipped / 0 failed** |
+
+### 3. 本轮修复与验收边界
+
+- **离线 figure loader**：`ec14abf` 为 D 离线回归显式注入 `offline_figure_loader`，避免测试夹具触发真实 OA 取图；后端全量恢复为 622 passed / 5 skipped。
+- **分析批处理/候选合并**：`a101e5f` 将默认 `batch_size` 调整为 10，关系候选跨批按每组最多 5 对合并调用，并加入 `ANALYSIS_BUDGET_SECONDS=900` 截止检查；非 thinking 分析仍保持串行，避免放大供应商限流。
+- **429 重试**：`f55ff2d` 将 `RateLimitError` 与 `InternalServerError` 纳入 transient 集合；非 thinking 调用最多 4 次，退避 1s 起、最大 8s。前端另对 502/503/504 与网络错误做最多 2 次有界重试。
+- **模式化论文上限**：`d6f6c0c` 将分析/写作池默认上限设为 A=20、B=30、C=20、D=20，可由 `PAPER_LIMIT_<MODE>` 调整；图谱统计仍使用完整检索池。
+- **A 检索约 3 分钟**：修复记录为 2026-11-25 22:03:51 `searching` → 22:06:52 `dashboard_ready`（181 秒），只证明该次检索阶段通过。
+- **Word 下载未通过（未完成）**：主线新任务仍在检索/生成链路中，尚未拿到 Word，也没有可交付的 `.docx` 及 zip/正文/参考文献校验证据；A 模式线上验收整体仍标记 **blocked / 未通过**，等主线给出最终结果后再补记，不得提前写通过。详细修复证据见 `dev/acceptance/blocker-fixes-20261125.md`，原 blocked 时间线见 `dev/acceptance/live-a-20261125.md`。

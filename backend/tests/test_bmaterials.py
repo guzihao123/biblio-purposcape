@@ -82,9 +82,9 @@ def test_b_card_exposes_optional_material_textarea():
 
 
 def test_mode_answer_accepts_material_text_within_size_limit():
-    validate_answer_value('mode', {'mode': 'B', 'theme': {'name': '材料主题'}, 'project': {'name': '项目', 'goal': '目标'}, 'policy_materials': PASTED})
+    validate_answer_value('mode', {'mode': 'B', 'theme': {'name': '材料主题', 'custom': '材料主题'}, 'project': {'name': '项目', 'goal': '目标'}, 'policy_materials': PASTED})
     with pytest.raises(HTTPException) as error:
-        validate_answer_value('mode', {'mode': 'B', 'theme': {'name': '材料主题'}, 'project': {'name': '项目', 'goal': '目标'}, 'policy_materials': 'x' * 16_001})
+        validate_answer_value('mode', {'mode': 'B', 'theme': {'name': '材料主题', 'custom': '材料主题'}, 'project': {'name': '项目', 'goal': '目标'}, 'policy_materials': 'x' * 16_001})
     assert error.value.status_code == 422
 
 

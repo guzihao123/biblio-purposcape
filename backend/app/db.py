@@ -35,10 +35,12 @@ def engine_kwargs(url):
     if url.startswith('postgresql+psycopg'):
         return {
             # Supavisor/pgbouncer pooling cannot safely reuse client-side prepared statements.
-            'connect_args': {'prepare_threshold': None},
+            # A bounded connect timeout prevents a dead pooler endpoint from pinning a worker.
+            'connect_args': {'prepare_threshold': None, 'connect_timeout': 10},
             # Pooled TLS connections can die between checkouts; probe and recycle them.
             'pool_pre_ping': True,
             'pool_recycle': 300,
+            'pool_timeout': 30,
         }
     return {}
 

@@ -31,9 +31,60 @@ _GAP_COLUMNS = {
 REQUIREMENTS_LEDGER_FILE = '用户要求台账.md'
 
 
+def _delivery_form_label(answers):
+    answer = answers.get('delivery') or {}
+    form = str(answer.get('form') or '').upper()
+    if form == 'OTHER':
+        custom = str(answer.get('custom') or '').strip()
+        return f'其他（自定义）：{custom or "未说明"}；实际使用展示 PPT（最接近替代）'
+    return {'A': '正式调研报告（Word）', 'B': '仅对话要点与代表文献', 'C': '展示 PPT'}.get(
+        form, form or '未记录'
+    )
+
+
+def _resolve_delivery_form(delivery_answer, mode):
+    requested = str(delivery_answer.get('form', delivery_answer.get('delivery', 'A'))).upper()
+    if requested in {'A', 'B', 'C', 'ALL'}:
+        return requested, ''
+    custom = str(delivery_answer.get('custom') or '').strip()
+    fallback = 'C' if str(mode).upper() == 'D' else 'A'
+    return fallback, custom
+
+
 def _requirements_ledger_text(answers):
     mode_answers = answers.get('mode', {})
-    if mode_answers.get('mode') != 'C':
+    mode = mode_answers.get('mode')
+    form_label = _delivery_form_label(answers)
+    if mode == 'B':
+        project = mode_answers.get('project') or {}
+        theme = mode_answers.get('theme') or {}
+        return '\n'.join([
+            '# 用户要求台账', '',
+            '- 用途模式：B 撰写标书/立项依据',
+            f"- 项目名称：{str(project.get('name') or theme.get('name') or '').strip() or '未提供'}",
+            f"- 一句话目标：{str(project.get('goal') or theme.get('goal') or '').strip() or '未提供'}",
+            f"- 资助类别/学科属性：{str(project.get('funding') or '').strip() or '未指定'}",
+            f"- 标书输入路径：{str(mode_answers.get('b_input_path') or 'direction')}",
+            f"- 项目主题：{str(theme.get('name') or theme.get('custom') or '').strip() or '未提供'}",
+            f"- 申请书/研究方案草稿：{str(mode_answers.get('project_draft') or '').strip() or '未提供'}",
+            f"- 政策/报告材料：{str(mode_answers.get('policy_materials') or '').strip() or '未提供'}",
+            f'- 交付形式：{form_label}', '',
+        ])
+    if mode == 'D':
+        return '\n'.join([
+            '# 用户要求台账', '',
+            '- 用途模式：D 组会或团队学习',
+            f"- 团队目前研究方向/在研问题：{str(mode_answers.get('team_context') or '').strip() or '未提供团队背景'}",
+            f'- 交付形式：{form_label}', '',
+        ])
+    if mode == 'E':
+        return '\n'.join([
+            '# 用户要求台账', '',
+            '- 用途模式：E 其他（自定义）',
+            f"- 自定义用途：{str(mode_answers.get('custom') or '').strip() or '未提供'}",
+            f'- 交付形式：{form_label}', '',
+        ])
+    if mode != 'C':
         return None
     info_route = str(mode_answers.get('c_info_route') or '')
     material = str(mode_answers.get('c_material') or mode_answers.get('user_results') or '')
@@ -51,7 +102,7 @@ def _requirements_ledger_text(answers):
         f"- C 模式任务：{mode_answers.get('c_route', '未记录')}",
         f"- 本文信息选择：{route_labels.get(info_route, info_route)}（{info_route}）",
         f"- 目标期刊：{str(mode_answers.get('target_journal') or '').strip() or '未提供'}",
-        '', '## 本文材料', '', '```text',
+        f'- 交付形式：{form_label}', '', '## 本文材料', '', '```text',
         material or '（跳过，未提供本文材料）', '```', '',
     ])
 
@@ -588,6 +639,10 @@ class Orchestrator:
             c_material = ''
         else:
             c_material = c_material or legacy_material
+        target_journal = str(mode_answers.get('target_journal') or '').strip()
+        if not target_journal:
+            match = re.search(r'目标期刊\s*[:：]\s*([^\n]+)', c_material)
+            target_journal = match.group(1).strip() if match else ''
         return WritingTask(
             id=task_id or task.id,
             mode=mode,
@@ -604,7 +659,9 @@ class Orchestrator:
             project=project,
             user_results=c_material,
             c_info_route=c_info_route,
-            target_journal=str(mode_answers.get('target_journal') or '').strip(),
+            target_journal=target_journal,
+            project_draft=str(answers.get('mode', {}).get('project_draft') or '').strip(),
+            project_input_path=str(answers.get('mode', {}).get('b_input_path') or 'direction'),
             team_context=(
                 '未提供团队背景'
                 if mode == 'D' and not str(answers.get('mode', {}).get('team_context') or '').strip()
@@ -739,7 +796,7 @@ class Orchestrator:
         combined_ledger += '\n' + (self.artifact_root / f'{task.id}-C2' / 'evidence_ledger.md').read_text(encoding='utf-8')
         (task_dir / 'evidence_ledger.md').write_text(combined_ledger, encoding='utf-8')
         delivery_answer = answers.get('delivery', {})
-        form = str(delivery_answer.get('form', delivery_answer.get('delivery', 'A'))).upper()
+        form, custom_delivery = _resolve_delivery_form(delivery_answer, 'C')
         combined = DeliveryTask(
             id=task.id,
             mode='E',
@@ -805,7 +862,7 @@ class Orchestrator:
                 result['checkpoint']['requirements_ledger'] = REQUIREMENTS_LEDGER_FILE
             return result
         delivery_answer = answers.get('delivery', {})
-        form = str(delivery_answer.get('form', delivery_answer.get('delivery', 'A'))).upper()
+        form, custom_delivery = _resolve_delivery_form(delivery_answer, mode)
         writing_mode = 'A_DIALOGUE' if mode == 'A' and form == 'B' else mode
         materials = []
         rejected_materials = []
@@ -848,6 +905,12 @@ class Orchestrator:
             material_listing=material_listing,
             material_originals=material_originals,
         )
+        if custom_delivery:
+            delivery_task.requirements.append({
+                'requirement': f'用户请求交付形态：{custom_delivery}；已使用最接近的替代（{form}）',
+                'location': '交付文件',
+                'passed': True,
+            })
         if writing_mode == 'B':
             if materials:
                 delivery_task.requirements.append({

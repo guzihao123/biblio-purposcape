@@ -1,6 +1,7 @@
 import re
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from app.qwen import ChatModel
@@ -74,7 +75,7 @@ class CandidateService:
             [sys.executable, str(script), 'openalex', '--query', query, '--count-only'],
             capture_output=True,
             text=True,
-            timeout=45,
+            timeout=20,
         )
         if completed.returncode != 0:
             raise RuntimeError('OpenAlex candidate count failed')
@@ -108,16 +109,21 @@ class CandidateService:
             if len(candidates) == 4:
                 break
 
-        options = []
-        for candidate in candidates:
+        def safe_count(candidate):
             try:
-                hits = self.count_runner(candidate['en'])
+                return self.count_runner(candidate['en'])
             except Exception:
-                hits = None
-            options.append({
-                **candidate,
-                'hits': hits,
-            })
+                return None
+
+        if candidates:
+            with ThreadPoolExecutor(max_workers=min(4, len(candidates))) as pool:
+                hits = list(pool.map(safe_count, candidates))
+        else:
+            hits = []
+        options = [
+            {**candidate, 'hits': candidate_hits}
+            for candidate, candidate_hits in zip(candidates, hits)
+        ]
         valid_hits = [option['hits'] for option in options if option['hits'] is not None]
         recommended = max(valid_hits) if valid_hits else None
         recommended_assigned = False

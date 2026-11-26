@@ -41,23 +41,16 @@ def test_c_mode_card_has_three_info_routes_material_and_optional_journal():
     ]
     assert by_name['c_material']['kind'] == 'textarea'
     assert '题目、摘要、方法、结果、创新' in by_name['c_material']['label']
-    assert by_name['target_journal']['label'] == '目标期刊（可跳过）'
+    assert 'target_journal' not in by_name
     assert 'user_results' not in by_name
-    journals = [
-        field['name']
-        for mode_fields in _mode_card()['conditional_fields'].values()
-        for field in mode_fields
-        if field['name'] == 'target_journal'
-    ]
-    assert journals == ['target_journal']
 
 
 def test_b_mode_card_asks_project_fields_and_optional_materials():
     fields = _mode_card()['conditional_fields']['B']
     names = [field['name'] for field in fields]
 
-    assert names == ['name', 'goal', 'funding', 'policy_materials']
-    assert [field.get('required') for field in fields] == [True, True, None, None]
+    assert names == ['name', 'goal', 'funding', 'b_input_path', 'project_draft', 'policy_materials']
+    assert [field.get('required') for field in fields] == [True, True, None, None, None, None]
     assert fields[-1]['kind'] == 'textarea'
     for generated in ('research_contents', 'technical_route', 'feasibility', 'expected_outcomes'):
         assert generated not in names
@@ -72,3 +65,20 @@ def test_mode_card_exposes_custom_e_option_and_generic_custom_field():
     assert card['custom']['label'] == '自定义用途'
     assert card['custom']['required'] is True
     assert card['custom_for'] == ['E']
+
+
+def test_delivery_previews_cover_dialogue_and_long_ppt_requirements():
+    options = {option['value']: option for option in _delivery_card('A')['options']}
+    assert '七类各 2 个选题槽位' in options['B']['preview']
+    d_options = {option['value']: option for option in _delivery_card('D')['options']}
+    assert '20–30 页' in d_options['C']['preview']
+    assert '真实图表' in d_options['C']['preview']
+
+
+def test_d_delivery_card_exposes_custom_other_form():
+    card = _delivery_card('D')
+    values = [option['value'] for option in card['options']]
+    assert 'OTHER' in values
+    assert card['custom_for'] == ['OTHER']
+    assert card['custom']['required'] is True
+    assert 'OTHER' not in [option['value'] for option in _delivery_card('A')['options']]

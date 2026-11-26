@@ -125,6 +125,46 @@ def test_remote_success_never_opens_local_database(monkeypatch):
     assert remote.events == ['started', 'checkpoint', 'completed']
 
 
+def test_remote_stage_wraps_service_with_watchdog(monkeypatch):
+    remote = FakeRemoteSync()
+    monkeypatch.setattr('app.remote_stage.configured_task_store_sync', lambda: remote)
+    events = []
+
+    class RecordingWatchdog:
+        def __init__(self, stage, task_id):
+            events.append(('init', stage, task_id))
+
+        def __enter__(self):
+            events.append(('enter',))
+
+        def __exit__(self, exc_type, exc, traceback):
+            events.append(('exit', exc_type.__name__ if exc_type else None))
+            return False
+
+    monkeypatch.setattr('app.remote_stage.StageWatchdog', RecordingWatchdog)
+
+    def service(task, stage_input):
+        events.append(('service',))
+        return {
+            'state': TaskState.DASHBOARD_READY.value,
+            'next_card': 'adjustment',
+            'message': 'done',
+            'checkpoint': {'stage': 'search'},
+        }
+
+    monkeypatch.setitem(STAGE_SERVICES, 'search', service)
+    run_stage(
+        'task-1', 'search', session_id='owner-1', job_id='job-test', input_hash='a' * 64,
+    )
+
+    assert events == [
+        ('init', 'search', 'task-1'),
+        ('enter',),
+        ('service',),
+        ('exit', None),
+    ]
+
+
 def test_remote_completed_duplicate_only_returns_checkpoint(monkeypatch):
     remote = FakeRemoteSync()
     remote.job.update(status='completed', revision=3)
