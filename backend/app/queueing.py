@@ -2,6 +2,7 @@ import hashlib
 import os
 import json
 import re
+import sys
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
@@ -445,6 +446,12 @@ def run_stage(task_id, stage, session_id=None, job_id=None, input_hash=None):
             public_error = StageExecutionError(message)
         except Exception as error:
             protected = protected_traceback(error)
+            detail = redact_sensitive_text(f'{type(error).__name__}: {error}')[:500]
+            print(
+                f'STAGE FAILURE task={task_id} stage={stage} {detail}',
+                file=sys.stderr,
+                flush=True,
+            )
             retry_after = _provider_retry_after(error)
             if db.is_active:
                 db.rollback()

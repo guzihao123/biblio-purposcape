@@ -231,7 +231,7 @@ def test_worker_releases_session_before_long_service_and_finalizes_fresh(
 
 
 def test_worker_failure_persists_safe_progress_and_redacted_traceback(
-    db, task, fake_queue, monkeypatch
+    db, task, fake_queue, monkeypatch, capsys
 ):
     secret = 'queue-test-secret-that-must-not-be-stored'
     monkeypatch.setenv('QUEUE_TEST_SECRET', secret)
@@ -257,6 +257,11 @@ def test_worker_failure_persists_safe_progress_and_redacted_traceback(
     assert 'Traceback' in task.progress.traceback
     assert 'RuntimeError' in task.progress.traceback
     assert secret not in task.progress.traceback
+    failure_log = capsys.readouterr().err
+    assert 'STAGE FAILURE' in failure_log
+    assert task.id in failure_log
+    assert 'RuntimeError' in failure_log
+    assert secret not in failure_log
     assert db.query(TaskJob).filter_by(task_id=task.id, kind='search').one().status == 'pending'
 
 
