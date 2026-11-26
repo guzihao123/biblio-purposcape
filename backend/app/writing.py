@@ -492,22 +492,63 @@ def _ensure_a_dialogue_intro(text, task):
     return block + cleaned.strip() + '\n\n' + text[first_heading.start():]
 
 
+def _compact_a_dialogue_data(data, limit):
+    def clip(value):
+        text = str(value or '').strip()
+        return text if limit is None or len(text) <= limit else text[:limit].rstrip() + '…'
+
+    compact = dict(data)
+    compact['landscape'] = [
+        {**row, 'direction': clip(row.get('direction')), 'share': clip(row.get('share')),
+         'venues': clip(row.get('venues'))}
+        for row in data.get('landscape') or []
+    ]
+    compact['gaps'] = [
+        {**row, 'gap': clip(row.get('gap')), 'reason': clip(row.get('reason'))}
+        for row in data.get('gaps') or []
+    ]
+    compact['topic_groups'] = []
+    for group in data.get('topic_groups') or []:
+        slots = []
+        for slot in group.get('slots') or []:
+            if slot.get('recommended') is False:
+                slots.append({**slot, 'reason': clip(slot.get('reason'))})
+                continue
+            slots.append({
+                **slot,
+                'title': clip(slot.get('title')), 'core_question': clip(slot.get('core_question')),
+                'opportunity': clip(slot.get('opportunity')), 'data_availability': clip(slot.get('data_availability')),
+                'research_value': clip(slot.get('research_value')), 'feasibility': clip(slot.get('feasibility')),
+                'innovation_potential': clip(slot.get('innovation_potential')),
+                'implementation_difficulty': clip(slot.get('implementation_difficulty')),
+                'risk': clip(slot.get('risk')),
+            })
+        compact['topic_groups'].append({**group, 'slots': slots})
+    first = dict(data.get('overall_first') or {})
+    first['reason'] = clip(first.get('reason'))
+    first['risk'] = clip(first.get('risk'))
+    compact['overall_first'] = first
+    return compact
+
+
 def _rebuild_a_dialogue_body(task):
     try:
         data = task.component_data if isinstance(task.component_data, dict) else {}
-        text = _render_a_dialogue(data)
-        text = re.sub(
-            r'^#\s+.*$', '# ' + str(task.direction or '领域格局与七类双槽选题'),
-            text, count=1, flags=re.M,
-        )
-        text = re.sub(r'^###\s*选题\s*([12])\s*[｜|]', r'- 选题 \1｜', text, flags=re.M)
-        text = _ensure_a_dialogue_intro(text, task)
-        errors = _a_dialogue_shape_errors(text)
-        if errors:
-            return None
-        evidence = EvidenceAuditor(task.papers).audit_data(data)
-        _validate_citation_coverage(text, evidence)
-        return BodyOutput(text=text, evidence=evidence)
+        for limit in (None, 120, 80, 50):
+            compact = _compact_a_dialogue_data(data, limit)
+            text = _render_a_dialogue(compact)
+            text = re.sub(
+                r'^#\s+.*$', '# ' + str(task.direction or '领域格局与七类双槽选题'),
+                text, count=1, flags=re.M,
+            )
+            text = re.sub(r'^###\s*选题\s*([12])\s*[｜|]', r'- 选题 \1｜', text, flags=re.M)
+            text = _ensure_a_dialogue_intro(text, task)
+            if _a_dialogue_shape_errors(text):
+                continue
+            evidence = EvidenceAuditor(task.papers).audit_data(compact)
+            _validate_citation_coverage(text, evidence)
+            return BodyOutput(text=text, evidence=evidence)
+        return None
     except WritingInputError:
         return None
 
