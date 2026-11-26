@@ -38,6 +38,17 @@ import xml.etree.ElementTree as ET
 UA = {"User-Agent": "purpose-landscape-skill/1.0 (research prototype)"}
 
 
+def openalex_params(params):
+    """Attach the optional key so shared hosts use their own budget, not the IP pool."""
+    key = os.environ.get("OPENALEX_API_KEY", "").strip()
+    if key:
+        params["api_key"] = key
+    mailto = os.environ.get("OPENALEX_MAILTO", "").strip()
+    if mailto:
+        params["mailto"] = mailto
+    return params
+
+
 def fetch(url, tries=3, headers=None):
     hdrs = dict(UA)
     if headers:
@@ -95,7 +106,7 @@ def search_openalex(a):
         params["sort"] = "publication_date:desc"
     elif a.sort == "citations":
         params["sort"] = "cited_by_count:desc"
-    url = "https://api.openalex.org/works?" + urllib.parse.urlencode(params)
+    url = "https://api.openalex.org/works?" + urllib.parse.urlencode(openalex_params(params))
     data = json.loads(fetch(url))
     total = data.get("meta", {}).get("count", 0)
     if a.count_only:
@@ -105,7 +116,7 @@ def search_openalex(a):
             pf = ['title_and_abstract.search:"%s"' % a.query[0]]
             if a.from_year:
                 pf.append("from_publication_date:%d-01-01" % a.from_year)
-            purl = "https://api.openalex.org/works?" + urllib.parse.urlencode({"per-page": "1", "filter": ",".join(pf)})
+            purl = "https://api.openalex.org/works?" + urllib.parse.urlencode(openalex_params({"per-page": "1", "filter": ",".join(pf)}))
             pt = json.loads(fetch(purl)).get("meta", {}).get("count", 0)
             print("  其中整串短语精确匹配: %d（太少说明词组偏窄，可放宽）" % pt)
         return
@@ -484,7 +495,7 @@ def stats_openalex(a):
         gb = "topics.id"
     # group_by 模式下 per-page 控制返回的分组数（不是论文数），取上限 200
     params = {"per-page": "200", "filter": ",".join(filters), "group_by": gb}
-    data = json.loads(fetch("https://api.openalex.org/works?" + urllib.parse.urlencode(params)))
+    data = json.loads(fetch("https://api.openalex.org/works?" + urllib.parse.urlencode(openalex_params(params))))
     groups = [{"key": g.get("key"), "name": g.get("key_display_name") or str(g.get("key")),
                "count": g.get("count", 0)} for g in data.get("group_by", [])]
     if gb == "publication_year":

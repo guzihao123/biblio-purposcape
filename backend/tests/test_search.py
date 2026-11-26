@@ -437,6 +437,32 @@ def test_fetch_honors_bounded_retry_after_without_network(retry_after, expected_
     assert len(attempts) == 2
 
 
+def test_openalex_requests_use_configured_key_and_mailto(monkeypatch):
+    spec = importlib.util.spec_from_file_location('keyed_search_papers', SEARCH_SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    urls = []
+
+    def fake_fetch(url):
+        urls.append(url)
+        return '{"meta":{"count":0},"results":[]}'
+
+    monkeypatch.setattr(module, 'fetch', fake_fetch)
+    monkeypatch.setenv('OPENALEX_API_KEY', 'offline-key')
+    monkeypatch.setenv('OPENALEX_MAILTO', 'offline@example.org')
+    args = argparse.Namespace(
+        limit=1, query=['offline'], from_year=None, sort='relevance',
+        count_only=True, phrase_count=False,
+    )
+
+    module.search_openalex(args)
+
+    assert len(urls) == 1
+    query = urllib.parse.parse_qs(urllib.parse.urlparse(urls[0]).query)
+    assert query['api_key'] == ['offline-key']
+    assert query['mailto'] == ['offline@example.org']
+
+
 def test_same_doi_cross_source_merge_prefers_openalex_and_backfills_real_fields(
     tmp_path, monkeypatch
 ):
