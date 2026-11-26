@@ -85,6 +85,7 @@ class StageWatchdog:
         heartbeat_seconds=None,
         hard_timeout_seconds=None,
         exit_fn=None,
+        on_timeout=None,
         clock=None,
     ):
         self.stage = str(stage)
@@ -102,6 +103,7 @@ class StageWatchdog:
         self.heartbeat_seconds = heartbeat
         self.hard_timeout_seconds = hard_timeout
         self._exit_fn = exit_fn or os._exit
+        self._on_timeout = on_timeout
         self._clock = clock or time.monotonic
         self._started_at = 0.0
         self._stop = threading.Event()
@@ -180,6 +182,24 @@ class StageWatchdog:
         _emit(self._header('HEARTBEAT', now))
         _emit(_format_thread_stacks())
 
+    def _persist_before_exit(self):
+        if self._on_timeout is None:
+            return
+
+        def persist():
+            try:
+                self._on_timeout()
+            except Exception:
+                pass
+
+        worker = threading.Thread(
+            target=persist,
+            name='stage-watchdog-persist',
+            daemon=True,
+        )
+        worker.start()
+        worker.join(timeout=10.0)
+
     def _hard_timeout(self, now):
         _emit(self._header('HARD TIMEOUT', now))
         _emit(_format_thread_stacks())
@@ -187,6 +207,7 @@ class StageWatchdog:
             faulthandler.dump_traceback(file=sys.stderr, all_threads=True)
         except Exception:
             pass
+        self._persist_before_exit()
         try:
             sys.stderr.flush()
         except Exception:

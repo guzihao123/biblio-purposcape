@@ -131,8 +131,8 @@ def test_remote_stage_wraps_service_with_watchdog(monkeypatch):
     events = []
 
     class RecordingWatchdog:
-        def __init__(self, stage, task_id):
-            events.append(('init', stage, task_id))
+        def __init__(self, stage, task_id, **kwargs):
+            events.append(('init', stage, task_id, callable(kwargs.get('on_timeout'))))
 
         def __enter__(self):
             events.append(('enter',))
@@ -158,7 +158,7 @@ def test_remote_stage_wraps_service_with_watchdog(monkeypatch):
     )
 
     assert events == [
-        ('init', 'search', 'task-1'),
+        ('init', 'search', 'task-1', True),
         ('enter',),
         ('service',),
         ('exit', None),

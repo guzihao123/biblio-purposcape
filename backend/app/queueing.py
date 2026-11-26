@@ -34,6 +34,17 @@ install_worker_log_redaction()
 QUEUE_NAME = os.environ.get('TASK_QUEUE_NAME', 'landscape')
 SAFE_FAILURE_MESSAGE = '任务执行失败，请稍后重试。'
 SAFE_ENQUEUE_MESSAGE = '任务暂时无法排队，请稍后重试。'
+SAFE_TIMEOUT_MESSAGE = '任务执行超时，已终止，请稍后重试。'
+DEFAULT_STAGE_JOB_TIMEOUT_SECONDS = 3600
+
+
+def stage_job_timeout():
+    raw = os.environ.get('STAGE_JOB_TIMEOUT_SECONDS', '')
+    try:
+        value = int(float(raw)) if str(raw).strip() else DEFAULT_STAGE_JOB_TIMEOUT_SECONDS
+    except (TypeError, ValueError):
+        value = DEFAULT_STAGE_JOB_TIMEOUT_SECONDS
+    return max(300, value)
 
 # Later retrieval/delivery tasks register their real services here. Keeping the
 # registry empty prevents an unimplemented stage from reporting false success.
@@ -387,7 +398,20 @@ def run_stage(task_id, stage, session_id=None, job_id=None, input_hash=None):
             reporter = TaskProgressReporter(
                 task_id, stage, session_factory=SessionLocal
             )
-            with stage_reporting(reporter), StageWatchdog(stage, task_id):
+
+            def persist_timeout():
+                _record_failure_in_new_session(
+                    task_id,
+                    stage,
+                    input_hash,
+                    'Stage watchdog hard timeout',
+                    event_type='failed',
+                    message=SAFE_TIMEOUT_MESSAGE,
+                )
+
+            with stage_reporting(reporter), StageWatchdog(
+                stage, task_id, on_timeout=persist_timeout
+            ):
                 result = service(task, stage_input) or {}
             # Checkpoint and completion use a fresh session so a pooled TLS
             # connection that died during the stage can be replaced and retried.
@@ -476,7 +500,9 @@ class QueueAdapter:
             db.commit()
 
         try:
-            return self.queue.enqueue(run_stage, task_id, stage)
+            return self.queue.enqueue(
+                run_stage, task_id, stage, job_timeout=stage_job_timeout()
+            )
         except Exception as error:
             protected = protected_traceback(error)
             _record_failure_in_new_session(

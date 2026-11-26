@@ -39,6 +39,7 @@ def enqueue_remote_stage(adapter, task_id, stage, session_id):
         _message,
         protected_traceback,
         run_stage,
+        stage_job_timeout,
     )
 
     sync = configured_task_store_sync()
@@ -61,6 +62,7 @@ def enqueue_remote_stage(adapter, task_id, stage, session_id):
             session_id=session_id,
             job_id=queued['job']['id'],
             input_hash=input_hash,
+            job_timeout=stage_job_timeout(),
         )
     except Exception as error:
         protected = protected_traceback(error)
@@ -119,6 +121,7 @@ def run_remote_stage(task_id, stage, session_id=None, job_id=None, input_hash=No
     from app.queueing import (
         RATE_LIMIT_MESSAGE,
         SAFE_FAILURE_MESSAGE,
+        SAFE_TIMEOUT_MESSAGE,
         STAGE_SERVICES,
         StageExecutionError,
         StageRateLimitError,
@@ -162,7 +165,20 @@ def run_remote_stage(task_id, stage, session_id=None, job_id=None, input_hash=No
         # reporting is a no-op here; lifecycle messages stay authoritative.
         from app.progress_reporter import NullReporter, stage_reporting
 
-        with stage_reporting(NullReporter()), StageWatchdog(stage, task_id):
+        def persist_timeout():
+            _fail_started(
+                sync,
+                task_id,
+                session_id,
+                started,
+                'failed',
+                SAFE_TIMEOUT_MESSAGE,
+                'Stage watchdog hard timeout',
+            )
+
+        with stage_reporting(NullReporter()), StageWatchdog(
+            stage, task_id, on_timeout=persist_timeout
+        ):
             result = service(task, stage_input) or {}
         message = result.get('message') or _message(stage, 'completed')
         result_state = TaskState(result['state']).value if result.get('state') is not None else None

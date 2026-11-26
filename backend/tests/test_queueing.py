@@ -27,6 +27,7 @@ class DeterministicQueueAdapter(QueueAdapter):
         super().__init__(queue=self)
 
     def enqueue(self, function, *args, **kwargs):
+        kwargs.pop('job_timeout', None)
         self.pending.append((function, args, kwargs))
         return SimpleNamespace(id=f'fake-job-{len(self.pending)}')
 
@@ -134,7 +135,44 @@ def test_worker_saves_checkpoint_and_progress(db, task, fake_queue):
     assert db.query(TaskJob).filter_by(task_id=task.id, kind='search').one().status == 'completed'
 
 
-def test_production_adapter_enqueues_rq_job_on_landscape(db, task):
+def test_local_stage_wraps_service_with_watchdog(db, task, fake_queue, monkeypatch):
+    events = []
+
+    class RecordingWatchdog:
+        def __init__(self, stage, task_id, **kwargs):
+            events.append(('init', stage, task_id, callable(kwargs.get('on_timeout'))))
+
+        def __enter__(self):
+            events.append(('enter',))
+
+        def __exit__(self, exc_type, exc, traceback):
+            events.append(('exit', exc_type.__name__ if exc_type else None))
+            return False
+
+    monkeypatch.setattr('app.queueing.StageWatchdog', RecordingWatchdog)
+
+    def service(task, stage_input):
+        events.append(('service',))
+        return {
+            'message': '检索与论文池整理完成',
+            'state': TaskState.DASHBOARD_READY.value,
+            'next_card': CardId.ADJUSTMENT.value,
+        }
+
+    monkeypatch.setitem(STAGE_SERVICES, 'search', service)
+    fake_queue.enqueue_stage(task.id, 'search')
+    fake_queue.work_once()
+
+    assert events == [
+        ('init', 'search', task.id, True),
+        ('enter',),
+        ('service',),
+        ('exit', None),
+    ]
+
+
+def test_production_adapter_enqueues_rq_job_on_landscape(db, task, monkeypatch):
+    monkeypatch.delenv('STAGE_JOB_TIMEOUT_SECONDS', raising=False)
     connection = fakeredis.FakeStrictRedis()
     adapter = QueueAdapter(connection=connection)
 
@@ -144,9 +182,21 @@ def test_production_adapter_enqueues_rq_job_on_landscape(db, task):
     assert job.origin == 'landscape'
     assert job.func_name == 'app.queueing.run_stage'
     assert job.args == (task.id, 'search')
+    assert job.timeout == 3600
     assert Queue('landscape', connection=connection).count == 1
     assert db.query(TaskEvent).filter_by(task_id=task.id, event_type='queued').count() == 1
     assert db.query(TaskJob).filter_by(task_id=task.id, kind='search').one().status == 'queued'
+
+
+def test_production_adapter_allows_a_longer_stage_job_timeout(db, task, monkeypatch):
+    monkeypatch.setenv('STAGE_JOB_TIMEOUT_SECONDS', '7200')
+    connection = fakeredis.FakeStrictRedis()
+    adapter = QueueAdapter(connection=connection)
+
+    enqueued = adapter.enqueue_stage(task.id, 'search')
+
+    job = Job.fetch(enqueued.id, connection=connection)
+    assert job.timeout == 7200
 
 
 def test_worker_failure_persists_safe_progress_and_redacted_traceback(

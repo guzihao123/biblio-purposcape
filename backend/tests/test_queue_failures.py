@@ -28,6 +28,7 @@ class DeterministicQueueAdapter(QueueAdapter):
         super().__init__(queue=self)
 
     def enqueue(self, function, *args, **kwargs):
+        kwargs.pop('job_timeout', None)
         self.pending.append((function, args, kwargs))
         return SimpleNamespace(id=f'fake-job-{len(self.pending)}')
 
