@@ -576,6 +576,33 @@ def test_b_model_payloads_require_system_generated_plan_sections(tmp_path):
         assert B_PROJECT_GENERATION_RULE in system_prompt
 
 
+def test_model_body_unsupported_citation_is_repaired_after_retries(tmp_path):
+    class InvalidCitationModel:
+        def __init__(self):
+            self.body_calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            if payload['stage'] == 'components':
+                return {'components': component_data('A')}
+            self.body_calls += 1
+            return {
+                'body': '正文引用未入账文献 [3]，但仍保留有效引用 [1]。',
+                'evidence': [EVIDENCE],
+            }
+
+    model = InvalidCitationModel()
+    task = make_task('A', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=model).produce(task)
+
+    assert model.body_calls == 2
+    assert '[3]' not in output.body
+    assert '引用修复：已移除 1 处无证据编号' in output.body
+    assert any(
+        event.kind == 'citation_repair' and event.payload.get('stage') == 'body'
+        for event in task.events
+    )
+
+
 def test_body_with_uncited_reference_is_retried_once(tmp_path):
     class RetryModel:
         def __init__(self):

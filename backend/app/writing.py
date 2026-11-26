@@ -1123,9 +1123,11 @@ class WritingService:
             'sample': outline_sample.sample,
         }
         last_error = None
+        last_result = None
         for _ in range(2 if model_backed else 1):
             try:
                 result = body_writer(context)
+                last_result = result
             except ValueError as error:
                 last_error = WritingInputError(str(error))
                 continue
@@ -1141,6 +1143,35 @@ class WritingService:
                 return BodyOutput(text=text, evidence=evidence)
             except WritingInputError as error:
                 last_error = error
+        if (
+            model_backed
+            and isinstance(last_result, dict)
+            and isinstance(last_result.get('text'), str)
+            and last_error is not None
+            and 'no evidence ledger entry' in str(last_error)
+        ):
+            try:
+                evidence = EvidenceAuditor(task.papers).audit_items(
+                    last_result.get('evidence') or []
+                )
+                repaired_text, removed = _strip_unsupported_citations(
+                    last_result['text'], {item['ref'] for item in evidence}
+                )
+                if removed:
+                    _validate_citation_coverage(repaired_text, evidence)
+                    _validate_material_citations(repaired_text, task.materials)
+                    repaired_text = _label_abstract_citations(repaired_text, evidence)
+                    task.events.append(WritingEvent(
+                        kind='citation_repair',
+                        payload={'removed': removed, 'stage': 'body'},
+                    ))
+                    repaired_text = (
+                        f'> 引用修复：已移除 {removed} 处无证据编号，相关表述请人工复核。\n\n'
+                        + repaired_text
+                    )
+                    return BodyOutput(text=repaired_text, evidence=evidence)
+            except WritingInputError:
+                pass
         raise last_error
 
     def produce(self, task, body_writer=None):
