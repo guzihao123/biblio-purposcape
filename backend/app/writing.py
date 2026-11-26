@@ -460,6 +460,36 @@ def _a_dialogue_shape_errors(text):
     return errors
 
 
+def _ensure_pool_ledger(evidence, papers, text):
+    available = {item['ref'] for item in evidence}
+    missing = _citation_refs(text) - available
+    if not missing:
+        return evidence
+    by_ref = {
+        int(paper['ref_no']): paper
+        for paper in papers
+        if str(paper.get('ref_no', '')).isdigit()
+    }
+    extra = []
+    for ref in sorted(missing):
+        paper = by_ref.get(ref)
+        abstract = str((paper or {}).get('abstract') or '')
+        if not paper or paper.get('claim_eligible') is False or not abstract.strip():
+            continue
+        sentences = [
+            sentence.strip()
+            for sentence in re.split(r'(?<=[.!?。！？])\s+', abstract)
+            if len(sentence.strip()) >= 20
+        ]
+        extra.append({
+            'claim': '池内篇号口径（结构引用，待人工核对）',
+            'ref': ref,
+            'quote': sentences[0] if sentences else abstract.strip(),
+            'level': paper.get('evidence_level') or 'B',
+        })
+    return evidence + extra
+
+
 def _ensure_a_dialogue_intro(text, task):
     """Deterministically add the missing 5–8 dialogue points from component evidence."""
     data = task.component_data if isinstance(task.component_data, dict) else {}
@@ -645,6 +675,7 @@ def _rebuild_a_dialogue_body(task):
             text = _ensure_a_dialogue_intro(text, task)
             text = _pad_a_dialogue_body(text, task)
             evidence = EvidenceAuditor(task.papers).audit_data(compact)
+            evidence = _ensure_pool_ledger(evidence, task.papers, text)
             text = _label_abstract_citations(text, evidence)
             if _a_dialogue_shape_errors(text):
                 continue
@@ -2066,6 +2097,10 @@ class WritingService:
                 auditor = EvidenceAuditor(task.papers)
                 evidence = auditor.audit_items(result.get('evidence') or [])
                 text = result['text']
+                if model_backed and task.mode.upper() == 'A_DIALOGUE':
+                    text = _ensure_a_dialogue_intro(text, task)
+                    text = _pad_a_dialogue_body(text, task)
+                    evidence = _ensure_pool_ledger(evidence, task.papers, text)
                 _validate_citation_coverage(text, evidence)
                 _validate_material_citations(text, task.materials)
                 text = _label_abstract_citations(text, evidence)
@@ -2076,8 +2111,6 @@ class WritingService:
                 if model_backed and task.mode.upper() == 'B':
                     text = _validate_b_body(text)
                 if model_backed and task.mode.upper() == 'A_DIALOGUE':
-                    text = _ensure_a_dialogue_intro(text, task)
-                    text = _pad_a_dialogue_body(text, task)
                     text = _label_abstract_citations(text, components.evidence + evidence)
                     shape_errors = _a_dialogue_shape_errors(text)
                     if shape_errors:
@@ -2166,6 +2199,8 @@ class WritingService:
                     if task.mode.upper() == 'A_DIALOGUE':
                         repaired_text = _ensure_a_dialogue_intro(repaired_text, task)
                         repaired_text = _pad_a_dialogue_body(repaired_text, task)
+                        evidence = _ensure_pool_ledger(evidence, task.papers, repaired_text)
+                        _validate_citation_coverage(repaired_text, evidence)
                         repaired_text = _label_abstract_citations(repaired_text, components.evidence + evidence)
                         shape_errors = _a_dialogue_shape_errors(repaired_text)
                         if shape_errors:

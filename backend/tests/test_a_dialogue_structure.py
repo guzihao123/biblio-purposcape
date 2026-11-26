@@ -213,6 +213,39 @@ def test_backfill_and_rebuild_empty_slot_evidence(tmp_path):
                 assert slot['evidence'] and slot['evidence'][0]['refs']
 
 
+def test_pool_ledger_covers_structural_paper_refs(tmp_path):
+    from app.writing import _ensure_pool_ledger
+    from test_writing import PAPERS
+
+    audited = [{'claim': 'x', 'ref': 1, 'quote': 'q', 'level': 'B'}]
+    extended = _ensure_pool_ledger(audited, PAPERS, '领域格局 [2]。')
+    added = [item for item in extended if item['ref'] == 2]
+    assert added and added[0]['quote'] in PAPERS[1]['abstract']
+    unchanged = _ensure_pool_ledger(audited, PAPERS, '无摘要 [3]。')
+    assert unchanged == audited
+
+
+def test_rebuild_covers_landscape_paper_refs(tmp_path):
+    data, _ = dialogue_body_without_key_points()
+    for row in data['landscape']:
+        row['paper_refs'] = [2]
+        row['evidence'] = []
+    for group in data['topic_groups']:
+        for slot in group['slots']:
+            slot['evidence'] = [deepcopy(EVIDENCE)]
+            slot['data_availability'] = '池内数据线索公开性未确认。'
+    for gap in data['gaps']:
+        gap['evidence'] = [deepcopy(EVIDENCE)]
+    data['overall_first']['evidence'] = [deepcopy(EVIDENCE)]
+    task = make_task('A_DIALOGUE', tmp_path)
+    task.component_data = data
+
+    rebuilt = _rebuild_a_dialogue_body(task)
+    assert rebuilt is not None
+    assert _a_dialogue_shape_errors(rebuilt.text) == []
+    assert any(item['ref'] == 2 for item in rebuilt.evidence)
+
+
 def test_normal_path_short_body_pads_and_labels(tmp_path):
     data, _ = dialogue_body_without_key_points()
     task = make_task('A_DIALOGUE', tmp_path)
