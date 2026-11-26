@@ -234,7 +234,7 @@ class FixtureQueue:
                 else:
                     task.state = 'done'
                     task.next_card = None
-                    progress.message = '交付文件已生成；请查看复核与覆盖边界'
+                    progress.message = '交付文件已生成；请查看交付文件'
                 progress.stage = stage
                 progress.checkpoint = {'fixture': True, 'stage': stage}
                 if job is not None:

@@ -175,7 +175,7 @@ export async function continueAndDeliver(page: Page, taskId: string, form: 'A' |
 }
 
 export async function verifyReport(page: Page) {
-  for (const heading of ['提纲', '样章', '正文', '复核与覆盖边界']) await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
+  for (const heading of ['提纲', '样章', '正文']) await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
   const sections = page.locator('.report-section')
   await expect(sections.nth(0).locator('pre')).not.toBeEmpty()
   await expect(sections.nth(1).locator('pre')).not.toBeEmpty()

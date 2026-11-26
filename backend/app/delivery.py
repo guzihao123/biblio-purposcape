@@ -123,6 +123,13 @@ def _pending_runs(paragraph, text, office):
             run.font.color.rgb = RGBColor(0xFF, 0xB4, 0xC2)
 
 
+def _plain_markdown_inline(text):
+    """Strip presentation markers so Word shows normal prose, not Markdown source."""
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', str(text))
+    text = text.replace('**', '').replace('__', '')
+    return re.sub(r'`([^`]*)`', r'\1', text)
+
+
 def _write_docx(task, body, path):
     from docx import Document
     from docx.shared import Pt
@@ -144,16 +151,16 @@ def _write_docx(task, body, path):
         heading = re.match(r'^(#{1,4})\s+(.+)', line)
         if heading:
             paragraph = document.add_heading('', level=min(len(heading.group(1)), 3))
-            _pending_runs(paragraph, heading.group(2), 'docx')
+            _pending_runs(paragraph, _plain_markdown_inline(heading.group(2)), 'docx')
         elif line.startswith('- '):
             paragraph = document.add_paragraph(style='List Bullet')
-            _pending_runs(paragraph, line[2:], 'docx')
+            _pending_runs(paragraph, _plain_markdown_inline(line[2:]), 'docx')
         elif line.startswith('|') and line.endswith('|'):
             paragraph = document.add_paragraph()
-            _pending_runs(paragraph, line.strip('|').replace('|', '｜'), 'docx')
+            _pending_runs(paragraph, _plain_markdown_inline(line.strip('|').replace('|', '｜')), 'docx')
         else:
             paragraph = document.add_paragraph()
-            _pending_runs(paragraph, line, 'docx')
+            _pending_runs(paragraph, _plain_markdown_inline(line), 'docx')
         for run in paragraph.runs:
             if run.font.size is None:
                 run.font.size = Pt(10.5)

@@ -93,7 +93,7 @@ LENGTH_TARGETS = {
 
 FORMAT_RULES = {
     'A': '研究空白证据表每行必须以「空白1：」「空白2：」…开头，并在同一行写 [n] 引用与理由类型；方向卡保留「第 N 推荐」「核心研究问题」「数据可得性」。',
-    'A_DIALOGUE': '每类选题的两张卡与综合第 1 推荐必须保留推荐理由与主要风险。',
+    'A_DIALOGUE': '七个分类标题之前必须先写「领域格局与对话要点」：恰好 5–8 条 Markdown 列表要点，每条带 [n]，其中至少 3 条明确写“研究空白”；每类选题的两张卡与综合第 1 推荐必须保留推荐理由与主要风险。',
     'B': '固定节名「已有研究对本项目技术路线的支撑」不带括注；必须保留「若不开展本项目」刚性需求段、对解表、六段论证链与「研究内容（一/二/三）」支撑清单；正文 CJK 目标 2300–2800，硬上限 3000。',
     'E': '先用「## 用途落实」逐条说明如何落实 custom_purpose，再给综述要点、空白点清单与 3 个可做方向；空白证据与引用要求同 A 基线。',
 }
@@ -393,6 +393,103 @@ def _render_a_dialogue(data):
         f"主要风险：{first['risk']}",
     ])
     return '\n'.join(lines).strip()
+
+
+def _a_dialogue_word_count(text):
+    body = text.split('## 参考文献')[0]
+    return len(re.findall(r'[\u4e00-\u9fff]', body))
+
+
+def _a_dialogue_shape_errors(text):
+    errors = []
+    body = text.split('## 参考文献')[0]
+    paras = [line for line in body.split('\n') if line.strip()]
+    head = body[:800]
+    if '领域' not in head and '格局' not in head:
+        errors.append('missing 领域/格局 first paragraph')
+    headings = []
+    for label in DIALOGUE_CATEGORIES:
+        match = re.search(
+            r'^#{2,4}\s*(?:\d+\s*[.、]?\s*)?' + re.escape(label) + r'\s*$',
+            body, flags=re.M,
+        )
+        if match is None:
+            errors.append(f'missing category heading「{label}」')
+        else:
+            headings.append((label, match))
+    headings.sort(key=lambda item: item[1].start())
+    pre_body = body[:headings[0][1].start()] if headings else body
+    key_lines = [
+        line for line in pre_body.splitlines()
+        if re.match(r'^\s*[-*]\s+', line) and re.search(r'\[\d+\]', line)
+    ]
+    if not 5 <= len(key_lines) <= 8:
+        errors.append(f'key points {len(key_lines)} outside 5-8')
+    blanks = [line for line in key_lines if '空白' in line]
+    if len(blanks) < 3:
+        errors.append(f'research-gap key points {len(blanks)} < 3')
+    slot_pat = re.compile(r'^\s*[-*]?\s*选题\s*([12１２])\s*[｜|]', re.M)
+    for index, (label, match) in enumerate(headings):
+        end = headings[index + 1][1].start() if index + 1 < len(headings) else len(body)
+        section = body[match.end():end]
+        slots = list(slot_pat.finditer(section))
+        if len(slots) != 2:
+            errors.append(f'{label} slots {len(slots)} != 2')
+    if not 1500 <= _a_dialogue_word_count(body) <= 4000:
+        errors.append(f'word count {_a_dialogue_word_count(body)} outside 1500-2500')
+    return errors
+
+
+def _ensure_a_dialogue_intro(text, task):
+    """Deterministically add the missing 5–8 dialogue points from component evidence."""
+    data = task.component_data if isinstance(task.component_data, dict) else {}
+    gaps = list(data.get('gaps') or [])
+    landscape = list(data.get('landscape') or [])
+    overall = data.get('overall_first') if isinstance(data.get('overall_first'), dict) else {}
+
+    first_heading = re.search(
+        r'^#{2,4}\s*(?:\d+\s*[.、]?\s*)?' + re.escape(DIALOGUE_CATEGORIES[0]) + r'\s*$',
+        text, flags=re.M,
+    )
+    if first_heading is None:
+        return text
+    pre_body = text[:first_heading.start()]
+    existing = [
+        line for line in pre_body.splitlines()
+        if re.match(r'^\s*[-*]\s+', line) and re.search(r'\[\d+\]', line)
+    ]
+    if 5 <= len(existing) <= 8 and sum(1 for line in existing if '空白' in line) >= 3:
+        return text
+
+    def refs(evidence):
+        return ' '.join(sorted({
+            f'[{ref}]' for item in evidence or []
+            for ref in (item.get('refs') or [])
+        }))
+
+    bullets = []
+    for gap in gaps[:3]:
+        citation = refs(gap.get('evidence') or [])
+        if citation:
+            bullets.append(f"- 研究空白：{gap.get('gap', '').strip()} {citation}")
+    for row in landscape[:2]:
+        citation = ' '.join(f'[{ref}]' for ref in (row.get('paper_refs') or []))
+        if citation:
+            bullets.append(f"- 领域格局：{row.get('direction', '').strip()}（{row.get('share', '')}）{citation}")
+    citation = refs(overall.get('evidence') or [])
+    if citation and overall.get('topic'):
+        bullets.append(f"- 首选方向：{overall['topic']} {citation}")
+    if len(bullets) < 5:
+        return text
+    bullets = bullets[:8]
+    if _a_dialogue_word_count(text) + sum(_a_dialogue_word_count(b) for b in bullets) > 4000:
+        bullets = [line[:80] for line in bullets[:5]]
+    block = '## 领域格局与对话要点\n\n' + '\n'.join(bullets) + '\n\n'
+    cleaned = '\n'.join(
+        line for line in pre_body.splitlines()
+        if not (re.match(r'^\s*[-*]\s+', line) and re.search(r'\[\d+\]', line))
+    )
+    return block + cleaned.strip() + '\n\n' + text[first_heading.start():]
 
 
 def _render_a(data):
@@ -1816,6 +1913,11 @@ class WritingService:
                         raise WritingInputError('C2 body structure: ' + '; '.join(shape_errors))
                 if model_backed and task.mode.upper() == 'B':
                     text = _validate_b_body(text)
+                if model_backed and task.mode.upper() == 'A_DIALOGUE':
+                    text = _ensure_a_dialogue_intro(text, task)
+                    shape_errors = _a_dialogue_shape_errors(text)
+                    if shape_errors:
+                        raise WritingInputError('A_DIALOGUE body structure: ' + '; '.join(shape_errors))
                 return BodyOutput(text=text, evidence=evidence)
             except WritingInputError as error:
                 last_error = error
@@ -1897,6 +1999,11 @@ class WritingService:
                             raise WritingInputError('C2 body structure: ' + '; '.join(shape_errors))
                     if task.mode.upper() == 'B':
                         repaired_text = _validate_b_body(repaired_text)
+                    if task.mode.upper() == 'A_DIALOGUE':
+                        repaired_text = _ensure_a_dialogue_intro(repaired_text, task)
+                        shape_errors = _a_dialogue_shape_errors(repaired_text)
+                        if shape_errors:
+                            raise WritingInputError('A_DIALOGUE body structure: ' + '; '.join(shape_errors))
                     return BodyOutput(text=repaired_text, evidence=evidence)
             except WritingInputError:
                 pass

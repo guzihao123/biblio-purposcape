@@ -940,7 +940,7 @@ class Orchestrator:
         return {
             'state': TaskState.DONE.value,
             'next_card': None,
-            'message': '交付文件已生成；请查看复核与覆盖边界' if delivered.clean else '交付文件已生成，但仍有需要修订或人工核对的项目',
+            'message': '交付文件已生成；请查看交付文件' if delivered.clean else '交付文件已生成，但仍有需要修订或人工核对的项目',
             'checkpoint': {
                 **checkpoint,
                 'requirements_ledger': REQUIREMENTS_LEDGER_FILE if ledger is not None else None,

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { artifactUrl, getReport } from '../api'
 import type { ReportPayload } from '../api'
+import { ReportText } from '../components/ReportText'
 
 const downloadLabels: Record<string, string> = {
   '综述初稿.docx': '下载 Word 报告',
@@ -45,24 +46,19 @@ export function ReportPage({ taskId }: { taskId: string }) {
         <header className="page-heading">
           <p className="site-eyebrow">提纲 → 样章 → 正文</p>
           <h1>调研交付</h1>
-          <p>正文与参考文献保持相同引用编号，复核边界随文件一并提供。</p>
+          <p>正文与参考文献保持相同引用编号，下载文件中含复核说明。</p>
         </header>
         <section className="full-power-card report-section">
           <h2>提纲</h2>
-          <pre>{report.outline}</pre>
+          <ReportText text={report.outline} />
         </section>
         <section className="full-power-card report-section">
           <h2>样章</h2>
-          <pre>{report.sample}</pre>
+          <ReportText text={report.sample} />
         </section>
         <section className="full-power-card report-section">
           <h2>正文</h2>
-          <pre>{report.body}</pre>
-        </section>
-        <section className={`full-power-card report-section ${report.verification.clean ? 'is-verified' : 'has-warning'}`}>
-          <h2>复核与覆盖边界</h2>
-          <pre>{report.verification.report}</pre>
-          <pre>{report.verification.conformance}</pre>
+          <ReportText text={report.body} />
         </section>
         <nav className="download-list" aria-label="交付文件下载">
           {report.artifacts.map((artifact) => {
