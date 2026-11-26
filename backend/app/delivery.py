@@ -77,6 +77,8 @@ def _reference_issues(report):
         if match:
             current = match.group(1)
             continue
+        if '非撤稿，供人工参考' in line:
+            continue
         if any(marker in line for marker in ('维持需人工核对', '均未收录', '不一致', '需人工判定', '网络失败')):
             text = line.strip().lstrip('- ').strip()
             prefix = f'[ref {current}] ' if current else ''
