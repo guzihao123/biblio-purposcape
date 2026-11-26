@@ -767,6 +767,50 @@ def test_body_prompt_requests_json_mode(tmp_path):
     assert 'JSON' in model.prompts[-1]
 
 
+def test_b_component_invalid_evidence_is_dropped_after_retries(tmp_path):
+    class InvalidEvidenceModel:
+        def __init__(self):
+            self.calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            self.calls += 1
+            data = component_data('B')
+            data['demand']['evidence'] = [{
+                'claim': 'Unsupported', 'refs': [3],
+                'quotes': {'3': 'No abstract exists.'},
+            }]
+            return {'components': data}
+
+    model = InvalidEvidenceModel()
+    task = make_task('B', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=model).produce_components(task)
+
+    assert model.calls == 2
+    assert '证据修复' in output.markdown
+    assert any(event.kind == 'evidence_repair' for event in task.events)
+    assert 'No abstract exists' not in output.markdown
+
+
+def test_c2_body_prompt_requires_the_structured_review_sections(tmp_path):
+    class PromptModel:
+        def __init__(self):
+            self.prompts = []
+
+        def complete_json(self, system_prompt, payload):
+            self.prompts.append(system_prompt)
+            if payload['stage'] == 'components':
+                return {'components': component_data('C2')}
+            return {'body': '结构化综述 [1]。', 'evidence': [EVIDENCE]}
+
+    model = PromptModel()
+    task = make_task('C2', tmp_path, component_data=None)
+    WritingService(workspace_root=tmp_path, model=model).produce(task)
+
+    prompt = model.prompts[-1]
+    for marker in ('研究主题与检索范围', '文献分类框架', '完整综述文本', '800–1200'):
+        assert marker in prompt
+
+
 def test_body_citation_without_a_ledger_entry_is_rejected(tmp_path):
     task = make_task('A', tmp_path)
 

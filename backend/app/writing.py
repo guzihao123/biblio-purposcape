@@ -115,6 +115,15 @@ C1_STYLE_RULE = (
     '仅当用户提供 target_journal 时：读取 style_reference_note，按目标期刊学科定位调整引言口径；'
     '若参考卡已降级，明确写“按通用口径写”，不得抄写任何范文原句或虚构范文结构。'
 )
+C2_BODY_RULE = (
+    'C2 正文必须包含以下标题：研究主题与检索范围、关键词和检索策略、代表性文献清单、'
+    '文献分类框架、完整综述文本、未来研究方向。文献分类框架必须逐一出现：理论基础、研究对象、'
+    '研究问题、技术方法、数据与实验、研究结论、研究局限。完整综述文本必须含 [n] 引用和'
+    '现有研究不足/现有局限；必须有六列文献比较表（文献、研究问题、数据、核心方法、主要发现、局限性）'
+    '和五列研究空白分析表（研究方向、已有进展、现有不足、文献证据、可深入研究的问题）。'
+    '不得写成讨论，不得要求本文结果。正文（不含参考文献）CJK 汉字+英文词合计必须为 800–1200，'
+    '超出时压缩，不得靠删标题/表格规避。'
+)
 
 COMPONENT_SCHEMAS = {
     'A': (
@@ -759,6 +768,42 @@ def _strip_unsupported_citations(value, available):
     return clean(value), removed
 
 
+def _repair_component_evidence(value, papers):
+    """Drop evidence items that fail the auditor and strip their citations."""
+    valid_refs = set()
+    dropped_refs = set()
+
+    def clean(node):
+        if isinstance(node, dict):
+            result = {}
+            for key, child in node.items():
+                if key == 'evidence' and isinstance(child, list):
+                    kept = []
+                    for item in child:
+                        try:
+                            records = EvidenceAuditor(papers).audit_items([item])
+                        except WritingInputError:
+                            for ref in (item.get('refs') or []):
+                                try:
+                                    dropped_refs.add(int(ref))
+                                except (TypeError, ValueError):
+                                    pass
+                            continue
+                        kept.append(item)
+                        valid_refs.update(record['ref'] for record in records)
+                    result[key] = kept
+                else:
+                    result[key] = clean(child)
+            return result
+        if isinstance(node, list):
+            return [clean(item) for item in node]
+        return node
+
+    repaired = clean(value)
+    repaired, removed = _strip_unsupported_citations(repaired, valid_refs)
+    return repaired, sorted(dropped_refs), removed
+
+
 def _validate_material_citations(text, materials):
     """[M] is a separate channel: validate only the explicit material marker."""
     if not materials:
@@ -1026,6 +1071,36 @@ class WritingService:
         if (
             last_candidate is not None
             and last_error is not None
+            and any(marker in str(last_error) for marker in (
+                'not claim-eligible', 'not in the abstract', 'evidence requires',
+            ))
+        ):
+            try:
+                repaired, dropped_refs, removed = _repair_component_evidence(
+                    last_candidate, task.papers
+                )
+                if dropped_refs or removed:
+                    task.component_data = repaired
+                    components = self._build_components(task, mode)
+                    task.events.append(WritingEvent(
+                        kind='evidence_repair',
+                        payload={
+                            'dropped_refs': dropped_refs,
+                            'removed_citations': removed,
+                            'stage': 'components',
+                        },
+                    ))
+                    components.markdown = (
+                        f'> 证据修复：已丢弃 {len(dropped_refs)} 个不合法引用并移除 {removed} 处编号，'
+                        '相关表述请人工复核。\n\n' + components.markdown
+                    )
+                    return components
+            except WritingInputError:
+                pass
+
+        if (
+            last_candidate is not None
+            and last_error is not None
             and 'no evidence ledger entry' in str(last_error)
         ):
             try:
@@ -1086,6 +1161,7 @@ class WritingService:
                     '正文 CJK 字数必须落在 length_target 区间，并严格遵守 format_rules。'
                     + c_writing_rule(task)
                     + (C1_STYLE_RULE if task.mode.upper() == 'C1' and str(task.target_journal or '').strip() else '')
+                    + (C2_BODY_RULE if task.mode.upper() == 'C2' else '')
                     + (B_PROJECT_GENERATION_RULE if task.mode.upper() == 'B' else '')
                     + (B_DRAFT_RULE if task.mode.upper() == 'B' and task.project_draft else '')
                     + (B_MATERIAL_RULE if task.mode.upper() == 'B' and task.materials else '')
