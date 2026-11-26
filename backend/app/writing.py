@@ -1287,7 +1287,9 @@ def _backfill_c2_row_evidence(data, papers):
             if not isinstance(row, dict) or row.get('evidence'):
                 continue
             refs = sorted({
-                int(ref) for ref in re.findall(r'\[(\d+)\]', row_text(row))
+                int(ref)
+                for group in re.findall(r'\[([0-9,\s]+)\]', row_text(row))
+                for ref in re.findall(r'\d+', group)
             })
             items = []
             claim = str(row.get('findings') or row.get('direction') or '').strip()
