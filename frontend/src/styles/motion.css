@@ -7,6 +7,7 @@
   --motion-ease-elastic: cubic-bezier(.16, 1, .3, 1);
 }
 
+
 @keyframes pageEnter {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -47,6 +48,7 @@
   100% { opacity: .75; }
 }
 
+
 .page-transition { position: relative; animation: pageEnter var(--motion-page) var(--motion-ease-enter) backwards; }
 .motion-button {
   position: relative;
@@ -80,6 +82,7 @@
 }
 .motion-button:active:not(:disabled) .motion-button__ripple { animation: ripple .45s ease-out; }
 
+
 .full-power-option { animation: optionEnter .6s var(--motion-ease-elastic) both; }
 .full-power-option:nth-child(1) { animation-delay: .1s; }
 .full-power-option:nth-child(2) { animation-delay: .115s; }
@@ -90,16 +93,19 @@
 .full-power-option.is-selected .full-power-option__indicator { transform: scale(1.15); box-shadow: 0 0 18px rgba(126, 240, 200, .6); }
 .wizard-receipt { animation: panelSweep var(--motion-sweep) ease .08s both; }
 
+
 .motion-tabs { position: relative; display: flex; border-bottom: 1px solid var(--site-border); }
 .motion-tabs > button { flex: 1; color: var(--site-muted); background: transparent; border: 0; padding: 12px; cursor: pointer; }
 .motion-tabs > button.is-active { color: var(--site-text); }
 .motion-tab-indicator { position: absolute; bottom: -1px; height: 2px; background: var(--site-accent-2); transition: left .25s var(--motion-ease-enter); }
+
 
 .motion-steps ol { display: flex; flex-wrap: wrap; gap: 12px; padding: 0; list-style: none; }
 .motion-step { display: inline-flex; gap: 6px; align-items: center; color: var(--site-muted); transition: transform .25s ease, color .2s ease, box-shadow .25s ease; }
 .motion-step__dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .motion-step.is-active { color: var(--site-accent-2); transform: translateX(4px); }
 .motion-steps output { display: block; margin-top: 10px; color: var(--site-text); }
+
 
 .motion-panel-wrap { position: relative; }
 .motion-panel {
@@ -130,6 +136,7 @@
 .motion-replay { animation: replayFlash var(--motion-flash) ease; }
 .motion-lab { display: grid; gap: 24px; }
 
+
 @media (max-width: 760px) {
   .page-transition { animation: fadeOnly .18s ease both; }
   .invite-hero, .invite-card, .wizard-intro { animation-name: fadeOnly !important; animation-duration: .18s !important; }
@@ -143,6 +150,7 @@
   .motion-panel__line, .wizard-receipt { animation: fadeOnly .18s ease both !important; transform: none !important; }
   .motion-panel { position: relative; inset: auto; width: 100%; animation: fadeOnly .18s ease both; }
 }
+
 
 @media (prefers-reduced-motion: reduce) {
   .motion-button__ripple, .motion-panel::before { display: none; }
@@ -158,4 +166,17 @@
   .full-power-option:hover, .full-power-option.is-selected, .full-power-option__indicator,
   .motion-step.is-active, .motion-tab-indicator, .download-feedback__check { transform: none !important; }
   .motion-panel { position: relative; inset: auto; width: 100%; }
+}
+
+
+@keyframes schoolBadgeEnter {
+  0% { opacity: 0; transform: scale(0.92); }
+  62% { opacity: 1; transform: scale(1.025); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes schoolBadgeGlow {
+  0% { opacity: 0; transform: scale(0.8); }
+  55% { opacity: 0.72; }
+  100% { opacity: 0.28; transform: scale(1.12); }
 }
