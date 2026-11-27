@@ -1339,6 +1339,84 @@ def _c1_expanded_body(task, original_text, quote_limit):
     return text.rstrip() + '\n'
 
 
+def _c1_fit_body(text, task):
+    """Trim or pad a C1 body into 800–1200 while preserving required sections."""
+    body, marker, references = text.partition('## 参考文献')
+    optional_titles = (
+        '## 检索与证据边界',
+        '## 研究缺口与本文回应',
+        '## 段落组织说明',
+        '## 证据使用说明',
+    )
+
+    def remove_section(source, title):
+        lines = source.splitlines()
+        start = next((i for i, line in enumerate(lines) if line.strip() == title), None)
+        if start is None:
+            return source
+        end = next(
+            (i for i in range(start + 1, len(lines)) if lines[i].startswith('## ')),
+            len(lines),
+        )
+        return '\n'.join(lines[:start] + lines[end:]).strip() + '\n'
+
+    for title in optional_titles:
+        if _c1_word_count(body) <= 1120:
+            break
+        body = remove_section(body, title)
+
+    lines = body.splitlines()
+    while _c1_word_count('\n'.join(lines)) > 1120:
+        text_now = '\n'.join(lines)
+        candidates = []
+        for index, line in enumerate(lines):
+            stripped = line.strip()
+            if not stripped or stripped.startswith(('#', '|')):
+                continue
+            pieces = [piece for piece in re.split(r'(?<=[。！？!?])', stripped) if piece.strip()]
+            if len(pieces) <= 1 or _c1_word_count(stripped) < 30:
+                continue
+            candidates.append((_c1_word_count(stripped), index, pieces))
+        if candidates:
+            _, index, pieces = max(candidates, key=lambda item: item[0])
+            lines[index] = ''.join(pieces[:-1]).rstrip()
+            continue
+        prose = [
+            (_c1_word_count(line), index)
+            for index, line in enumerate(lines)
+            if line.strip() and not line.strip().startswith(('#', '|'))
+            and _c1_word_count(line) >= 20
+        ]
+        if not prose:
+            break
+        _, index = max(prose, key=lambda item: item[0])
+        line = lines[index]
+        excess = max(1, _c1_word_count(text_now) - 1080)
+        cut = max(1, len(line) - excess * 2)
+        prefix = line[:cut].rstrip('，；、,; ')
+        boundary = max(prefix.rfind('。'), prefix.rfind('！'), prefix.rfind('？'), prefix.rfind('，'))
+        if boundary >= 20:
+            prefix = prefix[:boundary + 1]
+        lines[index] = prefix.rstrip() + '。'
+    body = '\n'.join(lines).strip()
+
+    if _c1_word_count(body) < 800:
+        for section in _c1_expansion_sections(task):
+            remaining = 1120 - _c1_word_count(body)
+            if remaining <= 25:
+                break
+            chunk = section[:max(20, remaining - 8)].rstrip()
+            for candidate in (body + '\n\n' + chunk, body + '\n\n' + section):
+                if _c1_word_count(candidate) <= 1120:
+                    body = candidate
+                    break
+            if _c1_word_count(body) >= 800:
+                break
+    if marker:
+        return body.rstrip() + '\n\n' + marker + references
+    return body.rstrip() + '\n'
+
+
 def _repair_c1_body(text, task):
     if isinstance(task.component_data, dict):
         task.component_data, _ = _backfill_c1_gap_evidence(task.component_data, task.papers)
@@ -1352,6 +1430,7 @@ def _repair_c1_body(text, task):
     for quote_limit in (2, 1, 0):
         candidates.append(_c1_expanded_body(task, text, quote_limit))
         candidates.append(_render_c1_body(task, text, quote_limit))
+    candidates = [_c1_fit_body(candidate, task) for candidate in candidates] + candidates
     valid = [candidate for candidate in candidates if not _c1_body_shape_errors(candidate)]
     if valid:
         return valid[0]
@@ -1367,6 +1446,8 @@ def _rebuild_c1_body(task):
         evidence = EvidenceAuditor(task.papers).audit_data(task.component_data)
         text = _repair_c1_body('', task)
         evidence = _ensure_pool_ledger(evidence, task.papers, text)
+        text = _label_abstract_citations(text, evidence)
+        text = _c1_fit_body(text, task)
         text = _label_abstract_citations(text, evidence)
         if _c1_body_shape_errors(text):
             return None

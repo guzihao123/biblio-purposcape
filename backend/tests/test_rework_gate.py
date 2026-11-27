@@ -347,3 +347,22 @@ def test_a_body_gap_without_evidence_is_rebuilt_with_pool_citation(tmp_path):
     assert _a_body_shape_errors(output.body) == []
     blank_lines = [line for line in output.body.splitlines() if '空白' in line and re.search(r'\[\d+\]', line)]
     assert len(blank_lines) >= 3
+
+
+def test_c1_overlength_rebuilt_body_is_trimmed_into_range(tmp_path):
+    task = make_task('C1', tmp_path)
+    for index, card in enumerate(task.component_data['paragraph_cards'], 1):
+        card['claim'] = (card.get('claim') or '') + ('该段需要围绕研究问题展开论证并说明证据边界。' * 12)
+    task.component_data['gaps'][0]['response'] = (
+        task.component_data['gaps'][0].get('response') or ''
+    ) + ('本文将以联合校准为核心组织研究内容并说明验证路径。' * 12)
+
+    class ShortBody:
+        def complete_json(self, system_prompt, payload):
+            assert payload['stage'] == 'body'
+            return {'body': '# 引言\n\n短稿 [1]。', 'evidence': [EVIDENCE]}
+
+    output = WritingService(workspace_root=tmp_path, model=ShortBody()).produce(task)
+
+    assert _c1_body_shape_errors(output.body) == []
+    assert 800 <= _c1_word_count(output.body) <= 1200
