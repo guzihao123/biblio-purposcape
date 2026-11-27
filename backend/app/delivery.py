@@ -708,7 +708,7 @@ def _ppt_filename(direction):
     return f'{topic}组会汇报.pptx'
 
 
-def _set_cjk_theme(path):
+def _set_cjk_theme(path, font='Noto Sans CJK SC'):
     import zipfile
 
     with zipfile.ZipFile(path) as source:
@@ -719,7 +719,7 @@ def _set_cjk_theme(path):
             if item.filename == 'ppt/theme/theme1.xml':
                 data = data.replace(
                     b'<a:ea typeface=""/>',
-                    b'<a:ea typeface="Noto Sans CJK SC"/>',
+                    ('<a:ea typeface="%s"/>' % font).encode('utf-8'),
                 )
             target.writestr(item, data)
     temporary.replace(path)
@@ -780,7 +780,7 @@ def _write_pptx(task, body, references, path, figure_loader=None):
             for title, lines in slides:
                 _add_ppt_slide(prs, title, lines)
         prs.save(path)
-    _set_cjk_theme(path)
+    _set_cjk_theme(path, 'PingFang SC' if task.mode == 'D' else 'Noto Sans CJK SC')
     if task.mode != 'D':
         return {'artifacts': {}, 'failures': []}
 

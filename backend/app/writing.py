@@ -200,7 +200,12 @@ COMPONENT_SCHEMAS = {
         '"reading_cards":[{"ref":1,"title":"…","reason":"…","research_question":"…","data":"…",'
         '"method":"…","findings":"…","limitations":"…","team_relevance":"…","reading_depth":"仅摘要"}],'
         '"ranking":[{"rank":1,"topic":"…","reason":"…","risk":"…"}],'
-        '"discussion_questions":["…"]}；reading_cards 3–5 张'
+        '"discussion_questions":["…"]}；reading_cards 3–5 张。'
+        '中文化硬性要求：所有面向页面的展示字段必须用简体中文概括；论文题目与数据集专名可保留英文，'
+        '英文术语在中文后用括号注明（如：多智能体协同（multi-agent））。'
+        'method_comparison 的 technique≤24 字、strength≤24 字、limitation≤24 字、data≤30 字，均为中文短句，禁止整句摘抄英文摘要；'
+        'reading_cards 的 research_question/data/method/findings/limitations/team_relevance/reason 各≤40 字中文短句；'
+        'progress.summary≤80 字中文；ranking.reason≤80 字、risk≤40 字中文；discussion_questions 用中文。'
     ),
     'E': (
         '{"markdown":"按 custom_purpose 组织的 Markdown 构件（含 [n] 引用与证据）；'
@@ -651,6 +656,41 @@ def _pad_a_dialogue_body(text, task):
     if len(lines) <= 2:
         return text
     return text.rstrip() + '\n\n' + '\n'.join(lines) + '\n'
+
+
+def _d_display_language_errors(data):
+    if not isinstance(data, dict):
+        return ['构件不是对象']
+    limits = {
+        'method_comparison': {'technique': 24, 'strength': 24, 'limitation': 24, 'data': 30},
+        'reading_cards': {
+            'research_question': 40, 'data': 40, 'method': 40, 'findings': 40,
+            'limitations': 40, 'team_relevance': 40, 'reason': 40,
+        },
+    }
+    errors = []
+
+    def han_count(text):
+        return len(re.findall(r'[\u4e00-\u9fff]', str(text or '')))
+
+    def latin_words(text):
+        return len(re.findall(r'[A-Za-z]{2,}', str(text or '')))
+
+    for key, fields in limits.items():
+        rows = data.get(key) or []
+        for index, row in enumerate(rows, 1):
+            if not isinstance(row, dict):
+                continue
+            for field, limit in fields.items():
+                value = str(row.get(field) or '')
+                han = han_count(value)
+                if han < 2 or han < latin_words(value):
+                    errors.append(f'{key}[{index}].{field} 需中文概括')
+    summary = data.get('progress') or []
+    for index, row in enumerate(summary, 1):
+        if isinstance(row, dict) and han_count(row.get('summary')) < 4:
+            errors.append(f'progress[{index}].summary 需中文概括')
+    return errors
 
 
 def _backfill_a_dialogue_slot_evidence(data, papers):
@@ -1943,6 +1983,10 @@ class WritingService:
         for attempt in range(2):
             try:
                 generated = self._generate_components(task, strict=attempt > 0)
+                if mode == 'D':
+                    language_errors = _d_display_language_errors(generated)
+                    if language_errors:
+                        raise WritingInputError('D 展示字段中文化：' + '; '.join(language_errors[:3]))
                 if mode == 'C2':
                     generated, filled = _backfill_c2_row_evidence(generated, task.papers)
                     if filled:

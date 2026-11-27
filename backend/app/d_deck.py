@@ -34,9 +34,36 @@ def X(v):
     return Inches(v / 96)
 
 
+def _wrap_label(text, width=22):
+    text = str(text or '')
+    if len(text) <= width:
+        return text
+    head, _, tail = text.rpartition(' ')
+    if head and len(tail) <= width:
+        return head + '\n' + tail
+    middle = len(text) // 2
+    return text[:middle] + '\n' + text[middle:]
+
+
 def _clip(text, limit):
     text = re.sub(r'\s+', ' ', str(text or '')).strip()
     return text if len(text) <= limit else text[: limit - 1] + '…'
+
+
+def _lead_sentence(text, limit=60):
+    text = re.sub(r'\s+', ' ', str(text or '')).strip()
+    match = re.match(r'[^。！？!?]+[。！？!?]?', text)
+    sentence = match.group(0) if match else text
+    if len(sentence) <= limit:
+        return sentence
+    clauses = [c for c in re.split(r'[，,；;]', sentence) if c.strip()]
+    kept = ''
+    for clause in clauses:
+        candidate = (kept + '，' + clause) if kept else clause
+        if len(candidate) > limit:
+            break
+        kept = candidate
+    return kept or sentence[:limit]
 
 
 def _first_sentence(text, limit):
@@ -97,7 +124,6 @@ class DDeck:
 
     def footer(self, slide, n):
         self.shape(slide, 72, 684, 1136, 1, LINE, LINE, False)
-        self.text(slide, '来源：OpenAlex 聚合与池内摘要', 72, 690, 900, 20, FS_META, MUTED)
         self.text(slide, f'{n:02d} / {self.total:02d}', 1100, 690, 108, 20, FS_META, PRIM, True, PP_ALIGN.RIGHT)
 
     def page(self, title, section, kind):
@@ -199,7 +225,7 @@ class DDeck:
         if not groups:
             return None
         cd = ChartData()
-        cd.categories = [_clip(g['name'], 22) for g in reversed(groups)]
+        cd.categories = [_wrap_label(g['name'], 22) for g in reversed(groups)]
         cd.add_series('命中篇数', [g.get('count', 0) for g in reversed(groups)])
         chart = slide.shapes.add_chart(XL_CHART_TYPE.BAR_CLUSTERED, X(x), X(y), X(w), X(h), cd).chart
         chart.has_legend = False
@@ -266,7 +292,7 @@ class DDeck:
         self.records.append((n, self.task.direction, '封面', 'cover'))
         self.shape(slide, 792, 0, 488, 720, DEEP, DEEP, False)
         self.shape(slide, 72, 74, 64, 6, PRIM, PRIM, False)
-        self.text(slide, _clip(self.task.direction, 48), 72, 112, 660, 150, FS_TITLE, INK, True)
+        self.text(slide, str(self.task.direction), 72, 112, 660, 150, FS_TITLE, INK, True)
         self.text(slide, '组会主题调研汇报', 72, 282, 650, 48, FS_BODY, MUTED)
         self.text(slide, '从文献全景、方法边界到优先方向的团队认知路径（分析）',
                   72, 342, 620, 116, FS_BODY, INK)
@@ -314,18 +340,18 @@ class DDeck:
         slide = self.page('研究方向需要从全景进展收敛到可执行的优先问题', '01 研究背景与主题介绍', 'steps')
         self.text(slide, '主题与研究链条（分析）', 82, 156, 500, 36, FS_BODY, PRIM, True)
         self.flow(slide, [
-            '研究主题\n' + _clip(self.task.direction, 12),
-            '方法路线\n' + _clip((methods[0].get('family') if methods else '方法族待定'), 12),
+            '研究主题\n' + self.task.direction,
+            '方法路线\n' + (methods[0].get('family') if methods else '方法族待定'),
             '证据池\n' + str(len(self.papers)) + ' 篇·' + str(len(progress)) + ' 方向',
-            '优先方向\n' + _clip(first.get('topic') or '待定', 12),
+            '优先方向\n' + str(first.get('topic') or '待定'),
         ], 82, 204, 1116, 126, font_size=FS_BODY)
         self.card(slide, '概念与调研范围',
-                  f'以“问题—方法—证据—决策”链组织调研；覆盖 {len(self.papers)} 篇、'
+                  f'以问题—方法—证据—决策链组织调研；覆盖 {len(self.papers)} 篇、'
                   f'{len(progress)} 个方向、{len(methods)} 类方法、{len(reading)} 篇精读（分析）。',
                   82, 366, 548, 220)
         question = (reading[0].get('research_question') if reading else '') or \
                    _first_sentence(first.get('reason') or '', 80) or '核心科学问题待补充。'
-        self.card(slide, '核心科学问题（来自精读与排序）', _clip(question, 90),
+        self.card(slide, '核心科学问题（来自精读与排序）', _lead_sentence(question, 90),
                   654, 366, 544, 220, True)
         self.manifest.append({'page': len(self.records), 'kind': 'diagram', 'name': '主题研究链条',
                               'degraded': False, 'reason': ''})
@@ -344,7 +370,7 @@ class DDeck:
             '纳入池\n' + str(len(self.papers)) + ' 篇',
         ], 82, 166, 1116, 118, font_size=FS_BODY)
         self.card(slide, '实际检索式与过滤条件',
-                  '\n'.join('· ' + _clip(q, 40) for q in queries[:4]) or '检索式未记录。',
+                  '\n'.join('· ' + str(q) for q in queries[:4]) or '检索式未记录。',
                   82, 318, 690, 268)
         self.card(slide, '筛选与最终数量',
                   f'写作池 {len(self.papers)} 篇\n'
@@ -389,7 +415,7 @@ class DDeck:
         denominator = sum(g.get('count', 0) for g in topics) or 1
         rows = [['主题', '占比｜篇数']]
         for g in top:
-            rows.append([_clip(g.get('name'), 16), f"{g.get('count', 0) / denominator * 100:.1f}%｜{g.get('count', 0)}"])
+            rows.append([str(g.get('name') or ''), f"{g.get('count', 0) / denominator * 100:.1f}%｜{g.get('count', 0)}"])
         self.table(slide, rows, 856, 166, 352, 200, widths=[190, 162])
         self.table(slide, [['池内结构', '数量'],
                            ['写作池', f'{len(self.papers)} 篇'],
@@ -403,26 +429,26 @@ class DDeck:
     def progress_pages(self):
         rows = self.components.get('progress') or []
         for i, row in enumerate(rows, 1):
-            title = _first_sentence(row.get('summary') or row.get('direction') or '研究方向', 34)
+            title = str(row.get('direction') or '研究方向')
             slide = self.page(title, f'03 国内外研究进展 · 方向{"一二三四五六七"[min(i, 7) - 1]}', ('steps', 'asym', 'stacked')[(i - 1) % 3])
             refs = ''.join(f'[{r}]' for r in row.get('refs') or [])
             if i % 2:
                 self.flow(slide, [
-                    '方向\n' + _clip(row.get('direction'), 12),
-                    '推进\n' + _clip(row.get('summary'), 16),
+                    '方向\n' + str(row.get('direction') or ''),
                     '证据\n' + (refs or '摘要证据'),
+                    '判读\n见下（分析）',
                 ], 82, 180, 1116, 150, font_size=FS_BODY)
-                self.card(slide, '主要进展（据摘要）', _clip(row.get('summary'), 84), 82, 372, 548, 210)
+                self.card(slide, '主要进展（据摘要）', _lead_sentence(row.get('summary'), 80), 82, 372, 548, 210)
                 self.card(slide, '对团队的含义（分析）',
-                          '该方向的证据强度与缺口需结合方法页与精读页判断；未提供团队既有基础。',
+                          '证据强度与缺口见方法页与精读页（分析）。',
                           654, 372, 544, 210, True)
             else:
-                self.card(slide, '方向与主要进展', _clip(row.get('summary'), 84), 82, 166, 548, 300)
+                self.card(slide, '方向与主要进展', _lead_sentence(row.get('summary'), 80), 82, 166, 548, 300)
                 self.card(slide, '代表作与边界', f'代表作 {refs or "见精读页"}（据摘要）\n'
                           '跨研究外推与数据可得性构成主要边界（分析）。',
                           654, 166, 544, 300, True)
                 self.table(slide, [['字段', '内容'],
-                                   ['研究方向', _clip(row.get('direction'), 18)],
+                                   ['研究方向', str(row.get('direction') or '')],
                                    ['证据编号', refs or '—']],
                            82, 496, 1116, 150, widths=[220, 896])
             self.manifest.append({'page': len(self.records), 'kind': 'diagram', 'name': f'方向{i}进展',
@@ -434,7 +460,7 @@ class DDeck:
         overview_layout = 'asym' if progress_count and progress_count % 3 == 1 else 'steps'
         slide = self.page('没有单一方法能独立完成领域文献的结构化分析', '04 核心方法与技术路线', overview_layout)
         families = [m.get('family') or '方法族' for m in methods[:4]] or ['方法族待定']
-        self.flow(slide, ['方法族\n' + _clip(f, 12) for f in families], 82, 174, 1116, 142, font_size=FS_BODY)
+        self.flow(slide, ['方法族\n' + str(f) for f in families], 82, 174, 1116, 142, font_size=FS_BODY)
         self.card(slide, '路线总览（分析）',
                   f'共 {len(methods)} 类方法；按“数据获取—建模—验证”分层组合，避免单点替代。',
                   82, 354, 548, 206)
@@ -443,27 +469,27 @@ class DDeck:
         self.manifest.append({'page': len(self.records), 'kind': 'diagram', 'name': '方法路线总览',
                               'degraded': False, 'reason': ''})
         for i, m in enumerate(methods, 1):
-            title = f"{_clip(m.get('family') or '方法', 10)}：{_clip(m.get('technique') or '技术路线', 16)}"
+            title = str(m.get('family') or '方法')
             slide = self.page(title, f'04 核心方法与技术路线 · 方法{"①②③④⑤⑥"[min(i, 6) - 1]}',
                               ('steps', 'stacked', 'asym')[(i - 1) % 3])
             refs = ''.join(f'[{r}]' for r in m.get('refs') or [])
             self.flow(slide, [
-                '技术\n' + _clip(m.get('technique'), 12),
-                '数据\n' + _clip(m.get('data'), 12),
+                '技术\n' + str(m.get('technique') or ''),
                 '证据\n' + (refs or '摘要证据'),
+                '适用\n见下（分析）',
             ], 82, 174, 1116, 142, font_size=FS_BODY)
-            self.card(slide, '优势（据摘要）', _clip(m.get('strength'), 84), 82, 354, 548, 206)
-            self.card(slide, '局限与适用边界（据摘要＋分析）', _clip(m.get('limitation'), 84),
+            self.card(slide, '优势（据摘要）', _lead_sentence(m.get('strength'), 72), 82, 354, 548, 206)
+            self.card(slide, '局限与适用边界（据摘要＋分析）', _lead_sentence(m.get('limitation'), 72),
                       654, 354, 544, 206, True)
             self.manifest.append({'page': len(self.records), 'kind': 'diagram', 'name': f'方法{i}路线',
                                   'degraded': False, 'reason': ''})
         slide = self.page('方法对比显示组合建模优于单点替代', '04 核心方法与技术路线 · 对比表', 'table')
         rows = [['方法族', '技术', '优势', '局限', '文献']]
         for m in methods[:5]:
-            rows.append([_clip(m.get('family'), 8), _clip(m.get('technique'), 10),
-                         _clip(m.get('strength'), 14), _clip(m.get('limitation'), 14),
-                         ''.join(f'[{r}]' for r in m.get('refs') or '')])
-        self.table(slide, rows, 60, 166, 1160, 470, widths=[150, 190, 300, 300, 100], font=FS_META)
+            rows.append([str(m.get('family') or ''), str(m.get('technique') or ''),
+                         str(m.get('strength') or ''), str(m.get('limitation') or ''),
+                         ''.join(f'[{r}]' for r in m.get('refs') or '') or '—'])
+        self.table(slide, rows, 60, 166, 1160, 470, widths=[150, 210, 300, 300, 100], font=14)
         self.manifest.append({'page': len(self.records), 'kind': 'diagram', 'name': '方法对比表',
                               'degraded': False, 'reason': ''})
 
@@ -471,19 +497,19 @@ class DDeck:
         cards = self.components.get('reading_cards') or []
         for i, card in enumerate(cards, 1):
             ref = int(card.get('ref') or 0)
-            title = f"[{ref}] {_clip(card.get('title') or '代表作精读', 26)}"
+            title = f"[{ref}] {str(card.get('reason') or '方法与发现')}"
             has_asset = bool(self.ref_assets(ref))
             layout = ('figure', 'stacked', 'two_cards')[(i - 1) % 3] if has_asset else ('two_cards', 'stacked', 'asym')[(i - 1) % 3]
             slide = self.page(title, f'05 代表作精读 · [{ref}]', layout)
             fields = [
-                ('题目', _clip(card.get('title'), 26)),
-                ('研究问题', _clip(card.get('research_question'), 30)),
-                ('数据', _clip(card.get('data'), 30)),
-                ('方法', _clip(card.get('method'), 30)),
-                ('主要发现', _clip(card.get('findings'), 30)),
-                ('局限', _clip(card.get('limitations'), 30)),
-                ('团队启发', _clip(card.get('team_relevance'), 30)),
-                ('选篇理由', _clip(card.get('reason'), 30)),
+                ('题目', str(card.get('title') or '')),
+                ('研究问题', str(card.get('research_question') or '')),
+                ('数据', str(card.get('data') or '')),
+                ('方法', str(card.get('method') or '')),
+                ('主要发现', str(card.get('findings') or '')),
+                ('局限', str(card.get('limitations') or '')),
+                ('团队启发', str(card.get('team_relevance') or '')),
+                ('选篇理由', str(card.get('reason') or '')),
                 ('阅读深度', card.get('reading_depth') or '仅摘要'),
                 ('证据', f'[{ref}]'),
             ]
@@ -518,7 +544,7 @@ class DDeck:
                           FS_BODY, MUTED, True, PP_ALIGN.CENTER)
                 attempt = self.ref_attempt(ref)
                 reason = '; '.join((attempt.get('failures') or [])[:2]) or '未取得 OA 原图'
-                self.text(slide, f'OA：{self.oa_url(ref) or "未提供"}\n原因：{_clip(reason, 70)}',
+                self.text(slide, f'OA：{self.oa_url(ref) or "未提供"}\n原因：{_lead_sentence(reason, 70)}',
                           x0 + 20, y0 + h0 / 2 - 12, w0 - 40, 120, FS_META, WARM)
                 self.manifest.append({'page': len(self.records), 'kind': 'image', 'name': f'ref{ref} 原文图',
                                       'ref_no': ref, 'degraded': True, 'allow_degraded': True,
@@ -539,9 +565,9 @@ class DDeck:
             ('理论', (reading[-1].get('limitations') if reading else ''), f'[{reading[-1].get("ref") if reading else "—"}]'),
         ]
         for angle, text, basis in picks:
-            rows.append([angle, _clip(text or '池内证据未覆盖，需人工核对。', 34), basis])
+            rows.append([angle, _lead_sentence(text or '池内证据未覆盖，需人工核对。', 48), basis])
         self.table(slide, rows, 60, 166, 1160, 440, widths=[110, 880, 170])
-        self.text(slide, '说明：不足项均来自方法、精读与排序中的原文/分析字段，未新增文献外事实。',
+        self.text(slide, '说明：不足项均来自原文/分析字段，未新增文献外事实。',
                   72, 626, 1080, 26, FS_META, MUTED)
         self.manifest.append({'page': len(self.records), 'kind': 'diagram', 'name': '研究不足表',
                               'degraded': False, 'reason': ''})
@@ -552,16 +578,16 @@ class DDeck:
         ranking = self.components.get('ranking') or []
         slide = self.page('研究前沿正转向组合方法与人机协同', '06 研究不足与发展趋势', 'steps')
         self.flow(slide, [
-            '已较成熟\n' + _clip((methods[0].get('family') if methods else '方法'), 12),
-            '仍有争议\n' + _clip((reading[0].get('limitations') if reading else '证据边界'), 12),
-            '尚未充分\n' + _clip((ranking[0].get('risk') if ranking else '机制证据'), 12),
-            '可能突破\n' + _clip((ranking[0].get('topic') if ranking else '组合路线'), 12),
+            '已较成熟\n' + str(methods[0].get('family') if methods else '方法'),
+            '仍有争议\n' + str(reading[0].get('limitations') if reading else '证据边界'),
+            '尚未充分\n' + str(ranking[0].get('risk') if ranking else '机制证据'),
+            '可能突破\n' + str(ranking[0].get('topic') if ranking else '组合路线'),
         ], 82, 180, 1116, 150, font_size=FS_BODY)
         self.card(slide, '趋势判断（分析）',
-                  '方法组合、可解释性与人机协同比单点技术更可能形成突破；需以团队数据条件验证。',
+                  '方法组合、可解释性与人机协同更可能形成突破（分析）。',
                   82, 372, 548, 210)
         self.card(slide, '对优先方向的含义（分析）',
-                  _clip((ranking[0].get('reason') if ranking else '优先方向待补充。'), 110),
+                  _lead_sentence((ranking[0].get('reason') if ranking else '优先方向待补充。'), 72),
                   654, 372, 544, 210, True)
         self.manifest.append({'page': len(self.records), 'kind': 'diagram', 'name': '不足→潜在突破路径',
                               'degraded': False, 'reason': ''})
@@ -569,18 +595,18 @@ class DDeck:
     def summary_page(self):
         reading = self.components.get('reading_cards') or []
         ranking = self.components.get('ranking') or []
-        findings = [_clip(c.get('findings'), 48) for c in reading[:3]] or ['精读发现待补充。']
+        findings = [_lead_sentence(c.get('findings'), 40) for c in reading[:3]] or ['精读发现待补充。']
         slide = self.page('三项发现落到优先方向与下一步验证', '08 总结与讨论', 'summary')
         x = 82
         for i, finding in enumerate(findings):
             self.card(slide, f'发现 {i + 1}', finding, x + i * 380, 166, 360, 210)
         priority = ranking[0] if ranking else {}
-        self.card(slide, '优先方向 1', f'{_clip(priority.get("topic"), 60)}\n理由：{_clip(priority.get("reason"), 70)}',
+        self.card(slide, '优先方向 1', f'{str(priority.get("topic") or "")}\n理由：{_lead_sentence(priority.get("reason"), 56)}',
                   x, 404, 548, 180, True)
         second = ranking[1] if len(ranking) > 1 else {}
-        self.card(slide, '优先方向 2', f'{_clip(second.get("topic"), 60)}\n风险：{_clip(second.get("risk"), 64)}',
+        self.card(slide, '优先方向 2', f'{str(second.get("topic") or "")}\n风险：{_lead_sentence(second.get("risk"), 48)}',
                   x + 572, 404, 548, 180)
-        self.text(slide, '下一步：按讨论问题拆解验证任务，优先核对数据可得性与机制证据（分析）。',
+        self.text(slide, '下一步：按讨论问题拆解验证任务（分析）。',
                   82, 600, 1080, 30, FS_BODY, PRIM, True)
         self.summary_pages = [len(self.records), len(self.records) + 1]
         self.manifest.append({'page': len(self.records), 'kind': 'diagram', 'name': '总结与优先方向',
@@ -593,7 +619,7 @@ class DDeck:
             y = 176 + (i - 1) * 82
             self.shape(slide, 82, y, 44, 44, PRIM, PRIM)
             self.text(slide, str(i), 82, y + 4, 44, 36, FS_BODY, WHITE, True, PP_ALIGN.CENTER)
-            self.text(slide, _clip(question, 54), 148, y + 2, 1040, 60, FS_BODY, INK)
+            self.text(slide, _lead_sentence(question, 54), 148, y + 2, 1040, 60, FS_BODY, INK)
             self.shape(slide, 82, y + 66, 1088, 1, LINE, LINE, False)
         self.manifest.append({'page': len(self.records), 'kind': 'diagram', 'name': '团队讨论问题',
                               'degraded': False, 'reason': ''})
@@ -611,7 +637,7 @@ class DDeck:
             for column, items in enumerate((chunk[:half], chunk[half:])):
                 x = 72 + column * 580
                 for i, entry in enumerate(items):
-                    self.text(slide, _clip(entry, 64), x, 166 + i * 92, 540, 84, FS_META, BODY, line=1.25)
+                    self.text(slide, entry, x, 166 + i * 92, 540, 84, FS_META, BODY, line=1.2)
 
     def write(self):
         total, plan = self.plan()

@@ -27,7 +27,7 @@ def test_theme_declares_real_cjk_font(d_delivery):
     deck = next(path for path in d_delivery.artifacts.values() if path.name.endswith('组会汇报.pptx'))
     with zipfile.ZipFile(deck) as archive:
         theme = archive.read('ppt/theme/theme1.xml').decode('utf-8')
-    assert re.search(r'<a:ea typeface="Noto Sans CJK SC"', theme)
+    assert re.search(r'<a:ea typeface="PingFang SC"', theme)
 
 
 def test_charts_have_readable_data_labels(d_delivery):
