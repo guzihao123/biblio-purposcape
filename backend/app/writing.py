@@ -1229,14 +1229,26 @@ def _c1_body_shape_errors(text):
     errors = []
     body = text.split('## 参考文献')[0]
     lines = body.splitlines()
-    cards = sum(1 for line in lines if '段落卡·' in line)
-    if not 4 <= cards <= 6:
-        errors.append(f'段落卡 {cards} 张，不在 4–6')
-    if '引言逻辑框架' not in body:
-        errors.append('missing 引言逻辑框架')
-    for function in ('背景重要性', '研究进展', '现有研究不足', '研究思路与方法', '研究贡献'):
+    card_functions = ('背景重要性', '研究进展', '现有研究不足', '研究思路与方法', '研究贡献')
+    cards = [line for line in lines if '段落卡·' in line]
+    if len(cards) != 5:
+        errors.append(f'段落卡 {len(cards)} 张，固定为 5 张')
+    for function in card_functions:
         if function not in body:
             errors.append(f'missing 段落卡职能「{function}」')
+    if '引言逻辑框架' not in body:
+        errors.append('missing 引言逻辑框架')
+    ordered = ('引言逻辑框架', 'Research Gap 分析表', '完整引言', '写作逻辑和学术质量检查')
+    heading_positions = []
+    for title in ordered:
+        pattern = r'^#{1,4}\s*' + re.escape(title)
+        if title == '引言逻辑框架':
+            pattern += r'(?:与段落卡)?'
+        pattern += r'\s*$'
+        match = re.search(pattern, body, flags=re.M)
+        heading_positions.append(match.start() if match else -1)
+    if any(pos < 0 for pos in heading_positions) or heading_positions != sorted(heading_positions):
+        errors.append('C1 章节顺序必须为：段落卡 → Research Gap 表 → 完整引言 → 质量检查')
     if not _c2_has_filled_table(
         body,
         ('研究方向', '已有进展', '现有不足', '文献证据', '与本文研究问题的联系'),
@@ -2128,6 +2140,17 @@ def _c2_body_shape_errors(text, check_count=True):
     for title in C2_BODY_COMPONENTS:
         if title not in body:
             errors.append(f'missing section「{title}」')
+    ordered_sections = (
+        '研究主题与检索范围', '关键词和检索策略', '代表性文献清单', '文献分类框架',
+        '不同研究方向的综合分析', '主要技术路线比较', '文献比较表', '现有研究不足',
+        '研究空白分析表', '未来研究方向', '完整综述文本',
+    )
+    heading_positions = []
+    for title in ordered_sections:
+        match = re.search(r'^#{1,4}\s*' + re.escape(title) + r'\s*$', body, flags=re.M)
+        heading_positions.append(match.start() if match else -1)
+    if any(pos < 0 for pos in heading_positions) or heading_positions != sorted(heading_positions):
+        errors.append('C2 章节顺序必须固定为：主题→关键词→代表文献→分类→综合分析→路线比较→比较表→不足→空白表→未来→完整综述')
     classification = _c2_named_section(body, '文献分类框架')
     for dim in C2_CLASSIFICATION_DIMS:
         if dim not in classification:
