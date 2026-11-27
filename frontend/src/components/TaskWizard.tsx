@@ -368,6 +368,22 @@ export function TaskWizard({ card, onSubmit, loadProjectThemes }: TaskWizardProp
             <p>{cardDescription}</p>
           </div>
 
+          {submitting && (
+            <div className="wizard-loading" role="status" aria-live="polite">
+              <div className="wizard-loading__engine" aria-hidden="true">
+                <svg viewBox="0 0 32 32" focusable="false">
+                  <circle cx="13" cy="13" r="8" />
+                  <path d="m19 19 8 8" />
+                </svg>
+                <span className="wizard-loading__ring" />
+              </div>
+              <div className="wizard-loading__copy">
+                <strong>正在确认选择</strong>
+                <span>正在准备下一步研究流程…</span>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={submitSelection}>
             {displayOptions.length > 0 && (
               <div className="option-grid" role="group" aria-label={card.multiple ? '可多选选项' : '单选选项'}>

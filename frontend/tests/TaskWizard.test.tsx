@@ -143,6 +143,25 @@ describe('TaskWizard', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1)
   })
 
+  it('shows an in-card loading indicator while confirmation is pending', async () => {
+    const user = userEvent.setup()
+    let resolveSubmission: (() => void) | undefined
+    const onSubmit = vi.fn(() => new Promise<void>((resolve) => {
+      resolveSubmission = resolve
+    }))
+    render(<TaskWizard card={{ ...modeCard, onSubmit }} />)
+
+    await user.click(screen.getByRole('button', { name: /A 选题立项前摸底/ }))
+    await user.click(screen.getByRole('button', { name: '确认选择' }))
+
+    expect(screen.getByRole('status')).toHaveTextContent('正在确认选择')
+    expect(screen.getByRole('button', { name: '确认选择' })).toBeDisabled()
+
+    resolveSubmission?.()
+    await screen.findByText(/已确认：/)
+    expect(screen.queryByText('正在确认选择')).not.toBeInTheDocument()
+  })
+
   it('allows the same selection to be retried after a rejected submission', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
