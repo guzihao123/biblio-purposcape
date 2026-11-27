@@ -189,7 +189,8 @@ describe('complete web flow', () => {
 
     expect(await screen.findByText('方向卡·动态多组学耐药分型')).toBeVisible()
     expect(screen.getByText(/领域正文与第1推荐/)).toBeVisible()
-    expect(screen.getByText('全部 9 项无失败')).toBeVisible()
+    expect(screen.queryByText('全部 9 项无失败')).not.toBeInTheDocument()
+    expect(screen.queryByText('通过')).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: '下载 Word 报告' })).toHaveAttribute('href', '/signed/draft.docx')
   })
 })
