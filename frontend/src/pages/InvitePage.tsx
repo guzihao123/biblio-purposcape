@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
 import schoolBadge from '../assets/jspi-badge.png'
 import { MotionButton } from '../components/MotionButton'
@@ -17,7 +17,7 @@ interface InvitePageProps {
 
 
 export function InvitePage({ apiBaseUrl, onSuccess, onBadgeIntroActiveChange }: InvitePageProps) {
-  const badgeTargetRef = useRef<HTMLDivElement>(null)
+  const [badgeTarget, setBadgeTarget] = useState<HTMLDivElement | null>(null)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [sessionEstablished, setSessionEstablished] = useState(false)
@@ -91,7 +91,7 @@ export function InvitePage({ apiBaseUrl, onSuccess, onBadgeIntroActiveChange }: 
       <main className="full-power-site invite-page">
       <SchoolBadgeIntro
         source={schoolBadge}
-        targetRef={badgeTargetRef}
+        target={badgeTarget}
         onActiveChange={onBadgeIntroActiveChange}
       />
       <div className="site-orbit site-orbit--one" aria-hidden="true" />
@@ -99,7 +99,7 @@ export function InvitePage({ apiBaseUrl, onSuccess, onBadgeIntroActiveChange }: 
       <div className="invite-layout">
         <section className="invite-hero" aria-labelledby="invite-hero-title">
           <div className="invite-identity">
-            <div ref={badgeTargetRef} className="school-badge">
+            <div ref={setBadgeTarget} className="school-badge">
               <img
                 src={schoolBadge}
                 alt="江苏警官学院校徽"
