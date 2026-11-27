@@ -336,7 +336,7 @@ def test_d_reading_card_structural_ref_does_not_require_evidence(tmp_path):
     assert 3 in output.structural_refs
 
 
-def test_c_body_invalid_evidence_is_dropped_after_strict_retries(tmp_path):
+def test_c_body_invalid_evidence_quote_is_repaired_before_retry(tmp_path):
     class InvalidEvidenceModel:
         def __init__(self):
             self.body_calls = 0
@@ -358,10 +358,9 @@ def test_c_body_invalid_evidence_is_dropped_after_strict_retries(tmp_path):
     task = make_task('C1', tmp_path, component_data=None)
     output = WritingService(workspace_root=tmp_path, model=model).produce(task)
 
-    assert model.body_calls == 2
+    assert model.body_calls == 1
     assert 'Not present in the abstract' not in output.body
-    assert '证据修复' in output.body
-    assert any(event.kind == 'evidence_repair' for event in task.events)
+    assert any('calibrated model' in item.get('quote', '') for item in output.evidence)
 
 
 def test_unsupported_prose_citation_is_repaired_after_strict_retries(tmp_path):

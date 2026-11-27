@@ -650,12 +650,8 @@ def _ensure_pool_ledger(evidence, papers, text):
     return evidence + extra
 
 
-def _audit_items_with_quote_repair(auditor, items, papers):
-    try:
-        return auditor.audit_items(items)
-    except WritingInputError as error:
-        if 'not in the abstract' not in str(error):
-            raise
+def _repair_evidence_quotes(items, papers):
+    """Replace non-verbatim quotes with a real abstract sentence for the same ref."""
     by_ref = {
         int(paper['ref_no']): paper
         for paper in papers
@@ -696,7 +692,16 @@ def _audit_items_with_quote_repair(auditor, items, papers):
             new_quotes[str(ref)] = quote
         item['quotes'] = new_quotes
         repaired.append(item)
-    return auditor.audit_items(repaired)
+    return repaired
+
+
+def _audit_items_with_quote_repair(auditor, items, papers):
+    try:
+        return auditor.audit_items(items)
+    except WritingInputError as error:
+        if 'not in the abstract' not in str(error):
+            raise
+    return auditor.audit_items(_repair_evidence_quotes(items, papers))
 
 
 def _ensure_a_dialogue_intro(text, task):
@@ -2414,26 +2419,36 @@ def _strip_unsupported_citations(value, available):
 
 
 def _repair_component_evidence(value, papers):
-    """Drop evidence items that fail the auditor and strip their citations."""
+    """Repair non-verbatim quotes, then drop anything still failing the auditor."""
     valid_refs = set()
     dropped_refs = set()
+    quote_repairs = 0
 
     def clean(node):
+        nonlocal quote_repairs
         if isinstance(node, dict):
             result = {}
             for key, child in node.items():
                 if key == 'evidence' and isinstance(child, list):
                     kept = []
                     for item in child:
+                        auditor = EvidenceAuditor(papers)
                         try:
-                            records = EvidenceAuditor(papers).audit_items([item])
+                            records = auditor.audit_items([item])
                         except WritingInputError:
-                            for ref in (item.get('refs') or []):
-                                try:
-                                    dropped_refs.add(int(ref))
-                                except (TypeError, ValueError):
-                                    pass
-                            continue
+                            try:
+                                candidate = _repair_evidence_quotes([item], papers)[0]
+                                records = auditor.audit_items([candidate])
+                            except (WritingInputError, IndexError):
+                                for ref in (item.get('refs') or []):
+                                    try:
+                                        dropped_refs.add(int(ref))
+                                    except (TypeError, ValueError):
+                                        pass
+                                continue
+                            if (candidate.get('quotes') or {}) != (item.get('quotes') or {}):
+                                quote_repairs += 1
+                            item = candidate
                         kept.append(item)
                         valid_refs.update(record['ref'] for record in records)
                     result[key] = kept
@@ -2446,7 +2461,7 @@ def _repair_component_evidence(value, papers):
 
     repaired = clean(value)
     repaired, removed = _strip_unsupported_citations(repaired, valid_refs)
-    return repaired, sorted(dropped_refs), removed
+    return repaired, sorted(dropped_refs), removed, quote_repairs
 
 
 def _backfill_c2_row_evidence(data, papers):
@@ -2888,10 +2903,10 @@ class WritingService:
             ))
         ):
             try:
-                repaired, dropped_refs, removed = _repair_component_evidence(
+                repaired, dropped_refs, removed, quote_repairs = _repair_component_evidence(
                     last_candidate, task.papers
                 )
-                if dropped_refs or removed:
+                if dropped_refs or removed or quote_repairs:
                     task.component_data = repaired
                     components = self._build_components(task, mode)
                     task.events.append(WritingEvent(
@@ -2899,11 +2914,13 @@ class WritingService:
                         payload={
                             'dropped_refs': dropped_refs,
                             'removed_citations': removed,
+                            'quote_repairs': quote_repairs,
                             'stage': 'components',
                         },
                     ))
                     components.markdown = (
-                        f'> 证据修复：已丢弃 {len(dropped_refs)} 个不合法引用并移除 {removed} 处编号，'
+                        f'> 证据修复：已改写 {quote_repairs} 处引文为摘要原句，'
+                        f'丢弃 {len(dropped_refs)} 个不合法引用并移除 {removed} 处编号，'
                         '相关表述请人工复核。\n\n' + components.markdown
                     )
                     return components
@@ -3068,7 +3085,7 @@ class WritingService:
                 if not isinstance(result, dict) or not isinstance(result.get('text'), str):
                     raise WritingInputError('body composer must return text and evidence')
                 auditor = EvidenceAuditor(task.papers)
-                if task.mode.upper() == 'D':
+                if task.mode.upper() in {'D', 'C1', 'C2'}:
                     evidence = _audit_items_with_quote_repair(auditor, result.get('evidence') or [], task.papers)
                 else:
                     evidence = auditor.audit_items(result.get('evidence') or [])

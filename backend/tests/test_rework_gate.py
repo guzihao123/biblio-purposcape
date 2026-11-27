@@ -165,3 +165,46 @@ def test_d_short_body_is_reworked_into_the_mode_gate(tmp_path):
     assert 3000 <= _d_word_count(output.body) <= 6000
     assert any(event.kind == 'd_body_rebuilt' for event in task.events)
     assert any(event.kind == 'body_rework' for event in task.events)
+
+
+def test_c1_component_quote_is_repaired_from_the_abstract(tmp_path):
+    class InvalidComponentQuote:
+        def complete_json(self, system_prompt, payload):
+            assert payload['stage'] == 'components'
+            data = deepcopy(component_data('C1'))
+            data['paragraph_cards'][0]['evidence'][0]['quotes']['1'] = 'Not present in the abstract.'
+            return {'components': data}
+
+    task = make_task('C1', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=InvalidComponentQuote()).produce_components(task)
+
+    assert all('Not present in the abstract.' not in item.get('quote', '') for item in output.evidence)
+    assert any('calibrated model' in item.get('quote', '') for item in output.evidence)
+    assert '段落卡·' in output.markdown
+
+
+def test_c1_body_quote_is_repaired_without_retry_failure(tmp_path):
+    class InvalidBodyQuote:
+        def __init__(self):
+            self.body_calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            if payload['stage'] == 'components':
+                return {'components': component_data('C1')}
+            self.body_calls += 1
+            return {
+                'body': '正文引用 [1]。',
+                'evidence': [{
+                    'claim': 'Invalid quote',
+                    'refs': [1],
+                    'quotes': {'1': 'Not present in the abstract.'},
+                }],
+            }
+
+    model = InvalidBodyQuote()
+    task = make_task('C1', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=model).produce(task)
+
+    assert model.body_calls == 1
+    assert 'Not present in the abstract.' not in output.body
+    assert any('calibrated model' in item.get('quote', '') for item in output.evidence)
