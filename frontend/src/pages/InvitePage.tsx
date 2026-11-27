@@ -1,27 +1,33 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import schoolBadge from '../assets/jspi-badge.png'
 import { MotionButton } from '../components/MotionButton'
 import { PageTransition } from '../components/PageTransition'
+
 
 interface InvitePageProps {
   apiBaseUrl?: string
   onSuccess?: (sessionId: string) => void
 }
 
+
 export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [sessionEstablished, setSessionEstablished] = useState(false)
+
 
   const startResearch = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError('')
     setSessionEstablished(false)
 
+
     const endpoint = apiBaseUrl
       ? `${apiBaseUrl.replace(/\/+$/, '')}/api/session`
       : `${(import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '')}/session`
     setSubmitting(true)
+
 
     let response: Response
     try {
@@ -37,11 +43,13 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
       return
     }
 
+
     if (!response.ok) {
       setError('研究服务暂时不可用，请稍后重试。')
       setSubmitting(false)
       return
     }
+
 
     let payload: unknown
     try {
@@ -52,10 +60,12 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
       return
     }
 
+
     const sessionId =
       typeof payload === 'object' && payload !== null && 'session_id' in payload
         ? (payload as { session_id?: unknown }).session_id
         : undefined
+
 
     if (typeof sessionId !== 'string' || sessionId.length === 0) {
       setError('研究服务返回异常，请稍后重试。')
@@ -63,10 +73,12 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
       return
     }
 
+
     setSessionEstablished(true)
     setSubmitting(false)
     onSuccess?.(sessionId)
   }
+
 
   return (
     <PageTransition>
@@ -75,13 +87,27 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
       <div className="site-orbit site-orbit--two" aria-hidden="true" />
       <div className="invite-layout">
         <section className="invite-hero" aria-labelledby="invite-hero-title">
-          <div className="site-brand" aria-label="研究图谱">
-            <span className="site-brand__mark" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </span>
-            <span>研究图谱</span>
+          <div className="invite-identity">
+            <div className="school-badge">
+              <img
+                src={schoolBadge}
+                alt="江苏警官学院校徽"
+                width="88"
+                height="88"
+                fetchPriority="high"
+              />
+            </div>
+            <div className="invite-identity__copy">
+              <div className="site-brand" aria-label="研究图谱">
+                <span className="site-brand__mark" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+                <span>研究图谱</span>
+              </div>
+              <p className="invite-identity__school">江苏警官学院</p>
+            </div>
           </div>
           <p className="site-eyebrow">文献研究 · 公开访问</p>
           <h1 id="invite-hero-title">
@@ -109,6 +135,7 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
           </ol>
         </section>
 
+
         <section className="full-power-card invite-card" aria-labelledby="invite-card-title">
           <div className="invite-card__signal" aria-hidden="true">
             <span />
@@ -119,6 +146,7 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
             <h2 id="invite-card-title">进入你的研究空间</h2>
             <p>无需邀请码，点击即可开始本次文献探索。</p>
           </div>
+
 
           <form onSubmit={startResearch} noValidate aria-busy={submitting}>
             {error && (
@@ -137,12 +165,88 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
             </MotionButton>
           </form>
 
+
           <div className="invite-card__footer">
             <span className="status-dot" aria-hidden="true" />
             匿名会话凭证由浏览器安全保存
           </div>
         </section>
       </div>
+
+      <section className="team-section" aria-labelledby="team-title">
+        <div className="team-section__heading">
+          <div>
+            <p className="site-eyebrow">江苏警官学院 · JIANGSU POLICE INSTITUTE</p>
+            <h2 id="team-title">制作团队 <span lang="en">PROJECT TEAM</span></h2>
+          </div>
+          <p>
+            智慧交通管理学院 × 刑事科学技术学院
+            <span lang="en">Intelligent Traffic Management × Criminal Science and Technology</span>
+          </p>
+        </div>
+        <ul className="team-grid" aria-label="团队成员与分工 / Team members and roles">
+          <li className="full-power-card team-card">
+            <div className="team-card__affiliation">
+              <p className="team-card__college">智慧交通管理学院</p>
+              <p className="team-card__college-en" lang="en">School of Intelligent Traffic Management</p>
+            </div>
+            <div className="team-card__person">
+              <h3>梁轩铖</h3>
+              <span className="team-card__role">项目经理</span>
+            </div>
+            <p className="team-card__role-en" lang="en">Project Manager</p>
+            <div className="team-card__description">
+              <p>统筹项目规划、团队协作与进度推进。</p>
+              <p lang="en">Planning, coordination and project delivery.</p>
+            </div>
+          </li>
+          <li className="full-power-card team-card">
+            <div className="team-card__affiliation">
+              <p className="team-card__college">智慧交通管理学院</p>
+              <p className="team-card__college-en" lang="en">School of Intelligent Traffic Management</p>
+            </div>
+            <div className="team-card__person">
+              <h3>陈治霖</h3>
+              <span className="team-card__role">成果展示</span>
+            </div>
+            <p className="team-card__role-en" lang="en">Project Presentation</p>
+            <div className="team-card__description">
+              <p>整理研究成果，完成演示内容与视觉呈现。</p>
+              <p lang="en">Research synthesis, demos and visual presentation.</p>
+            </div>
+          </li>
+          <li className="full-power-card team-card">
+            <div className="team-card__affiliation">
+              <p className="team-card__college">刑事科学技术学院</p>
+              <p className="team-card__college-en" lang="en">School of Criminal Science and Technology</p>
+            </div>
+            <div className="team-card__person">
+              <h3>顾梓豪</h3>
+              <span className="team-card__role">全栈开发</span>
+            </div>
+            <p className="team-card__role-en" lang="en">Full-stack Developer</p>
+            <div className="team-card__description">
+              <p>覆盖前端交互、后端服务与系统联调。</p>
+              <p lang="en">Frontend, backend services and integration.</p>
+            </div>
+          </li>
+          <li className="full-power-card team-card">
+            <div className="team-card__affiliation">
+              <p className="team-card__college">江苏警官学院</p>
+              <p className="team-card__college-en" lang="en">Jiangsu Police Institute</p>
+            </div>
+            <div className="team-card__person">
+              <h3>张圣智</h3>
+              <span className="team-card__role">成果展示</span>
+            </div>
+            <p className="team-card__role-en" lang="en">Project Presentation</p>
+            <div className="team-card__description">
+              <p>支持成果梳理、展示设计与汇报呈现。</p>
+              <p lang="en">Showcase design and presentation support.</p>
+            </div>
+          </li>
+        </ul>
+      </section>
       </main>
     </PageTransition>
   )
