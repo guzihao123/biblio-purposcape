@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -794,6 +795,8 @@ def _write_pptx(task, body, references, path, figure_loader=None):
                 task.papers,
                 task.components.get('reading_cards', []),
                 path.parent,
+                max_refs=min(len(task.papers or []), 20),
+                allow_doi_fallback=True,
             )
         except Exception as error:
             figure_bundle = None
@@ -803,6 +806,12 @@ def _write_pptx(task, body, references, path, figure_loader=None):
                 + figure_loader_error + '\n',
                 encoding='utf-8',
             )
+
+    require_two = os.environ.get('D_REQUIRE_MIN_FIGURES', 'true').strip().lower() not in {'0', 'false', 'no', 'off'}
+    if task.mode == 'D' and require_two:
+        available = len(figure_bundle.assets) if figure_bundle is not None else 0
+        if available < 2:
+            raise RuntimeError(f'D PPT 需要至少 2 张原图，实际仅取得 {available} 张；已停止生成不合规 PPT')
 
     deck_result = None
     if task.mode == 'D':

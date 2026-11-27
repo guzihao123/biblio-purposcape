@@ -894,6 +894,87 @@ def _write_log(output_dir, bundle):
     return log_path
 
 
+def _supplemental_pdf_images(source_path, ref_no, figure_dir, needed=2):
+    """Extract real embedded bitmaps when caption-based crops miss the artwork."""
+    figure_dir = Path(figure_dir)
+    figure_dir.mkdir(parents=True, exist_ok=True)
+    assets = []
+    try:
+        pages = read_pdf_pages(source_path)
+    except Exception:
+        return assets
+    for page_index in range(min(len(pages), 16)):
+        if len(assets) >= needed:
+            break
+        destination = figure_dir / f"ref{ref_no}_supp{len(assets) + 1}.png"
+        meta = _embedded_image_for_caption(
+            source_path,
+            page_index,
+            '',
+            destination,
+            previous_reason='图注未定位，补充页面内嵌位图',
+        )
+        if meta:
+            assets.append(FigureAsset(
+                ref_no=ref_no,
+                fig_no=f'S{len(assets) + 1}',
+                name='补充原图',
+                path=destination,
+                caption='补充原图（未定位到图注，使用页面内嵌位图）',
+                description=f'原文 p{page_index + 1} 页面内嵌位图补充。',
+                source_url=str(source_path),
+                version='正式版',
+                original_page=str(page_index + 1),
+                acquisition='OA PDF 页面内嵌位图补充（图注定位失败）',
+                slot='reading',
+                crop_mode='embedded_image',
+                crop_meta=meta,
+            ))
+            continue
+        # Last resort for vector-only pages: crop the largest graphic object.
+        try:
+            bbox, page_width, page_height = _largest_object_bbox(source_path, page_index)
+        except Exception:
+            bbox, page_width, page_height = None, 0, 0
+        if not bbox or page_width <= 0 or page_height <= 0:
+            continue
+        x0, y0, x1, y1 = bbox
+        scale = 2.0
+        px = (
+            round(max(0, x0) * scale, 2),
+            round(max(0, page_height - y1) * scale, 2),
+            round(max(1, x1 - x0) * scale, 2),
+            round(max(1, y1 - y0) * scale, 2),
+        )
+        temporary = figure_dir / f'.ref{ref_no}_supp{len(assets) + 1}.tmp.png'
+        completed = subprocess.run(
+            [sys.executable, str(PDF_FIGURES), str(source_path), 'crop', '--page', str(page_index),
+             '--scale', str(scale), '--px', ','.join(str(value) for value in px), '--out', str(temporary)],
+            capture_output=True, text=True, timeout=120,
+        )
+        if completed.returncode != 0 or not temporary.is_file():
+            continue
+        _normalize_png(temporary, destination)
+        temporary.unlink(missing_ok=True)
+        _trim_white(destination)
+        assets.append(FigureAsset(
+            ref_no=ref_no,
+            fig_no=f'S{len(assets) + 1}',
+            name='补充原图',
+            path=destination,
+            caption='补充原图（未定位到图注，使用页面最大图形区域）',
+            description=f'原文 p{page_index + 1} 页面最大图形区域裁切补充。',
+            source_url=str(source_path),
+            version='正式版',
+            original_page=str(page_index + 1),
+            acquisition='OA PDF 页面图形区域补充（图注定位失败）',
+            slot='reading',
+            crop_mode='page_graphic',
+            crop_meta={'mode': 'page_graphic', 'display_box': [round(v, 1) for v in bbox]},
+        ))
+    return assets
+
+
 FRAMEWORK_PREFERRED_REFS = (4, 2, 3)
 
 
@@ -908,6 +989,7 @@ def prepare_d_figures(
     figure_dirname="figures",
     allow_network=True,
     local_pdfs=None,
+    allow_doi_fallback=False,
 ):
     """Acquire figures for the D reading set, returning a planning bundle.
 
@@ -996,10 +1078,11 @@ def prepare_d_figures(
                 bundle.attempts.append(attempt)
                 continue
             if not _has_oa_hint(paper):
-                attempt["failures"].append("题录没有 OA URL/开放获取标记，未发起网络定位")
-                attempt["status"] = "未尝试（无 OA 线索）"
-                bundle.attempts.append(attempt)
-                continue
+                if not (allow_doi_fallback and str(paper.get("doi") or "").strip()):
+                    attempt["failures"].append("题录没有 OA URL/开放获取标记，未发起网络定位")
+                    attempt["status"] = "未尝试（无 OA 线索）"
+                    bundle.attempts.append(attempt)
+                    continue
             try:
                 result = service.read_for_components(paper, purpose="D_READING_CARD")
             except Exception as error:
@@ -1025,6 +1108,8 @@ def prepare_d_figures(
             bundle.attempts.append(attempt)
             continue
         source_path = Path(result.source_path)
+        if source_path.suffix.casefold() == '.pdf':
+            attempt['source_path'] = str(source_path)
         assets = []
         failures = []
         try:
@@ -1051,6 +1136,28 @@ def prepare_d_figures(
         else:
             attempt["status"] = "已定位全文但未取得可嵌入原图"
         bundle.attempts.append(attempt)
+    if len(bundle.assets) < 2:
+        for attempt in bundle.attempts:
+            source_path = attempt.get('source_path')
+            if not source_path or not Path(source_path).is_file():
+                continue
+            added = _supplemental_pdf_images(
+                source_path,
+                attempt.get('ref_no'),
+                figure_dir,
+                needed=2 - len(bundle.assets),
+            )
+            if not added:
+                continue
+            bundle.assets.extend(added)
+            attempt['status'] = (
+                f'已取得 {len(bundle.by_ref(attempt.get("ref_no") or 0))} 张原图（含内嵌位图补充）'
+            )
+            attempt.setdefault('failures', []).append(
+                f'图注定位未取得足够图片，已补充 {len(added)} 张页面内嵌位图'
+            )
+            if len(bundle.assets) >= 2:
+                break
     _write_log(output_dir, bundle)
     return bundle
 
@@ -1193,6 +1300,21 @@ def decorate_d_slides(slides, bundle):
         if breakthrough:
             trend_page.setdefault("figures", []).append(breakthrough)
             used.add(breakthrough.path)
+
+    # Guarantee: if at least two real assets exist, place at least two of them
+    # even when their semantic slots do not match the preferred pages.
+    if len(used) < 2:
+        empty_pages = [slide for slide in slides if not slide.get("figures")]
+        for asset in bundle.assets:
+            if asset.path in used:
+                continue
+            page = next((slide for slide in empty_pages if not slide.get("figures")), None)
+            if page is None:
+                break
+            page.setdefault("figures", []).append(asset)
+            used.add(asset.path)
+            if len(used) >= 2:
+                break
 
     return slides
 
