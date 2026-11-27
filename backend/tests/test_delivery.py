@@ -462,3 +462,28 @@ def test_word_filenames_follow_mode_specific_delivery_conventions():
     assert word_filename(task('C2', direction='交通事故致因分析')) == '交通事故致因分析文献综述.docx'
     assert word_filename(task('E', direction='交通事故致因分析', components={'C1': {}, 'C2': {}, 'linkage': {}})) == '交通事故致因分析论文引言与文献综述.docx'
     assert word_filename(task('D', direction='自动驾驶测试')) == '调研报告.docx'
+
+
+def test_markdown_tables_are_exported_as_real_word_tables(tmp_path):
+    body = '\n'.join([
+        '# 城市内涝与地下车库韧性',
+        '',
+        '## 文献比较表',
+        '',
+        '| 文献 | 研究问题 | 数据 |',
+        '|---|---|---|',
+        '| [1] | 损失校准 | 摘要未说明 |',
+        '| [2] | 暴露调查 | 三个地区 |',
+        '',
+        '## 参考文献',
+        '',
+        '[1] X',
+        '[2] Y',
+    ])
+    result = service(tmp_path).deliver(make_task(body=body))
+    from docx import Document
+
+    document = Document(word_path(result))
+    assert len(document.tables) == 1
+    assert document.tables[0].rows[0].cells[0].text == '文献'
+    assert document.tables[0].rows[1].cells[1].text == '损失校准'

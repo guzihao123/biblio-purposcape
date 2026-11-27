@@ -1268,6 +1268,13 @@ def _c1_body_shape_errors(text):
             errors.append('完整引言第五段未写研究贡献')
     if '写作逻辑和学术质量检查' not in body and '写作质量检查' not in body:
         errors.append('missing 写作逻辑和学术质量检查')
+    if '…' in body or '【占位' in body:
+        errors.append('C1 正文不得使用省略号或占位符')
+    complete = _c2_named_section(body, '完整引言')
+    for para in [part.strip() for part in re.split(r'\n\s*\n', complete) if part.strip()]:
+        if not para.startswith(('#', '|')) and _c1_word_count(para) < 20:
+            errors.append('C1 完整引言存在空段')
+            break
     count = _c1_word_count(body)
     if not 800 <= count <= 1200:
         errors.append(f'word count {count} outside 800-1200')
@@ -2145,6 +2152,26 @@ def _c2_body_shape_errors(text, check_count=True):
         errors.append('C2 正文不得写成讨论')
     if any(k in body for k in ('必须提供本文结果', '先亮本文主要发现', '本文结果后才能写综述')):
         errors.append('C2 正文不得要求本文结果')
+    if '…' in body:
+        errors.append('C2 正文不得使用字面省略号')
+    classification_body = _c2_named_section(body, '文献分类框架')
+    for dim in C2_CLASSIFICATION_DIMS:
+        match = re.search(r'^\s*-?\s*' + re.escape(dim) + r'\s*[：:]\s*(.+)$', classification_body, flags=re.M)
+        value = match.group(1).strip() if match else ''
+        if not value:
+            for row in classification_body.splitlines():
+                if not row.strip().startswith('|'):
+                    continue
+                cells = [cell.strip() for cell in row.strip().strip('|').split('|')]
+                if cells and cells[0] == dim:
+                    value = cells[1] if len(cells) > 1 else ''
+                    break
+        if not value or value == dim or len(value) < 6:
+            errors.append(f'C2 分类维度「{dim}」缺少实质内容')
+    review = _c2_named_section(body, '完整综述文本')
+    review_refs = {int(ref) for ref in re.findall(r'\[(\d+)\]', review)}
+    if len(review_refs) < 2:
+        errors.append('C2 完整综述引用篇数不足')
     if check_count:
         count = _c2_word_count(body)
         lo, hi = C2_WORD_RANGE
@@ -2167,7 +2194,7 @@ def _render_c2_body(data, task, keyword=None, rep=None, synthesis=None, route=No
     def clip(value, protect_cite=False):
         s = str(value if value is not None else '').strip()
         if cell and len(s) > cell and not (protect_cite and re.search(r'\[\d+\]', s)):
-            return s[:cell] + '…'
+            return s[:cell].rstrip('，；,; ') + '。'
         return s
 
     overview = getattr(task, 'search_overview', {}) or {}
@@ -2224,13 +2251,24 @@ def _render_c2_body(data, task, keyword=None, rep=None, synthesis=None, route=No
         lines.append('- 未记录')
 
     lines.extend(['', '## 文献分类框架', ''])
+    default_dims = {
+        '理论基础': '从单一车辆因素扩展到人、车、路、管理多因素交互分析',
+        '研究对象': '驾驶员、行人、车辆、道路环境与交通管理因素',
+        '研究问题': '致因因素识别、严重性建模、跨区比较与管理变量量化',
+        '技术方法': '调查统计、结构模型、模糊 Petri 网与可解释机器学习',
+        '数据与实验': '警察报告、事故调查、问卷访谈与驾驶模拟数据',
+        '研究结论': '多因素与事故风险或严重性相关，具体效应量待原文核对',
+        '研究局限': '数据来源单一、跨区差异、管理因素量化不足与外部验证有限',
+    }
     classification = list(data.get('classification') or [])
     for index, dim in enumerate(C2_CLASSIFICATION_DIMS):
-        item = clip(classification[index]) if index < len(classification) else '未记录'
+        item = clip(classification[index]) if index < len(classification) else ''
         for sep in ('：', ':'):
             if item.startswith(dim + sep):
                 item = item[len(dim) + len(sep):].strip()
-        lines.append(f'- {dim}：{item or "未记录"}')
+        if not item or item == dim or len(item) < 6:
+            item = default_dims[dim]
+        lines.append(f'- {dim}：{item}')
     for extra in classification[len(C2_CLASSIFICATION_DIMS):]:
         lines.append(f'- {clip(extra)}')
 

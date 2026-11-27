@@ -167,9 +167,45 @@ def _write_docx(task, body, path):
         if first.startswith('#') and task.direction in first:
             body_lines = body_lines[index + 1:]
         break
-    for raw in body_lines:
-        line = raw.strip()
-        if not line or line.startswith('|---'):
+    def cells(line):
+        return [cell.strip() for cell in line.strip().strip('|').split('|')]
+
+    def is_separator(line):
+        values = cells(line)
+        return bool(values) and all(re.fullmatch(r':?-{3,}:?', value.replace(' ', '')) for value in values)
+
+    index = 0
+    while index < len(body_lines):
+        line = body_lines[index].strip()
+        index += 1
+        if not line:
+            continue
+        if line.startswith('|') and line.endswith('|'):
+            block = [line]
+            while index < len(body_lines):
+                candidate = body_lines[index].strip()
+                if not (candidate.startswith('|') and candidate.endswith('|')):
+                    break
+                block.append(candidate)
+                index += 1
+            rows = [cells(item) for item in block]
+            if len(rows) >= 2 and is_separator(block[1]):
+                rows = [rows[0]] + rows[2:]
+            width = max((len(row) for row in rows), default=0)
+            if width:
+                table_obj = document.add_table(rows=len(rows), cols=width)
+                table_obj.style = 'Table Grid'
+                for row_index, row in enumerate(rows):
+                    for column in range(width):
+                        cell = table_obj.rows[row_index].cells[column]
+                        cell.text = ''
+                        paragraph = cell.paragraphs[0]
+                        value = row[column] if column < len(row) else ''
+                        _pending_runs(paragraph, _plain_markdown_inline(value), 'docx')
+                        for run in paragraph.runs:
+                            run.font.size = Pt(9)
+                            if row_index == 0:
+                                run.bold = True
             continue
         heading = re.match(r'^(#{1,4})\s+(.+)', line)
         if heading:
@@ -178,9 +214,6 @@ def _write_docx(task, body, path):
         elif line.startswith('- '):
             paragraph = document.add_paragraph(style='List Bullet')
             _pending_runs(paragraph, _plain_markdown_inline(line[2:]), 'docx')
-        elif line.startswith('|') and line.endswith('|'):
-            paragraph = document.add_paragraph()
-            _pending_runs(paragraph, _plain_markdown_inline(line.strip('|').replace('|', '｜')), 'docx')
         else:
             paragraph = document.add_paragraph()
             _pending_runs(paragraph, _plain_markdown_inline(line), 'docx')
