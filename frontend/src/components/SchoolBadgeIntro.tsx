@@ -1,18 +1,13 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import introSound from '../assets/school-badge-intro.m4a?url'
 
-const INTRO_SESSION_KEY = 'jspi-school-badge-intro-v2-played'
 const INTRO_DURATION_MS = 5600
 
 function shouldPlayIntro() {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
   if (document.hidden || window.scrollY > 0) return false
-  try {
-    return window.sessionStorage.getItem(INTRO_SESSION_KEY) !== '1'
-  } catch {
-    return true
-  }
+  return true
 }
 
 interface SchoolBadgeIntroProps {
@@ -26,6 +21,7 @@ export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadge
   const introRef = useRef<HTMLImageElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
   const completeRef = useRef<() => void>(() => {})
+  const restartRef = useRef<() => void>(() => {})
   const startedAtRef = useRef(0)
   const [enabled] = useState(shouldPlayIntro)
   const [finished, setFinished] = useState(false)
@@ -84,6 +80,21 @@ export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadge
     }
     completeRef.current = complete
 
+    const restart = () => {
+      if (disposed || completed || !started) return
+      window.clearTimeout(fallbackTimer)
+      scene.classList.remove('is-running')
+      intro.classList.remove('is-running')
+      page?.classList.remove('invite-page--intro-running')
+      void intro.offsetWidth
+      startedAtRef.current = performance.now()
+      page?.classList.add('invite-page--intro-running')
+      scene.classList.add('is-running')
+      intro.classList.add('is-running')
+      fallbackTimer = window.setTimeout(complete, INTRO_DURATION_MS + 400)
+    }
+    restartRef.current = restart
+
     const handleVisibility = () => {
       if (document.hidden) complete()
     }
@@ -131,12 +142,6 @@ export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadge
       intro.style.setProperty('--school-intro-scale-full', String(fullSize / finalSize))
       intro.style.setProperty('--school-intro-scale-start', String((introSize / finalSize) * 0.88))
 
-      try {
-        window.sessionStorage.setItem(INTRO_SESSION_KEY, '1')
-      } catch {
-        // Storage is optional; the animation still works without it.
-      }
-
       started = true
       startedAtRef.current = performance.now()
       target.classList.add('school-badge--intro-pending', 'school-badge--intro-static')
@@ -147,6 +152,18 @@ export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadge
       intro.classList.add('is-running')
       scene.focus({ preventScroll: true })
       fallbackTimer = window.setTimeout(complete, INTRO_DURATION_MS + 400)
+
+      // Browsers may reject unmuted autoplay. The visible sound button then replays
+      // both timelines from the beginning inside a user gesture.
+      const audio = audioRef.current
+      if (audio) {
+        audio.volume = 0.7
+        try {
+          void audio.play().catch(() => setSoundEnabled(false))
+        } catch {
+          setSoundEnabled(false)
+        }
+      }
     }
 
     setActive(true)
@@ -161,6 +178,7 @@ export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadge
       disposed = true
       removeListeners()
       completeRef.current = () => {}
+      restartRef.current = () => {}
       audioRef.current?.pause()
       scene.classList.remove('is-running', 'is-awaiting')
       intro.classList.remove('is-running')
@@ -191,8 +209,20 @@ export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadge
       return
     }
 
-    audio.volume = 0.5
-    void audio.play().catch(() => setSoundEnabled(false))
+    audio.volume = 0.7
+    try {
+      audio.currentTime = 0
+    } catch {
+      // Metadata may not be available yet; the playing/metadata handlers will sync.
+    }
+    try {
+      // Start audio synchronously in the click gesture before restarting the visuals.
+      const playback = audio.play()
+      restartRef.current()
+      void playback.catch(() => setSoundEnabled(false))
+    } catch {
+      setSoundEnabled(false)
+    }
     syncSoundOffset()
   }
 
@@ -222,7 +252,7 @@ export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadge
           aria-pressed={soundEnabled}
           onClick={toggleSound}
         >
-          {soundEnabled ? '关闭音效' : '开启音效'}
+          {soundEnabled ? '关闭音效' : '开启音效并重播'}
         </button>
         <button
           type="button"
@@ -238,6 +268,7 @@ export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadge
         preload="auto"
         aria-hidden="true"
         onLoadedMetadata={syncSoundOffset}
+        onPlaying={syncSoundOffset}
         onPlay={() => setSoundEnabled(true)}
         onPause={() => setSoundEnabled(false)}
         onEnded={() => setSoundEnabled(false)}
