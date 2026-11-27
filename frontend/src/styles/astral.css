@@ -766,10 +766,17 @@ code,
   cursor: pointer;
   touch-action: manipulation;
   pointer-events: auto;
-  background: rgba(10, 18, 32, 0.88);
-  border: 1px solid var(--site-border);
+  background: rgba(10, 18, 32, 0.94);
+  border: 1px solid rgba(139, 192, 221, 0.55);
   border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(2, 7, 15, 0.28);
   transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.school-badge-scene__control:first-child {
+  color: #e8fff8;
+  background: rgba(15, 48, 50, 0.94);
+  border-color: var(--site-accent-2);
 }
 
 .school-badge-scene__control:hover {
