@@ -120,6 +120,19 @@ export function InvitePage({ apiBaseUrl, onSuccess, onBadgeIntroActiveChange }: 
               <p className="invite-identity__school">江苏警官学院</p>
             </div>
           </div>
+          <div className="site-brand site-brand--panorama">
+            <span className="site-brand__copy">
+              <span className="site-brand__title">
+                <span className="site-brand__phrase">智研通——</span>
+                <span className="site-brand__phrase">面向科研全过程的</span>
+                <span className="site-brand__phrase">智能调研、</span>
+                <span className="site-brand__phrase">知识分析与成果生成平台</span>
+              </span>
+              <span className="site-brand__english" lang="en">biblio-purpose-landscape</span>
+            </span>
+            <span className="site-brand__aura" aria-hidden="true" />
+            <span className="site-brand__beam" aria-hidden="true" />
+          </div>
           <p className="site-eyebrow">文献研究 · 公开访问</p>
           <h1 id="invite-hero-title">
             让研究问题
