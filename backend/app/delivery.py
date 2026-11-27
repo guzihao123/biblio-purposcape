@@ -718,6 +718,7 @@ def _ppt_asset_manifest(slides, base_dir=None, figure_bundle=None):
                 'version': attempt.get('version'),
                 'reading_depth': attempt.get('depth'),
                 'status': attempt.get('status'),
+                'pdf_backend': attempt.get('pdf_backend') or '',
                 'figure_count': len(figure_bundle.by_ref(attempt.get('ref_no') or 0)),
                 'failures': attempt.get('failures') or [],
             }
@@ -823,6 +824,7 @@ def _write_pptx(task, body, references, path, figure_loader=None):
                     'version': attempt.get('version'),
                     'reading_depth': attempt.get('depth'),
                     'status': attempt.get('status'),
+                    'pdf_backend': attempt.get('pdf_backend') or '',
                     'figure_count': len(figure_bundle.by_ref(attempt.get('ref_no') or 0)),
                     'failures': attempt.get('failures') or [],
                 }

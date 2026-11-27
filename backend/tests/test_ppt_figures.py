@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw
 
 from app.delivery import DeliveryTask, _reference_entries, _write_pptx
 from app.ppt_figures import (
+    CAPTION_RE,
     FigureAsset,
     FigureBundle,
     _figure_caption_from_lines,
@@ -476,3 +477,63 @@ def test_reading_page_gets_degraded_when_assets_consumed(tmp_path):
     decorate_d_slides(slides, bundle)
     assert slides[0].get('figures')
     assert slides[1].get('degraded_figures')
+
+
+def test_pdf_figures_backend_command_reports_linux_renderer(tmp_path):
+    pdf = _synthetic_pdf(tmp_path / "backend.pdf")
+    script = Path(__file__).resolve().parents[2] / "skill_runtime" / "scripts" / "pdf_figures.py"
+    env = dict(os.environ)
+    env["PDF_FIGURES_BACKEND"] = "pdfium"
+    completed = subprocess.run(
+        [sys.executable, str(script), str(pdf), "backend"],
+        capture_output=True, text=True, env=env,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip() == "backend=pypdfium2"
+
+
+def test_caption_regex_accepts_figure_capital_fig_and_chinese_variants():
+    for line in ("Figure 4. Results", "FIGURE 4: Results", "FIG. 4 Results", "Fig 4 — Results", "图4 结果"):
+        match = CAPTION_RE.match(line)
+        assert match is not None, line
+        assert match.group(1) == "4"
+
+
+def test_figure_crop_falls_back_to_embedded_image(tmp_path, monkeypatch):
+    import app.ppt_figures as ppt_figures
+
+    pdf = _synthetic_pdf(tmp_path / "fallback.pdf")
+    monkeypatch.setattr(
+        ppt_figures,
+        "_column_aware_crop_pixels",
+        lambda *args, **kwargs: (None, {"mode": "degraded", "reason": "forced crop failure"}),
+    )
+
+    assets, failures = _figures_from_pdf(pdf, 7, tmp_path / "figures")
+
+    assert failures == []
+    assert len(assets) == 1
+    assert assets[0].crop_mode == "embedded_image"
+    assert assets[0].path.read_bytes().startswith(b"\x89PNG")
+    assert "forced crop failure" in assets[0].crop_meta.get("reason", "")
+
+
+def test_prepare_d_figures_records_pdf_backend(tmp_path):
+    pdf = _synthetic_pdf(tmp_path / "backend-manifest.pdf")
+    papers = [{"ref_no": 1, "title": "Backend test", "abstract": "x"}]
+    bundle = prepare_d_figures(
+        papers,
+        [{"ref": 1}],
+        tmp_path,
+        include_supporting=False,
+        local_pdfs={1: pdf},
+    )
+
+    assert bundle.attempts[0]["pdf_backend"] in {"pypdfium2", "PyMuPDF"}
+
+
+def test_dockerfile_requires_pdf_backend_self_check():
+    dockerfile = (Path(__file__).resolve().parents[2] / "Dockerfile").read_text(encoding="utf-8")
+    assert "PDF_FIGURES_BACKEND=pdfium" in dockerfile
+    assert "backend=pypdfium2" in dockerfile
+    assert "pdf_backend_crop.png" in dockerfile

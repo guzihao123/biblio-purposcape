@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -110,6 +111,24 @@ def _slot_for_caption(caption):
     if any(keyword in lead for keyword in BREAKTHROUGH_ANY):
         return "breakthrough"
     return "reading"
+
+
+def _pdf_backend():
+    """Return the renderer that ``pdf_figures.py`` will actually use."""
+    forced = os.environ.get("PDF_FIGURES_BACKEND", "").strip().lower()
+    try:
+        import fitz  # noqa: F401
+        if forced != "pdfium":
+            return "PyMuPDF"
+    except Exception:
+        pass
+    try:
+        import pypdfium2  # noqa: F401
+        if forced != "swift":
+            return "pypdfium2"
+    except Exception:
+        pass
+    return "PDFKit(Swift)"
 
 
 def _has_oa_hint(paper):
@@ -493,6 +512,84 @@ def _column_aware_crop_pixels(pdf_path, page_index, caption, scale=2.0):
     return px, meta
 
 
+def _embedded_image_for_caption(pdf_path, page_index, caption, destination, previous_reason=""):
+    """Extract the page's embedded bitmap when the vector crop has no reliable box.
+
+    This is deliberately a last resort: it uses the largest/nearest native
+    bitmap on the page and records why the column-aware crop was skipped, so a
+    degraded extraction remains distinguishable from a precise crop.
+    """
+
+    import pypdfium2 as pdfium
+
+    destination = Path(destination)
+    document = pdfium.PdfDocument(str(pdf_path))
+    try:
+        page = document[page_index]
+        try:
+            page_width, page_height = page.get_size()
+            try:
+                anchor = _caption_anchor_in_pdf(pdf_path, page_index, caption)
+            except Exception:
+                anchor = None
+            candidates = []
+            for obj in page.get_objects():
+                if obj.type != 3:
+                    continue
+                try:
+                    x0, y0, x1, y1 = obj.get_pos()
+                    native_width, native_height = obj.get_size()
+                except Exception:
+                    continue
+                width, height = x1 - x0, y1 - y0
+                if width < page_width * 0.03 or height < page_height * 0.03:
+                    continue
+                if min(native_width, native_height) < 120:
+                    continue
+                candidates.append({
+                    "obj": obj,
+                    "box": (x0, y0, x1, y1),
+                    "native": (native_width, native_height),
+                    "area": width * height,
+                })
+            if not candidates:
+                return None
+            chosen = None
+            if anchor is not None:
+                caption_top = anchor[1]
+                above = [
+                    item for item in candidates
+                    if item["box"][1] >= caption_top - page_height * 0.15
+                ]
+                if above:
+                    chosen = min(
+                        above,
+                        key=lambda item: (abs(item["box"][1] - caption_top), -item["area"]),
+                    )
+            if chosen is None:
+                chosen = max(candidates, key=lambda item: item["area"])
+            bitmap = chosen["obj"].get_bitmap(render=False)
+            image = bitmap.to_pil()
+            if min(image.size) < 120:
+                return None
+            temporary = destination.with_suffix(".tmp.png")
+            image.save(temporary, format="PNG")
+            _normalize_png(temporary, destination)
+            temporary.unlink(missing_ok=True)
+            _trim_white(destination)
+            box = [round(value, 1) for value in chosen["box"]]
+            return {
+                "mode": "embedded_image",
+                "reason": previous_reason or "列感知裁切失败，改用内嵌位图",
+                "display_box": box,
+                "image_size": [image.width, image.height],
+            }
+        finally:
+            page.close()
+    finally:
+        document.close()
+
+
 def _figures_from_pdf(source_path, ref_no, figure_dir, oa_url="", version="正式版", acquisition=None):
     """Render+crop the artwork for every accepted caption, including same-page figures.
 
@@ -510,6 +607,7 @@ def _figures_from_pdf(source_path, ref_no, figure_dir, oa_url="", version="正�
     failures = []
     seen_figs = set()
     page_texts = read_pdf_pages(source_path)
+    seen_embedded = set()
     for index, text in enumerate(page_texts):
         lines = text.splitlines()
         for line_index, line in enumerate(lines):
@@ -527,58 +625,102 @@ def _figures_from_pdf(source_path, ref_no, figure_dir, oa_url="", version="正�
                 continue
             scale = 2.0
             px, crop_meta = _column_aware_crop_pixels(source_path, index, caption, scale)
-            if px is None:
-                failures.append(f"page {index + 1} Fig.{fig_no}: {crop_meta.get('reason', '未定位到可靠图区')}")
-                continue
-            seen_figs.add(fig_no)
             name = _short_name(caption, fig_no)
             destination = figure_dir / f"ref{ref_no}_fig{fig_no}_{name}.png"
             temporary = figure_dir / f".ref{ref_no}_fig{fig_no}.tmp.png"
-            completed = subprocess.run(
-                [
-                    sys.executable,
-                    str(PDF_FIGURES),
-                    str(source_path),
-                    "crop",
-                    "--page",
-                    str(index),
-                    "--scale",
-                    str(scale),
-                    "--px",
-                    ",".join(str(value) for value in px),
-                    "--out",
-                    str(temporary),
-                ],
-                capture_output=True,
-                text=True,
-                timeout=120,
-            )
-            if completed.returncode != 0 or not temporary.is_file():
-                failures.append(
-                    f"page {index + 1} Fig.{fig_no}: pdf_figures 裁切失败 "
-                    f"{(completed.stderr or completed.stdout).strip()[:180]}"
+            asset = None
+            failure_reason = ""
+            if px is not None:
+                completed = subprocess.run(
+                    [
+                        sys.executable,
+                        str(PDF_FIGURES),
+                        str(source_path),
+                        "crop",
+                        "--page",
+                        str(index),
+                        "--scale",
+                        str(scale),
+                        "--px",
+                        ",".join(str(value) for value in px),
+                        "--out",
+                        str(temporary),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
                 )
-                continue
-            _normalize_png(temporary, destination)
-            temporary.unlink(missing_ok=True)
-            _trim_white(destination)
-            assets.append(
-                FigureAsset(
-                    ref_no=ref_no,
-                    fig_no=fig_no,
-                    name=name,
-                    path=destination,
-                    caption=caption,
-                    description=f"原文 p{index + 1} 图区渲染裁切（图注锚点 + 同列图形块边界）。",
-                    source_url=oa_url or str(source_path),
-                    version=version or "正式版",
-                    original_page=str(index + 1),
-                    acquisition=acquisition or "OA PDF 渲染裁切（pdf_figures.py crop，Swift/PDFKit 或 PyMuPDF）",
-                    slot=_slot_for_caption(caption),
-                    crop_mode=crop_meta.get("mode", ""),
-                    crop_meta=crop_meta,
+                if completed.returncode == 0 and temporary.is_file():
+                    _normalize_png(temporary, destination)
+                    temporary.unlink(missing_ok=True)
+                    _trim_white(destination)
+                    asset = FigureAsset(
+                        ref_no=ref_no,
+                        fig_no=fig_no,
+                        name=name,
+                        path=destination,
+                        caption=caption,
+                        description=f"原文 p{index + 1} 图区渲染裁切（图注锚点 + 同列图形块边界）。",
+                        source_url=oa_url or str(source_path),
+                        version=version or "正式版",
+                        original_page=str(index + 1),
+                        acquisition=acquisition or "OA PDF 渲染裁切（pdf_figures.py crop，Swift/PDFKit 或 PyMuPDF）",
+                        slot=_slot_for_caption(caption),
+                        crop_mode=crop_meta.get("mode", ""),
+                        crop_meta=crop_meta,
+                    )
+                else:
+                    temporary.unlink(missing_ok=True)
+                    failure_reason = (
+                        f"pdf_figures 裁切失败 "
+                        f"{(completed.stderr or completed.stdout).strip()[:180]}"
+                    )
+            else:
+                failure_reason = crop_meta.get("reason", "未定位到可靠图区")
+
+            if asset is None:
+                embedded = _embedded_image_for_caption(
+                    source_path,
+                    index,
+                    caption,
+                    destination,
+                    previous_reason=failure_reason,
                 )
-            )
+                if embedded:
+                    key = (
+                        index,
+                        tuple(embedded.get("display_box") or []),
+                        tuple(embedded.get("image_size") or []),
+                    )
+                    if key in seen_embedded:
+                        failures.append(
+                            f"page {index + 1} Fig.{fig_no}: {failure_reason}；内嵌图已用于其他图注"
+                        )
+                        continue
+                    seen_embedded.add(key)
+                    asset = FigureAsset(
+                        ref_no=ref_no,
+                        fig_no=fig_no,
+                        name=name,
+                        path=destination,
+                        caption=caption,
+                        description=f"原文 p{index + 1} 内嵌位图提取（列感知裁切失败后兜底）。",
+                        source_url=oa_url or str(source_path),
+                        version=version or "正式版",
+                        original_page=str(index + 1),
+                        acquisition="OA PDF 内嵌位图（pdf_figures.py 兜底）",
+                        slot=_slot_for_caption(caption),
+                        crop_mode="embedded_image",
+                        crop_meta=embedded,
+                    )
+                else:
+                    failures.append(
+                        f"page {index + 1} Fig.{fig_no}: {failure_reason}；内嵌图兜底未找到"
+                    )
+                    continue
+
+            seen_figs.add(fig_no)
+            assets.append(asset)
     return assets, failures
 
 
@@ -731,6 +873,8 @@ def _write_log(output_dir, bundle):
         lines.append(f"- 实际版本：{attempt.get('version') or '未确认'}")
         lines.append(f"- 阅读深度：{attempt.get('depth') or '仅摘要'}")
         lines.append(f"- 定位/下载：{attempt.get('status') or '未获取'}")
+        if attempt.get("pdf_backend"):
+            lines.append(f"- PDF 后端：{attempt['pdf_backend']}")
         if attempt.get("acquisition"):
             lines.append(f"- 获取方式：{attempt['acquisition']}")
         for failure in attempt.get("failures") or []:
@@ -814,6 +958,7 @@ def prepare_d_figures(
             "depth": "仅摘要",
             "status": "未获取",
             "source_url": "",
+            "pdf_backend": "",
             "failures": [],
         }
         if not paper:
@@ -884,6 +1029,7 @@ def prepare_d_figures(
         failures = []
         try:
             if source_path.suffix.casefold() == ".pdf":
+                attempt["pdf_backend"] = _pdf_backend()
                 assets, failures = _figures_from_pdf(
                     source_path,
                     ref,

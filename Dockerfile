@@ -26,6 +26,10 @@ COPY fixtures ./fixtures
 COPY worker.py ./
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir .
+RUN PDF_FIGURES_BACKEND=pdfium python skill_runtime/scripts/pdf_figures.py backend/tests/fixtures/fulltext/synthetic-digital.pdf backend | tee /tmp/pdf_backend.txt \
+    && grep -qx 'backend=pypdfium2' /tmp/pdf_backend.txt \
+    && PDF_FIGURES_BACKEND=pdfium python skill_runtime/scripts/pdf_figures.py backend/tests/fixtures/fulltext/synthetic-digital.pdf crop --page 0 --scale 1 --px 10,10,80,80 --out /tmp/pdf_backend_crop.png \
+    && test -s /tmp/pdf_backend_crop.png
 COPY --from=frontend /app/frontend/dist ./frontend/dist
 EXPOSE 8000
 CMD ["sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

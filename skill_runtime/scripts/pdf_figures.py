@@ -72,7 +72,7 @@ def parse_px(s):
 def main():
     ap = argparse.ArgumentParser(description="PDF 图/全文提取（PyMuPDF 优先，PDFKit 回退）")
     ap.add_argument("pdf")
-    ap.add_argument("command", choices=["info", "render", "crop", "text", "images", "xmltext"])
+    ap.add_argument("command", choices=["info", "render", "crop", "text", "images", "xmltext", "backend"])
     ap.add_argument("--page", type=int, default=0)
     ap.add_argument("--scale", type=float, default=2.0)
     ap.add_argument("--px", help="x,y,w,h（同 scale 整页图像素，左上原点）")
@@ -106,6 +106,9 @@ def main():
     fitz = have_fitz() and forced != 'pdfium'
     pdfium = have_pdfium() and forced != 'swift' and not fitz
     backend = "PyMuPDF" if fitz else ("pypdfium2" if pdfium else "PDFKit(Swift)")
+    if a.command == "backend":
+        print("backend=" + backend)
+        return
     print("backend=" + backend)
 
     if fitz:
