@@ -146,7 +146,7 @@ def test_pad_closes_short_body_when_evidence_text_rich(tmp_path):
     assert _a_dialogue_shape_errors(padded) == []
 
 
-def test_pad_noop_without_evidence(tmp_path):
+def test_pad_adds_analysis_checklist_without_component_evidence(tmp_path):
     data, _ = dialogue_body_without_key_points()
     stripped = deepcopy(data)
     for gap in stripped['gaps']:
@@ -154,9 +154,41 @@ def test_pad_noop_without_evidence(tmp_path):
     for row in stripped['landscape']:
         row['evidence'] = []
     task = make_task('A_DIALOGUE', tmp_path)
+    intro_task = make_task('A_DIALOGUE', tmp_path)
+    intro_task.component_data = data
+    body = _short_dialogue_body(data, intro_task)
     task.component_data = stripped
-    body = _short_dialogue_body(data, task)
-    assert _pad_a_dialogue_body(body, task) == body
+    before_refs = set(re.findall(r'\[(\d+)\]', body))
+    assert _a_dialogue_word_count(body) < 1500
+
+    padded = _pad_a_dialogue_body(body, task)
+    assert padded != body
+    assert '## 选题核验清单' in padded
+    assert padded.count('## 选题核验清单') == 1
+    assert _a_dialogue_word_count(padded) >= 1500
+    assert _a_dialogue_shape_errors(padded) == []
+    assert set(re.findall(r'\[(\d+)\]', padded)) == before_refs
+
+
+def test_normal_path_short_body_without_component_evidence_pads(tmp_path):
+    data, _ = dialogue_body_without_key_points()
+    stripped = deepcopy(data)
+    for gap in stripped['gaps']:
+        gap['evidence'] = []
+    for row in stripped['landscape']:
+        row['evidence'] = []
+    task = make_task('A_DIALOGUE', tmp_path)
+    intro_task = make_task('A_DIALOGUE', tmp_path)
+    intro_task.component_data = data
+    body = _short_dialogue_body(data, intro_task)
+    task.component_data = stripped
+
+    service = WritingService(workspace_root=tmp_path, model=_StubModel(stripped, body))
+    output = service.produce(task)
+    text = output.body_path.read_text(encoding='utf-8')
+    assert '## 选题核验清单' in text
+    assert _a_dialogue_shape_errors(text) == []
+    assert 'a_dialogue_rebuilt' not in [event.kind for event in task.events]
 
 
 def test_rebuild_labels_b_level_citations(tmp_path):

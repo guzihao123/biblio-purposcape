@@ -359,7 +359,7 @@ def test_c_body_invalid_evidence_is_dropped_after_strict_retries(tmp_path):
     output = WritingService(workspace_root=tmp_path, model=model).produce(task)
 
     assert model.body_calls == 2
-    assert '[1]' not in output.body
+    assert 'Not present in the abstract' not in output.body
     assert '证据修复' in output.body
     assert any(event.kind == 'evidence_repair' for event in task.events)
 
@@ -379,7 +379,7 @@ def test_unsupported_prose_citation_is_repaired_after_strict_retries(tmp_path):
     task = make_task('A', tmp_path, component_data=None)
     output = WritingService(workspace_root=tmp_path, model=model).produce_components(task)
 
-    assert model.calls == 2
+    assert model.calls == 3
     assert '[3]' not in output.markdown
     assert '引用修复：已移除 1 处无证据编号' in output.markdown
     assert any(
@@ -791,7 +791,7 @@ def test_generated_component_shape_failure_after_retry_is_reported(tmp_path):
         WritingService(workspace_root=tmp_path, model=model).produce(
             task, body_writer=successful_body('正文 [1]。'),
         )
-    assert model.components_calls == 2
+    assert model.components_calls == 3
 
 
 def test_template_override_is_used_for_both_model_calls(tmp_path):
@@ -852,7 +852,7 @@ def test_b_component_invalid_evidence_is_dropped_after_retries(tmp_path):
     task = make_task('B', tmp_path, component_data=None)
     output = WritingService(workspace_root=tmp_path, model=model).produce_components(task)
 
-    assert model.calls == 2
+    assert model.calls == 3
     assert '证据修复' in output.markdown
     assert any(event.kind == 'evidence_repair' for event in task.events)
     assert 'No abstract exists' not in output.markdown

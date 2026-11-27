@@ -243,7 +243,7 @@ def test_broken_model_body_is_rebuilt_to_match_c2_shape(tmp_path):
 
     # 修复前该 broken 正文会原样通过（C6 线上失败），修复后必须被确定性重建
     assert output.body != broken_c2_body()
-    assert model.body_calls == 2
+    assert model.body_calls == 3
     assert any(event.kind == 'c2_body_rebuilt' for event in task.events)
     assert_c2_structure_ok(output.body)
 

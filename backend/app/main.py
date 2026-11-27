@@ -715,8 +715,8 @@ def resume_failed_generate(
         raise HTTPException(status_code=404, detail='Task not found')
     mode_answer = db.query(TaskAnswer).filter_by(task_id=task.id, card_id='mode').one_or_none()
     mode = str((mode_answer.value if mode_answer else {}).get('mode', ''))
-    if task.state != 'error' or task.progress is None or task.progress.stage != 'generate' or mode != 'B':
-        raise HTTPException(status_code=409, detail='Only a failed B generate stage can be resumed')
+    if task.state != 'error' or task.progress is None or task.progress.stage != 'generate' or mode not in {'B', 'D'}:
+        raise HTTPException(status_code=409, detail='Only a failed B/D generate stage can be resumed')
     resumed = db.query(TaskEvent).filter(
         TaskEvent.task_id == task.id,
         TaskEvent.event_type == 'generate_resume_requested',

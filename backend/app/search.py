@@ -212,6 +212,16 @@ def _matches_query(text, query):
     return bool(tokens) and all(token in normalized_text for token in tokens)
 
 
+def _matches_query_relaxed(text, query):
+    tokens = _query_tokens(query)
+    if not tokens:
+        return False
+    normalized_text = unicodedata.normalize('NFKC', text or '').casefold()
+    hits = sum(token in normalized_text for token in tokens)
+    required = max(1, (len(tokens) + 1) // 2)
+    return hits >= required and (hits >= 2 or len(tokens) == 1)
+
+
 def _lexical_relevance_score(title, abstract, term_sets):
     """Score the best matching query using only deterministic lexical evidence."""
 
@@ -411,7 +421,7 @@ def _finish_paper(paper):
     return paper
 
 
-def merge_records(records, limit=MAX_POOL_SIZE, from_year=None, terms=None, mode='A'):
+def merge_records(records, limit=MAX_POOL_SIZE, from_year=None, terms=None, mode='A', min_pool=0):
     """Merge identities, backfill real fields, filter, select, then number publicly."""
 
     mode = str(mode).upper()
@@ -454,6 +464,7 @@ def merge_records(records, limit=MAX_POOL_SIZE, from_year=None, terms=None, mode
         groups.setdefault(find(index), []).append(normalized[index])
 
     eligible = []
+    valid_candidates = []
     for group in groups.values():
         paper = _merge_group(group)
         if not paper['_title_key'] or paper['is_retracted'] or paper['_force_exclude']:
@@ -462,6 +473,7 @@ def merge_records(records, limit=MAX_POOL_SIZE, from_year=None, terms=None, mode
             continue
         if from_year is not None and (paper.get('year') is None or paper['year'] < from_year):
             continue
+        valid_candidates.append(paper)
 
         if terms is not None:
             term_sets = [list(terms)]
@@ -479,6 +491,27 @@ def merge_records(records, limit=MAX_POOL_SIZE, from_year=None, terms=None, mode
             ):
                 continue
         eligible.append(paper)
+
+    if min_pool and len(eligible) < min_pool:
+        selected_keys = {paper['_title_key'] for paper in eligible}
+        for paper in valid_candidates:
+            if len(eligible) >= min_pool:
+                break
+            if paper['_title_key'] in selected_keys:
+                continue
+            term_sets = [list(terms)] if terms is not None else (paper.get('_query_term_sets') or [])
+            text = (paper.get('title') or '') + '\n' + (paper.get('abstract') or '')
+            if not any(
+                _matches_query_relaxed(text, query)
+                for term_set in term_sets
+                for query in term_set
+            ):
+                continue
+            paper['_relevance_score'] = _lexical_relevance_score(
+                paper.get('title'), paper.get('abstract'), term_sets
+            )
+            eligible.append(paper)
+            selected_keys.add(paper['_title_key'])
 
     eligible.sort(key=lambda paper: _selection_key(paper, mode))
     selected = [_finish_paper(paper) for paper in eligible[:limit]]
@@ -696,6 +729,7 @@ class SearchService:
                 limit=self.limit,
                 from_year=request.from_year if scope == 'limited' else None,
                 mode=request.mode,
+                min_pool=10 if request.mode == 'D' else 0,
             )
             pool.update({
                 'scope': scope,

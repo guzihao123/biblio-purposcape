@@ -283,3 +283,24 @@ def test_snapshot_artifacts_are_read_only_and_sandboxed(client, database, tmp_pa
     assert report.headers['content-disposition'].startswith('attachment')
     assert client.get(f'/api/snapshots/{task_id}/{token}/artifacts/..%2Fsecret').status_code == 404
     assert client.post(f'/api/snapshots/{task_id}/{token}/artifacts/desktop.html', content='changed').status_code == 405
+
+
+def test_failed_d_generate_can_resume_with_capability(client, database, monkeypatch):
+    _, task_id, token = seed_failed_b_task(database)
+    with database.session_factory() as db:
+        answer = db.query(TaskAnswer).filter_by(task_id=task_id, card_id='mode').one()
+        answer.value = {'mode': 'D'}
+        db.commit()
+    calls = []
+    monkeypatch.setattr(
+        'app.main.queue_adapter.enqueue_stage',
+        lambda task_id, stage, session_id=None: calls.append(stage),
+    )
+
+    response = client.post(
+        f'/api/tasks/{task_id}/resume-generate',
+        headers={'X-Snapshot-Token': token},
+    )
+
+    assert response.status_code == 200
+    assert calls == ['recover_generate']

@@ -970,3 +970,35 @@ def test_mode_e_is_supported_for_search_request_and_pool_merging():
 
     with pytest.raises(ValueError):
         SearchRequest(terms=['urban flooding'], from_year=None, mode='F')
+
+
+def test_mode_d_relaxes_partial_query_matches_when_pool_is_too_small():
+    terms = [
+        '"traffic accident" AND "causal analysis"',
+        '"human error" AND "traffic safety" OR "driver behavior"',
+    ]
+    records = []
+    for index in range(12):
+        if index % 2 == 0:
+            title = f'Traffic accident causal study {index}'
+            abstract = 'The traffic accident causal study identifies contributing factors.'
+        else:
+            title = f'Human error traffic safety study {index}'
+            abstract = 'Human error and traffic safety research notes without the final concept.'
+        records.append({
+            'id': f'fixture:d-relax-{index}',
+            'doi': f'10.1000/d-relax-{index}',
+            'title': title,
+            'abstract': abstract,
+            'year': 2025,
+            'type': 'article',
+            'cited_by_count': index,
+            'source': 'openalex',
+        })
+
+    strict = merge_records(records, limit=12, mode='D', terms=terms)
+    relaxed = merge_records(records, limit=12, mode='D', terms=terms, min_pool=10)
+
+    assert strict['count'] == 0
+    assert relaxed['count'] == 10
+    assert all(paper['claim_eligible'] for paper in relaxed['papers'])
