@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
-import type { RefObject } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 
 const INTRO_SESSION_KEY = 'jspi-school-badge-intro-played'
 
@@ -16,20 +15,23 @@ function shouldPlayIntro() {
 
 interface SchoolBadgeIntroProps {
   source: string
-  targetRef: RefObject<HTMLDivElement | null>
+  target: HTMLDivElement | null
   onActiveChange?: (active: boolean) => void
 }
 
-export function SchoolBadgeIntro({ source, targetRef, onActiveChange }: SchoolBadgeIntroProps) {
+export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadgeIntroProps) {
   const introRef = useRef<HTMLImageElement>(null)
   const [enabled] = useState(shouldPlayIntro)
   const [finished, setFinished] = useState(false)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!enabled) return
     const intro = introRef.current
-    const target = targetRef.current
     if (!intro || !target) return
+
+    // Hide the target before the first paint so it cannot play a separate
+    // entrance while the shared badge asset is still downloading.
+    target.classList.add('school-badge--intro-pending', 'school-badge--intro-static')
 
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     let disposed = false
@@ -135,7 +137,7 @@ export function SchoolBadgeIntro({ source, targetRef, onActiveChange }: SchoolBa
       target.classList.remove('school-badge--intro-pending', 'school-badge--intro-static')
       releaseBackdrop()
     }
-  }, [enabled, onActiveChange, targetRef])
+  }, [enabled, onActiveChange, target])
 
   if (!enabled || finished) return null
   return (
