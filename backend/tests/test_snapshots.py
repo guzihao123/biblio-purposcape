@@ -148,7 +148,7 @@ def test_failed_b_generate_can_resume_once_with_capability(client, database, mon
 
     assert response.status_code == 200
     assert response.json()['report_url'] == f'/tasks/{task_id}/report'
-    assert calls and calls[0][0:2] == (task_id, 'generate')
+    assert calls and calls[0][0:2] == (task_id, 'recover_generate')
     assert client.post(
         f'/api/tasks/{task_id}/resume-generate',
         headers={'X-Snapshot-Token': token},
@@ -169,6 +169,26 @@ def test_failed_b_generate_can_resume_once_with_capability(client, database, mon
     )
     assert retry.status_code == 200
     assert len(calls) == 2
+
+
+def test_resume_uses_existing_artifacts_when_web_pool_is_present(client, database, tmp_path, monkeypatch):
+    _, task_id, token = seed_failed_b_task(database)
+    directory = tmp_path / 'artifacts' / task_id
+    directory.mkdir(parents=True)
+    (directory / 'papers.json').write_text('{"papers": []}', encoding='utf-8')
+    calls = []
+    monkeypatch.setattr(
+        'app.main.queue_adapter.enqueue_stage',
+        lambda task_id, stage, session_id=None: calls.append(stage),
+    )
+
+    response = client.post(
+        f'/api/tasks/{task_id}/resume-generate',
+        headers={'X-Snapshot-Token': token},
+    )
+
+    assert response.status_code == 200
+    assert calls == ['generate']
 
 
 def test_resume_generate_rejects_invalid_capability_and_non_failed_task(client, database, monkeypatch):

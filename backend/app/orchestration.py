@@ -623,6 +623,52 @@ class Orchestrator:
             },
         }
 
+    def recover_generate_stage(self, task, stage_input):
+        answers = self._answers(stage_input)
+        mode = self._mode(answers)
+        terms = answers.get('terms', {}).get('terms') or []
+        from_year = self._from_year(answers)
+        task_dir = self.artifact_root / task.id
+        task_dir.mkdir(parents=True, exist_ok=True)
+        report_stage_phase('recover_generate', 'retrieve')
+        pools = self.search_factory(task_dir).run(SearchRequest(
+            terms=terms,
+            from_year=from_year,
+            mode=self._search_mode(mode),
+            direction=answers.get('direction', {}).get('direction', ''),
+        ))
+        analyzer = self.analysis_factory(self.model)
+
+        def analyze(paper_pool):
+            workers = max(1, int(os.environ.get('ANALYSIS_CONCURRENCY', '1')))
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                classify_future = pool.submit(analyzer.classify, paper_pool)
+                votes_future = pool.submit(analyzer.extract_factor_votes, paper_pool)
+                relations_future = pool.submit(analyzer.extract_relations, paper_pool)
+                classified = classify_future.result()
+                factor_votes = [asdict(vote) for vote in votes_future.result()]
+                relations = [asdict(relation) for relation in relations_future.result()]
+            return {'classify': classified, 'factor_votes': factor_votes, 'relations': relations}
+
+        analysis_limit = self._paper_limit(mode)
+        analysis = {'all': analyze(pools['unlimited']['papers'][:analysis_limit])}
+        if from_year is not None:
+            analysis['limited'] = analyze(pools['limited']['papers'][:analysis_limit])
+        (task_dir / 'analysis.json').write_text(json.dumps(analysis, ensure_ascii=False, indent=2), encoding='utf-8')
+        report_stage_phase('recover_generate', 'stats')
+        stats = self.stats_runner(task_dir, terms, from_year)
+        (task_dir / 'stats.json').write_text(json.dumps(stats, ensure_ascii=False, indent=2), encoding='utf-8')
+        result = self.generate_stage(task, stage_input)
+        checkpoint = dict(result.get('checkpoint') or {})
+        checkpoint.update({
+            'recovered_search': True,
+            'graph_artifacts': 0,
+            'limited_count': pools['limited']['count'],
+            'unlimited_count': pools['unlimited']['count'],
+        })
+        result['checkpoint'] = checkpoint
+        return result
+
     def _writing_task(self, task, answers, mode, papers, analysis, task_id=None, materials=None):
         project = dict(answers.get('mode', {}).get('project', {}))
         theme = answers.get('mode', {}).get('theme')
@@ -967,4 +1013,5 @@ def register_stage_services():
 
     orchestrator = Orchestrator()
     STAGE_SERVICES['search'] = orchestrator.search_stage
+    STAGE_SERVICES['recover_generate'] = orchestrator.recover_generate_stage
     STAGE_SERVICES['generate'] = orchestrator.generate_stage

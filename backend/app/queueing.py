@@ -255,6 +255,7 @@ def _record_failure_in_new_session(
 def _consume_stage_quotas(db, task, stage, input_hash):
     operations = {
         'search': ('retrieval', 'model'),
+        'recover_generate': ('retrieval', 'model'),
         'generate': ('model',),
     }.get(stage, ())
     if not operations:

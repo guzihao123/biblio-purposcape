@@ -731,14 +731,15 @@ def resume_failed_generate(
             raise HTTPException(status_code=409, detail='Generate stage was already resumed')
     task.state = 'generating'
     db.commit()
+    stage = 'generate' if (ArtifactStore().root / task.id / 'papers.json').is_file() else 'recover_generate'
     try:
-        queue_adapter.enqueue_stage(task.id, 'generate', session_id=task.session_id)
+        queue_adapter.enqueue_stage(task.id, stage, session_id=task.session_id)
     except QueueEnqueueError:
         raise HTTPException(status_code=503, detail='Task could not be queued; retry later') from None
     db.add(TaskEvent(
         task_id=task.id,
         event_type='generate_resume_requested',
-        payload={'stage': 'generate', 'mode': mode},
+        payload={'stage': stage, 'mode': mode},
     ))
     db.commit()
     return {'queued': True, 'report_url': f'/tasks/{task.id}/report'}
