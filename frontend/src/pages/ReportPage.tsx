@@ -9,6 +9,8 @@ const downloadLabels: Record<string, string> = {
   '标书-文献综述分析.docx': '下载 Word 报告',
   '调研报告.docx': '下载 Word 报告',
   'report.docx': '下载 Word 报告',
+  'C1_引言.docx': '下载 C1 引言 Word',
+  'C2_文献综述.docx': '下载 C2 文献综述 Word',
   'slides.pptx': '下载 PPT',
   'dialogue.json': '下载对话要点',
   'verify_report.txt': '查看证据复核',

@@ -744,6 +744,45 @@ class Orchestrator:
             custom_purpose=answers.get('mode', {}).get('custom', ''),
         )
 
+    def _write_c_pair_word_fallback(self, task, task_dir, mode, source_name, output_name,
+                                    written, papers, answers):
+        try:
+            source = task_dir / source_name
+            if not source.is_file():
+                return None
+            body = source.read_text(encoding='utf-8')
+            if not body.strip():
+                return None
+            subtask_id = f'{task.id}-{mode}-word'
+            subtask_dir = self.artifact_root / subtask_id
+            subtask_dir.mkdir(parents=True, exist_ok=True)
+            ledger_path = self.artifact_root / f'{task.id}-{mode}' / 'evidence_ledger.md'
+            ledger = ledger_path.read_text(encoding='utf-8') if ledger_path.is_file() else ''
+            output = written.get(mode)
+            delivery_task = DeliveryTask(
+                id=subtask_id,
+                mode=mode,
+                direction=answers.get('direction', {}).get('direction', ''),
+                papers=papers,
+                body=body,
+                evidence_ledger=ledger,
+                components=getattr(getattr(output, 'components', None), 'data', {}) if output else {},
+                outline=getattr(output, 'outline', '') if output else '',
+                sample=getattr(output, 'sample', '') if output else '',
+                delivery_form='A',
+                search_log=(task_dir / 'search_log.md').read_text(encoding='utf-8') if (task_dir / 'search_log.md').exists() else '',
+                requirements=[],
+            )
+            self.delivery_factory(self.artifact_root).deliver(delivery_task)
+            candidates = sorted(subtask_dir.glob('*.docx'))
+            if not candidates:
+                return None
+            target = task_dir / output_name
+            shutil.copyfile(candidates[0], target)
+            return target
+        except Exception:
+            return None
+
     def _generate_c_pair(self, task, answers, papers, analysis, version):
         task_dir = self.artifact_root / task.id
         written = {}
@@ -853,6 +892,12 @@ class Orchestrator:
 
         if not can_combine:
             failures.append('C1+C2 独立交付、衔接检查或根目录复核未通过，已阻止合并交付')
+            self._write_c_pair_word_fallback(
+                task, task_dir, 'C1', 'C1_引言.md', 'C1_引言.docx', written, papers, answers,
+            )
+            self._write_c_pair_word_fallback(
+                task, task_dir, 'C2', 'C2_文献综述.md', 'C2_文献综述.docx', written, papers, answers,
+            )
             report_stage_phase('generate', 'upload')
             synced = self._sync_artifacts(task_dir)
             return {
