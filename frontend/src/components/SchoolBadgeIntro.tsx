@@ -172,6 +172,17 @@ export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadge
     }
   }, [enabled, onActiveChange, target])
 
+  const syncSoundOffset = () => {
+    const audio = audioRef.current
+    if (!audio || audio.paused || audio.readyState < HTMLMediaElement.HAVE_METADATA) return
+    const elapsed = Math.min(Math.max((performance.now() - startedAtRef.current) / 1000, 0), 5.55)
+    try {
+      if (Math.abs(audio.currentTime - elapsed) > 0.12) audio.currentTime = elapsed
+    } catch {
+      // Playback continues even if the browser has not exposed a seekable range yet.
+    }
+  }
+
   const toggleSound = () => {
     const audio = audioRef.current
     if (!audio) return
@@ -181,13 +192,8 @@ export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadge
     }
 
     audio.volume = 0.5
-    const elapsed = Math.min(Math.max((performance.now() - startedAtRef.current) / 1000, 0), 5.55)
-    try {
-      if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) audio.currentTime = elapsed
-    } catch {
-      // Some browsers expose metadata before allowing a seek; playback still works.
-    }
     void audio.play().catch(() => setSoundEnabled(false))
+    syncSoundOffset()
   }
 
   if (!enabled || finished) return null
@@ -231,6 +237,7 @@ export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadge
         src={introSound}
         preload="auto"
         aria-hidden="true"
+        onLoadedMetadata={syncSoundOffset}
         onPlay={() => setSoundEnabled(true)}
         onPause={() => setSoundEnabled(false)}
         onEnded={() => setSoundEnabled(false)}
