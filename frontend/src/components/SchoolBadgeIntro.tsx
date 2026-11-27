@@ -245,6 +245,7 @@ export function SchoolBadgeIntro({ source, target, onActiveChange }: SchoolBadge
         aria-hidden="true"
         draggable="false"
       />
+      <span className="school-badge-intro__light" aria-hidden="true" />
       <div className="school-badge-scene__controls" role="group" aria-label="开场动画控制">
         <button
           type="button"

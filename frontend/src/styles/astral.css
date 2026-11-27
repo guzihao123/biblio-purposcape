@@ -739,6 +739,34 @@ code,
   animation: schoolBadgeIntro 5600ms linear both;
 }
 
+.school-badge-intro__light {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: min(110vmin, 1100px);
+  height: min(110vmin, 1100px);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(190, 240, 255, 0.42) 0%,
+    rgba(105, 205, 255, 0.24) 24%,
+    rgba(50, 135, 235, 0.1) 46%,
+    rgba(20, 80, 180, 0.035) 62%,
+    transparent 72%
+  );
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate3d(-50%, -50%, 0) scale(0.28);
+  will-change: transform, opacity;
+}
+
+.school-badge-scene.is-running .school-badge-intro__light {
+  visibility: visible;
+  animation: schoolBadgeLight 5600ms linear both;
+}
+
 .school-badge-scene__controls {
   position: absolute;
   z-index: 3;

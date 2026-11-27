@@ -208,6 +208,25 @@
   }
 }
 
+@keyframes schoolBadgeLight {
+  0%, 6% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) scale(0.28);
+  }
+  20% {
+    opacity: 0.92;
+    transform: translate3d(-50%, -50%, 0) scale(0.76);
+  }
+  38%, 50% {
+    opacity: 0.68;
+    transform: translate3d(-50%, -50%, 0) scale(1.06);
+  }
+  70%, 100% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) scale(1.34);
+  }
+}
+
 @keyframes schoolBadgeVeil {
   0%, 52% { opacity: 1; }
   74%, 100% { opacity: 0; }
