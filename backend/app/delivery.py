@@ -22,6 +22,29 @@ WORD_FILENAMES = {
     'E': '综述初稿.docx',
 }
 
+
+def _word_topic(direction):
+    topic = re.sub(r'[\s/\\:*?"<>|]+', '', str(direction or ''))
+    return topic[:32] or '未命名主题'
+
+
+def word_filename(task):
+    """Stable internal fallback plus the user-facing mode-specific Word names."""
+    mode = str(task.mode or '').upper()
+    topic = _word_topic(getattr(task, 'direction', ''))
+    if mode in {'A', 'A_DIALOGUE'}:
+        return f'选题摸底-{topic}.docx'
+    if mode == 'B':
+        return f'{topic}项目申请书.docx'
+    if mode == 'C1':
+        return f'{topic}论文引言.docx'
+    if mode == 'C2':
+        return f'{topic}文献综述.docx'
+    components = getattr(task, 'components', None) or {}
+    if mode == 'E' and isinstance(components, dict) and {'C1', 'C2'} <= set(components):
+        return f'{topic}论文引言与文献综述.docx'
+    return WORD_FILENAMES.get(mode, '综述初稿.docx')
+
 WORD_RANGES = {
     'A': '1500-2500',
     'A_DIALOGUE': '1500-4000',
@@ -1025,7 +1048,7 @@ class DeliveryService:
 
         report_stage_phase('generate', 'office')
         if form in {'A', 'ALL'}:
-            word_name = WORD_FILENAMES.get(task.mode, '综述初稿.docx')
+            word_name = word_filename(task)
             report_path = task_dir / word_name
             _write_docx(task, body, report_path)
             artifacts[word_name] = report_path

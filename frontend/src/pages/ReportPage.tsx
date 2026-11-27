@@ -62,7 +62,9 @@ export function ReportPage({ taskId }: { taskId: string }) {
         </section>
         <nav className="download-list" aria-label="交付文件下载">
           {report.artifacts.map((artifact) => {
-            const label = downloadLabels[artifact.name] ?? (artifact.name.endsWith('组会汇报.pptx') ? '下载 PPT' : undefined)
+            const label = downloadLabels[artifact.name]
+              ?? (artifact.name.endsWith('.pptx') ? '下载 PPT' : undefined)
+              ?? (artifact.name.endsWith('.docx') ? '下载 Word 报告' : undefined)
             if (!label) return null
             return <a key={artifact.name} className="full-power-button" href={artifactUrl(artifact.url)} download>{label}</a>
           })}

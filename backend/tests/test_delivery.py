@@ -80,6 +80,10 @@ def make_task(form='ALL', mode='A', body=None):
     )
 
 
+
+def word_path(result):
+    return next(path for name, path in result.artifacts.items() if name.endswith('.docx'))
+
 def passing_reference_checker(papers_path, output_path):
     Path(output_path).write_text('# 著录核验\n\n离线测试：两条题录均已核对。\n', encoding='utf-8')
     return {'clean': True, 'issues': []}
@@ -152,7 +156,7 @@ def test_docx_skips_duplicate_title_from_the_body(tmp_path):
     result = service(tmp_path).deliver(make_task(body=body))
     from docx import Document
 
-    texts = [paragraph.text for paragraph in Document(result['综述初稿.docx']).paragraphs]
+    texts = [paragraph.text for paragraph in Document(word_path(result)).paragraphs]
     assert texts[0] == '城市内涝与地下车库韧性'
     assert not any(text.startswith('城市内涝与地下车库韧性｜模式') for text in texts)
 
@@ -161,7 +165,7 @@ def test_docx_and_pptx_are_real_openable_files(tmp_path):
     task = make_task()
     result = service(tmp_path).deliver(task)
 
-    assert result['综述初稿.docx'].read_bytes().startswith(b'PK')
+    assert word_path(result).read_bytes().startswith(b'PK')
     assert result['城市内涝与地下车库韧性组会汇报.pptx'].read_bytes().startswith(b'PK')
     assert result['verify_report.txt'].exists()
     assert result['references_check.md'].exists()
@@ -170,7 +174,7 @@ def test_docx_and_pptx_are_real_openable_files(tmp_path):
 
     from docx import Document
     from pptx import Presentation
-    document = Document(result['综述初稿.docx'])
+    document = Document(word_path(result))
     presentation = Presentation(result['城市内涝与地下车库韧性组会汇报.pptx'])
     assert len(document.paragraphs) > 3
     assert 8 <= len(presentation.slides) <= 12
@@ -182,7 +186,7 @@ def test_pending_verification_is_highlighted_in_word_and_red_bold_in_ppt(tmp_pat
     from pptx import Presentation
     result = service(tmp_path).deliver(make_task())
 
-    document = Document(result['综述初稿.docx'])
+    document = Document(word_path(result))
     assert any(
         run.font.highlight_color == WD_COLOR_INDEX.YELLOW and '【待核实】' in run.text
         for paragraph in document.paragraphs
@@ -206,7 +210,7 @@ def test_pending_verification_is_highlighted_in_word_and_red_bold_in_ppt(tmp_pat
 def test_dialogue_delivery_has_bounded_points_and_representative_references(tmp_path):
     result = service(tmp_path).deliver(make_task(form='B'))
 
-    assert '综述初稿.docx' not in result.artifacts
+    assert not any(name.endswith('.docx') for name in result.artifacts)
     assert not any(name.endswith('.pptx') for name in result.artifacts)
     payload = result.dialogue
     assert 1 <= len(payload['key_points']) <= 8
@@ -332,7 +336,7 @@ def test_hcc_fixture_generates_openable_office_files_and_passes_preset_verifier(
     assert result.clean is True
     from docx import Document
     from pptx import Presentation
-    assert len(Document(result['综述初稿.docx']).paragraphs) > 20
+    assert len(Document(word_path(result)).paragraphs) > 20
     presentation = Presentation(result['肝细胞癌免疫治疗耐药组会汇报.pptx'])
     assert 8 <= len(presentation.slides) <= 12
     slide_text = '\n'.join(
@@ -396,8 +400,8 @@ def test_e_mode_delivery_a_writes_the_survey_word_file(tmp_path):
 
     assert result.clean is True
     assert '综述初稿.docx' in result.artifacts
-    assert result['综述初稿.docx'].read_bytes().startswith(b'PK')
-    assert len(Document(result['综述初稿.docx']).paragraphs) > 20
+    assert word_path(result).read_bytes().startswith(b'PK')
+    assert len(Document(word_path(result)).paragraphs) > 20
     assert result['综述初稿.md'].read_text(encoding='utf-8').startswith('# 肝癌免疫治疗耐药机制')
     assert '## 参考文献' in result['综述初稿.md'].read_text(encoding='utf-8')
 
@@ -435,3 +439,26 @@ def test_d_compression_preserves_reading_pages():
     for ref in (1, 3, 4, 6, 10):
         assert f'代表作精读 [{ref}]｜方法与数据' in titles
     assert len(comp) <= 15
+
+
+def test_word_filenames_follow_mode_specific_delivery_conventions():
+    from app.delivery import word_filename
+
+    def task(mode, direction='自动驾驶测试', components=None):
+        return DeliveryTask(
+            id=f'{mode}-name-task',
+            mode=mode,
+            direction=direction,
+            papers=[],
+            body='',
+            evidence_ledger='',
+            components=components or {},
+        )
+
+    assert word_filename(task('A')) == '选题摸底-自动驾驶测试.docx'
+    assert word_filename(task('A_DIALOGUE', direction='交通事故致因分析')) == '选题摸底-交通事故致因分析.docx'
+    assert word_filename(task('B', direction='自动驾驶测试')) == '自动驾驶测试项目申请书.docx'
+    assert word_filename(task('C1', direction='交通事故致因分析')) == '交通事故致因分析论文引言.docx'
+    assert word_filename(task('C2', direction='交通事故致因分析')) == '交通事故致因分析文献综述.docx'
+    assert word_filename(task('E', direction='交通事故致因分析', components={'C1': {}, 'C2': {}, 'linkage': {}})) == '交通事故致因分析论文引言与文献综述.docx'
+    assert word_filename(task('D', direction='自动驾驶测试')) == '调研报告.docx'

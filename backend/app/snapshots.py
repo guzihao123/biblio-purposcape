@@ -55,7 +55,10 @@ def _public_artifacts(directory, task_id, token):
     for path in sorted(directory.iterdir(), key=lambda item: item.name):
         if not path.is_file() or path.stat().st_size > 50_000_000:
             continue
-        if path.name not in PUBLIC_ARTIFACT_NAMES and not path.name.endswith('组会汇报.pptx'):
+        if (
+            path.name not in PUBLIC_ARTIFACT_NAMES
+            and not path.name.endswith(('.docx', '.pptx'))
+        ):
             continue
         artifacts.append({
             'name': path.name,

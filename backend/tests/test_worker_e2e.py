@@ -514,7 +514,9 @@ def test_c_pair_real_rq_worker_word_ppt_and_evidence(harness, scenario, form):
     assert '完成衔接与重复检查' in conformance
 
     if form == 'A':
-        word = task_dir / '综述初稿.docx'
+        words = list(task_dir.glob('*.docx'))
+        assert len(words) == 1
+        word = words[0]
         assert zipfile.is_zipfile(word)
         from docx import Document
         document = Document(word)
