@@ -455,6 +455,16 @@ class Orchestrator:
             raise RuntimeError('task Skill version is missing')
         return version
 
+    def _rehydrate_task_artifacts(self, task_dir):
+        if (task_dir / 'papers.json').is_file():
+            return 0
+        origin = (os.environ.get('WEB_API_ORIGIN') or '').rstrip('/')
+        secret = os.environ.get('WORKER_SHARED_SECRET') or ''
+        if not origin or not secret:
+            return 0
+        from app.artifact_rehydrate import ensure_task_artifacts
+        return ensure_task_artifacts(task_dir, origin, secret)
+
     def _sync_artifacts(self, task_dir):
         secret = os.environ.get('WORKER_SHARED_SECRET') or ''
         web_origin = (os.environ.get('WEB_API_ORIGIN') or '').rstrip('/')
@@ -848,6 +858,7 @@ class Orchestrator:
         answers = self._answers(stage_input)
         mode = self._mode(answers)
         task_dir = self.artifact_root / task.id
+        rehydrated = self._rehydrate_task_artifacts(task_dir)
         papers = json.loads((task_dir / 'papers.json').read_text(encoding='utf-8'))['papers']
         papers = papers[:self._paper_limit(mode if mode != 'C1+C2' else 'C')]
         analysis_document = json.loads((task_dir / 'analysis.json').read_text(encoding='utf-8')) if (task_dir / 'analysis.json').exists() else {}
@@ -936,6 +947,7 @@ class Orchestrator:
             'failures': delivered.failures,
             'warnings': warnings,
             'storage_synced': synced,
+            'artifacts_rehydrated': rehydrated,
         }
         if writing_mode == 'B':
             checkpoint['materials'] = {'accepted': len(materials), 'rejected': rejected_materials}

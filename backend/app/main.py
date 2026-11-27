@@ -1,4 +1,5 @@
 import hashlib
+import hmac
 import os
 import subprocess
 import sys
@@ -82,6 +83,55 @@ async def put_internal_artifact(
         request.headers.get('content-type') or 'application/octet-stream',
     )
     return {'ok': True, **result}
+
+
+@app.get('/api/internal/artifacts/{task_id}')
+def list_internal_artifacts(
+    task_id: str,
+    x_worker_token: str = Header(default=''),
+    db: Session = Depends(get_db),
+):
+    secret = os.environ.get('WORKER_SHARED_SECRET') or ''
+    if not secret or not hmac.compare_digest(x_worker_token, secret):
+        raise HTTPException(status_code=403, detail='worker_unauthorized')
+    try:
+        validate_task_id(task_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail='Artifact not found') from None
+    if db.get(Task, task_id) is None:
+        raise HTTPException(status_code=404, detail='Artifact not found')
+    store = ArtifactStore()
+    directory = store.root / task_id
+    artifacts = []
+    if directory.is_dir():
+        for path in sorted(directory.iterdir(), key=lambda item: item.name):
+            try:
+                store._safe_file(task_id, path.name)
+            except HTTPException:
+                continue
+            artifacts.append(path.name)
+    return {'artifacts': artifacts}
+
+
+@app.get('/api/internal/artifacts/{task_id}/{filename:path}')
+def download_internal_artifact(
+    task_id: str,
+    filename: str,
+    x_worker_token: str = Header(default=''),
+    db: Session = Depends(get_db),
+):
+    secret = os.environ.get('WORKER_SHARED_SECRET') or ''
+    if not secret or not hmac.compare_digest(x_worker_token, secret):
+        raise HTTPException(status_code=403, detail='worker_unauthorized')
+    try:
+        validate_task_id(task_id)
+        validate_filename(filename)
+    except ValueError:
+        raise HTTPException(status_code=404, detail='Artifact not found') from None
+    if db.get(Task, task_id) is None:
+        raise HTTPException(status_code=404, detail='Artifact not found')
+    path = ArtifactStore()._safe_file(task_id, filename)
+    return FileResponse(path, filename=path.name, content_disposition_type='attachment')
 
 
 @app.get('/api/health')

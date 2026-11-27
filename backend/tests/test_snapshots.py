@@ -19,6 +19,7 @@ from app.snapshots import snapshot_token
 def configure_snapshot_environment(monkeypatch, tmp_path):
     monkeypatch.setenv('SESSION_SECRET', 'snapshot-test-session-secret')
     monkeypatch.setenv('ADMIN_TOKEN', 'snapshot-test-admin-token')
+    monkeypatch.setenv('WORKER_SHARED_SECRET', 'snapshot-test-worker-secret')
     monkeypatch.setenv('ARTIFACT_ROOT', str(tmp_path / 'artifacts'))
     monkeypatch.delenv('TASK_STORE_AUTHORITY', raising=False)
     get_settings.cache_clear()
@@ -171,6 +172,28 @@ def test_resume_generate_rejects_invalid_capability_and_non_failed_task(client, 
         f'/api/tasks/{task_id}/resume-generate',
         headers={'X-Snapshot-Token': token},
     ).status_code == 409
+
+
+def test_internal_artifact_recovery_requires_worker_token(client, database, tmp_path):
+    _, task_id = seed_completed_task(database, tmp_path)
+    worker_headers = {'X-Worker-Token': 'snapshot-test-worker-secret'}
+
+    assert client.get(f'/api/internal/artifacts/{task_id}').status_code == 403
+    listing = client.get(f'/api/internal/artifacts/{task_id}', headers=worker_headers)
+    assert listing.status_code == 200
+    assert 'papers.json' not in listing.json()['artifacts']
+    assert 'desktop.html' in listing.json()['artifacts']
+
+    download = client.get(
+        f'/api/internal/artifacts/{task_id}/desktop.html',
+        headers=worker_headers,
+    )
+    assert download.status_code == 200
+    assert download.text == '<html><body>snapshot dashboard</body></html>'
+    assert client.get(
+        f'/api/internal/artifacts/{task_id}/..%2Fsecret',
+        headers=worker_headers,
+    ).status_code == 404
 
 
 def test_owner_can_mint_read_only_snapshot_link(client, database, tmp_path):
