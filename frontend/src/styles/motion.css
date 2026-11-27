@@ -180,3 +180,22 @@
   55% { opacity: 0.72; }
   100% { opacity: 0.28; transform: scale(1.12); }
 }
+
+@keyframes schoolBadgeIntro {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--school-intro-x), var(--school-intro-y), 0) scale(var(--school-intro-scale-start));
+  }
+  15% {
+    opacity: 1;
+    transform: translate3d(var(--school-intro-x), var(--school-intro-y), 0) scale(var(--school-intro-scale));
+  }
+  42% {
+    opacity: 1;
+    transform: translate3d(var(--school-intro-x), var(--school-intro-y), 0) scale(var(--school-intro-scale));
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
