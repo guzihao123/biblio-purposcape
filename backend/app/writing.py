@@ -1,3 +1,4 @@
+import os
 import re
 from copy import deepcopy
 from dataclasses import dataclass, field
@@ -2959,6 +2960,64 @@ def _style_reference_note(task):
     return reason if degraded else '已生成写法参考卡，只借结构不抄文字。'
 
 
+def _gate_exhausted_action():
+    return os.environ.get('WRITING_GATE_EXHAUSTED_ACTION', 'release').strip().lower()
+
+
+def _release_allowed(error):
+    """Integrity errors must still fail; only structure/format gates may release."""
+    text = str(error or '')
+    return not any(marker in text for marker in (
+        'material citation',
+        '非论文材料',
+        '必须至少引用一条（据材料',
+    ))
+
+
+def _release_body(task, components, last_result, last_error, errors):
+    mode = str(task.mode or '').upper()
+    text = ''
+    evidence = []
+    if isinstance(last_result, dict) and isinstance(last_result.get('text'), str):
+        text = last_result['text']
+        try:
+            evidence = _audit_items_with_quote_repair(
+                EvidenceAuditor(task.papers), last_result.get('evidence') or [], task.papers,
+            )
+        except WritingInputError:
+            evidence = []
+    if not text and isinstance(components, ComponentOutput):
+        try:
+            data = components.data if isinstance(components.data, dict) else {}
+            if mode == 'A':
+                text = _render_a(data)
+            elif mode == 'A_DIALOGUE':
+                text = _render_a_dialogue(data)
+            elif mode == 'B':
+                text = _render_b(task, data)
+            elif mode == 'C1':
+                text = _render_c1_body(task, '', 0)
+            elif mode == 'C2':
+                text = _render_c2(data, task)
+            elif mode == 'D':
+                text = _render_d(task, data)
+            evidence = EvidenceAuditor(task.papers).audit_data(data)
+        except (WritingInputError, KeyError, TypeError, ValueError):
+            text = ''
+            evidence = []
+    if not text.strip():
+        return None
+    text, removed = _strip_unsupported_citations(text, {item['ref'] for item in evidence})
+    text = _label_abstract_citations(text, evidence)
+    reason = '；'.join(str(error)[:120] for error in errors[-2:]) or str(last_error or '')[:240]
+    note = (
+        f'> 门控放行：三轮重写后仍未满足 {mode} 的结构/字数要求，以下为最佳结果，请人工复核。'
+        + (f'\n> 未通过项：{reason}' if reason else '')
+        + '\n\n'
+    )
+    return BodyOutput(text=note + text, evidence=evidence)
+
+
 class WritingService:
     def __init__(self, workspace_root, model=None, template_root=None, template_overrides=None):
         self.workspace_root = Path(workspace_root)
@@ -3679,6 +3738,18 @@ class WritingService:
                     payload={'reason': str(last_error)[:300] if last_error else ''},
                 ))
                 return rebuilt
+        if model_backed and _gate_exhausted_action() == 'release' and _release_allowed(last_error):
+            released = _release_body(task, components, last_result, last_error, attempt_errors)
+            if released is not None:
+                task.events.append(WritingEvent(
+                    kind='body_gate_released',
+                    payload={
+                        'mode': task.mode,
+                        'errors': attempt_errors[-3:],
+                        'stage': 'body',
+                    },
+                ))
+                return released
         raise last_error
 
     def _compact_b_body(self, task, text, errors):

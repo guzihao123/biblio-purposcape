@@ -33,6 +33,10 @@ services:
         value: /var/data/artifacts
       - key: SEED_BASE_SKILL
         value: "true"
+      - key: WRITING_GATE_EXHAUSTED_ACTION
+        value: release
+      - key: SEARCH_MIN_POOL
+        value: "10"
       - key: TASK_QUEUE_NAME
         value: landscape-v2
 
@@ -68,6 +72,10 @@ services:
         sync: false
       - key: ARTIFACT_ROOT
         value: /var/data/artifacts
+      - key: WRITING_GATE_EXHAUSTED_ACTION
+        value: release
+      - key: SEARCH_MIN_POOL
+        value: "10"
       - key: TASK_QUEUE_NAME
         value: landscape-v2
       - key: WEB_API_ORIGIN

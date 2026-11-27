@@ -340,7 +340,7 @@ def test_a_body_gap_without_evidence_is_rebuilt_with_pool_citation(tmp_path):
     class ShortABody:
         def complete_json(self, system_prompt, payload):
             assert payload['stage'] == 'body'
-            return {'body': '# 短稿\n\n领域骨架 [1]。', 'evidence': [EVIDENCE]}
+            return {'body': '# 项目甲\n\n过短论述 [1]。', 'evidence': [EVIDENCE]}
 
     output = WritingService(workspace_root=tmp_path, model=ShortABody()).produce(task)
 
@@ -366,3 +366,33 @@ def test_c1_overlength_rebuilt_body_is_trimmed_into_range(tmp_path):
 
     assert _c1_body_shape_errors(output.body) == []
     assert 800 <= _c1_word_count(output.body) <= 1200
+
+
+def test_body_gate_release_returns_best_effort_result(tmp_path, monkeypatch):
+    class ShortABody:
+        def complete_json(self, system_prompt, payload):
+            assert payload['stage'] == 'body'
+            return {'body': '# 项目甲\n\n过短论述 [1]。', 'evidence': [EVIDENCE]}
+
+    monkeypatch.setenv('WRITING_GATE_EXHAUSTED_ACTION', 'release')
+    task = make_task('B', tmp_path)
+    output = WritingService(workspace_root=tmp_path, model=ShortABody()).produce(task)
+
+    assert '门控放行' in output.body
+    assert any(event.kind == 'body_gate_released' for event in task.events)
+    assert output.body_path.exists()
+
+
+def test_body_gate_fail_action_still_raises(tmp_path, monkeypatch):
+    import pytest
+    from app.writing import WritingInputError
+
+    class ShortABody:
+        def complete_json(self, system_prompt, payload):
+            assert payload['stage'] == 'body'
+            return {'body': '# 项目甲\n\n过短论述 [1]。', 'evidence': [EVIDENCE]}
+
+    monkeypatch.setenv('WRITING_GATE_EXHAUSTED_ACTION', 'fail')
+    task = make_task('B', tmp_path)
+    with pytest.raises(WritingInputError):
+        WritingService(workspace_root=tmp_path, model=ShortABody()).produce(task)

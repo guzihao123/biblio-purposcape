@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 import re
 import shlex
 import subprocess
@@ -421,6 +422,15 @@ def _finish_paper(paper):
     return paper
 
 
+def min_pool_size():
+    raw = os.environ.get('SEARCH_MIN_POOL', '10')
+    try:
+        value = int(str(raw).strip())
+    except (TypeError, ValueError):
+        return 10
+    return max(0, value)
+
+
 def merge_records(records, limit=MAX_POOL_SIZE, from_year=None, terms=None, mode='A', min_pool=0):
     """Merge identities, backfill real fields, filter, select, then number publicly."""
 
@@ -729,7 +739,7 @@ class SearchService:
                 limit=self.limit,
                 from_year=request.from_year if scope == 'limited' else None,
                 mode=request.mode,
-                min_pool=10 if request.mode == 'D' else 0,
+                min_pool=min_pool_size(),
             )
             pool.update({
                 'scope': scope,

@@ -972,7 +972,8 @@ def test_mode_e_is_supported_for_search_request_and_pool_merging():
         SearchRequest(terms=['urban flooding'], from_year=None, mode='F')
 
 
-def test_mode_d_relaxes_partial_query_matches_when_pool_is_too_small():
+@pytest.mark.parametrize('mode', ['A', 'B', 'C1', 'C2', 'D', 'E'])
+def test_all_modes_relax_partial_query_matches_when_pool_is_too_small(mode):
     terms = [
         '"traffic accident" AND "causal analysis"',
         '"human error" AND "traffic safety" OR "driver behavior"',
@@ -996,8 +997,8 @@ def test_mode_d_relaxes_partial_query_matches_when_pool_is_too_small():
             'source': 'openalex',
         })
 
-    strict = merge_records(records, limit=12, mode='D', terms=terms)
-    relaxed = merge_records(records, limit=12, mode='D', terms=terms, min_pool=10)
+    strict = merge_records(records, limit=12, mode=mode, terms=terms)
+    relaxed = merge_records(records, limit=12, mode=mode, terms=terms, min_pool=10)
 
     assert strict['count'] == 0
     assert relaxed['count'] == 10
