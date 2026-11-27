@@ -1,3 +1,4 @@
+import json
 import os
 import re
 from copy import deepcopy
@@ -247,6 +248,7 @@ class WritingTask:
     project_input_path: str = 'direction'
     materials: list = field(default_factory=list)
     custom_purpose: str = ''
+    last_body_text: str = ''
     events: list = field(default_factory=list)
 
 
@@ -2581,7 +2583,7 @@ def _repair_component_evidence(value, papers):
                                 candidate = _repair_evidence_quotes([item], papers)[0]
                                 records = auditor.audit_items([candidate])
                             except (WritingInputError, IndexError):
-                                for ref in (item.get('refs') or []):
+                                for ref in ((item.get('refs') or []) if isinstance(item, dict) else []):
                                     try:
                                         dropped_refs.add(int(ref))
                                     except (TypeError, ValueError):
@@ -2620,7 +2622,11 @@ def _backfill_a_gap_evidence(data, papers):
         return data, 0
     candidate_refs = []
     for row in (data.get('gaps') or []) + (data.get('directions') or []):
+        if not isinstance(row, dict):
+            continue
         for item in row.get('evidence') or []:
+            if not isinstance(item, dict):
+                continue
             for ref in item.get('refs') or []:
                 try:
                     ref = int(ref)
@@ -2629,6 +2635,8 @@ def _backfill_a_gap_evidence(data, papers):
                 if ref in by_ref and ref not in candidate_refs:
                     candidate_refs.append(ref)
     for row in data.get('landscape') or []:
+        if not isinstance(row, dict):
+            continue
         for ref in row.get('paper_refs') or []:
             try:
                 ref = int(ref)
@@ -2696,7 +2704,11 @@ def _backfill_c1_gap_evidence(data, papers):
     eligible = list(by_ref.values())
     candidate_refs = []
     for row in (data.get('gaps') or []) + (data.get('paragraph_cards') or []):
+        if not isinstance(row, dict):
+            continue
         for item in row.get('evidence') or []:
+            if not isinstance(item, dict):
+                continue
             for ref in item.get('refs') or []:
                 try:
                     ref = int(ref)
@@ -3438,6 +3450,7 @@ class WritingService:
                 else:
                     evidence = auditor.audit_items(result.get('evidence') or [])
                 text = result['text']
+                task.last_body_text = text
                 if model_backed and task.mode.upper() == 'A_DIALOGUE':
                     text = _ensure_a_dialogue_intro(text, task)
                     text = _pad_a_dialogue_body(text, task)
@@ -3774,25 +3787,92 @@ class WritingService:
                     return response[key]
         return None
 
-    def produce(self, task, body_writer=None):
-        components = self.produce_components(task)
+    def _fallback_output(self, task, components, outline_sample, body, error):
         task_dir = self.workspace_root / task.id
         task_dir.mkdir(parents=True, exist_ok=True)
-        (task_dir / 'components.md').write_text(components.markdown, encoding='utf-8')
-        task.events.append(WritingEvent(kind='components_ready'))
+        mode = str(task.mode or '').upper()
+        data = task.component_data if isinstance(task.component_data, dict) else {}
+        try:
+            raw_data = json.dumps(data, ensure_ascii=False, indent=2)
+        except (TypeError, ValueError):
+            raw_data = str(data)
+        components_markdown = getattr(components, 'markdown', '') if components is not None else ''
+        if not components_markdown:
+            components_markdown = '## 降级构件\n\n' + (raw_data or '无可用构件数据')
+        outline = getattr(outline_sample, 'outline', '') if outline_sample is not None else ''
+        sample = getattr(outline_sample, 'sample', '') if outline_sample is not None else ''
+        body_text = getattr(body, 'text', '') if body is not None else ''
+        if not body_text:
+            body_text = task.last_body_text or components_markdown
+        if not body_text.strip():
+            body_text = '（本次生成没有返回可用正文，保留提纲与构件说明供人工复核。）'
+        reason = f'{type(error).__name__}: {error}'[:500]
+        if not outline.strip():
+            outline = f'# {task.direction or "研究主题"}｜降级交付提纲\n\n## 生成说明\n\n{reason}\n\n## 构件原文\n\n{components_markdown}'
+        if not sample.strip():
+            sample = body_text[:3000]
+        body_text = (
+            f'# {task.direction or "研究主题"}\n\n'
+            f'> 降级交付：生成流程未完成（{reason}），以下保留已生成的文字内容，请人工复核。\n\n'
+            + body_text
+        )
+        (task_dir / 'components.md').write_text(components_markdown, encoding='utf-8')
+        (task_dir / 'outline.md').write_text(outline, encoding='utf-8')
+        (task_dir / 'sample.md').write_text(sample, encoding='utf-8')
+        body_path = task_dir / BODY_FILES.get(mode, '综述初稿.md')
+        body_path.write_text(body_text, encoding='utf-8')
+        ledger = '| 论断 | 引用序号 | 摘要原句摘录 | 证据等级 |\n|---|---|---|---|\n'
+        (task_dir / 'evidence_ledger.md').write_text(ledger, encoding='utf-8')
+        task.events.append(WritingEvent(
+            kind='writing_fallback_delivered',
+            payload={'stage': 'produce', 'error': reason},
+        ))
+        return WritingOutput(
+            components=ComponentOutput(
+                mode=mode,
+                data=data,
+                markdown=components_markdown,
+                evidence=getattr(components, 'evidence', []) if components is not None else [],
+            ),
+            outline=outline,
+            sample=sample,
+            body=body_text,
+            body_path=body_path,
+            evidence=getattr(components, 'evidence', []) if components is not None else [],
+        )
 
-        outline_sample = self.produce_outline_and_sample(task, components)
-        (task_dir / 'outline.md').write_text(outline_sample.outline, encoding='utf-8')
-        task.events.append(WritingEvent(kind='outline_ready'))
-        (task_dir / 'sample.md').write_text(outline_sample.sample, encoding='utf-8')
-        task.events.append(WritingEvent(kind='sample_ready'))
+    def produce(self, task, body_writer=None):
+        model_backed = body_writer is None and self.model is not None
+        components = None
+        outline_sample = None
+        body = None
+        try:
+            components = self.produce_components(task)
+            task_dir = self.workspace_root / task.id
+            task_dir.mkdir(parents=True, exist_ok=True)
+            (task_dir / 'components.md').write_text(components.markdown, encoding='utf-8')
+            task.events.append(WritingEvent(kind='components_ready'))
 
-        if task.mode.upper() == 'C1' and str(task.target_journal or '').strip():
-            card, degraded, reason = style_reference_card(task)
-            (task_dir / STYLE_REFERENCE_FILE).write_text(card, encoding='utf-8')
-            task.events.append(WritingEvent(kind='style_reference_ready', payload={'degraded': degraded, 'reason': reason}))
+            outline_sample = self.produce_outline_and_sample(task, components)
+            (task_dir / 'outline.md').write_text(outline_sample.outline, encoding='utf-8')
+            task.events.append(WritingEvent(kind='outline_ready'))
+            (task_dir / 'sample.md').write_text(outline_sample.sample, encoding='utf-8')
+            task.events.append(WritingEvent(kind='sample_ready'))
 
-        body = self.write_body(task, components, outline_sample, body_writer)
+            if task.mode.upper() == 'C1' and str(task.target_journal or '').strip():
+                card, degraded, reason = style_reference_card(task)
+                (task_dir / STYLE_REFERENCE_FILE).write_text(card, encoding='utf-8')
+                task.events.append(WritingEvent(kind='style_reference_ready', payload={'degraded': degraded, 'reason': reason}))
+
+            body = self.write_body(task, components, outline_sample, body_writer)
+        except Exception as error:
+            if not (
+                model_backed
+                and _gate_exhausted_action() == 'release'
+                and _release_allowed(error)
+            ):
+                raise
+            return self._fallback_output(task, components, outline_sample, body, error)
         body_path = task_dir / BODY_FILES[components.mode]
         body_path.write_text(body.text, encoding='utf-8')
         evidence = components.evidence + body.evidence

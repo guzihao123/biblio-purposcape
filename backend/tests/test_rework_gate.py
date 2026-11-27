@@ -396,3 +396,47 @@ def test_body_gate_fail_action_still_raises(tmp_path, monkeypatch):
     task = make_task('B', tmp_path)
     with pytest.raises(WritingInputError):
         WritingService(workspace_root=tmp_path, model=ShortABody()).produce(task)
+
+
+def test_non_object_evidence_entries_do_not_crash_c1_backfill(tmp_path):
+    class MixedEvidence:
+        def complete_json(self, system_prompt, payload):
+            data = deepcopy(component_data('C1'))
+            data['gaps'][0]['evidence'] = [['not-an-object']]
+            return {'components': data}
+
+    task = make_task('C1', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=MixedEvidence()).produce_components(task)
+
+    assert 'Research Gap 分析表' in output.markdown
+    assert re.search(r'\[\d+\]', output.markdown)
+
+
+def test_non_object_evidence_entries_do_not_crash_a_backfill(tmp_path):
+    class MixedEvidence:
+        def complete_json(self, system_prompt, payload):
+            data = deepcopy(component_data('A'))
+            data['gaps'][0]['evidence'] = [['not-an-object']]
+            return {'components': data}
+
+    task = make_task('A', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=MixedEvidence()).produce_components(task)
+
+    assert '空白证据表' in output.markdown
+    assert re.search(r'\[\d+\]', output.markdown)
+
+
+def test_model_component_crash_is_released_as_full_degraded_report(tmp_path, monkeypatch):
+    class BrokenComponents:
+        def complete_json(self, system_prompt, payload):
+            return {'components': {'directions': [['not-a-dict']]}}
+
+    monkeypatch.setenv('WRITING_GATE_EXHAUSTED_ACTION', 'release')
+    task = make_task('A', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=BrokenComponents()).produce(task)
+
+    assert output.outline.strip()
+    assert output.sample.strip()
+    assert output.body.strip()
+    assert output.body_path.is_file()
+    assert any(event.kind == 'writing_fallback_delivered' for event in task.events)
