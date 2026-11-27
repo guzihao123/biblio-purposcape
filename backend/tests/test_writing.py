@@ -435,7 +435,7 @@ def test_b_support_heading_annotation_is_normalized_and_shape_passes():
     assert _b_body_shape_errors(normalized) == []
 
 
-def test_b_overlong_body_is_compacted_before_delivery(tmp_path):
+def test_b_overlong_body_is_repaired_before_delivery(tmp_path):
     class OverlongModel:
         def __init__(self):
             self.compactions = 0
@@ -452,9 +452,9 @@ def test_b_overlong_body_is_compacted_before_delivery(tmp_path):
     task = make_task('B', tmp_path, component_data=None, project={'name': '项目甲', 'goal': '目标乙'})
     output = WritingService(workspace_root=tmp_path, model=model).produce(task)
 
-    assert model.compactions == 1
+    assert model.compactions == 0
     assert 2000 <= _b_word_count(output.body) <= 3000
-    assert any(event.kind == 'b_body_compacted' for event in task.events)
+    assert any(event.kind == 'b_body_repaired' for event in task.events)
 
 
 def test_b_components_include_project_demand_mapping_and_six_link_chain(tmp_path):

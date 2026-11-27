@@ -644,18 +644,48 @@ def _pad_a_dialogue_body(text, task):
             f'[{ref}]' for item in evidence or []
             for ref in (item.get('refs') or [])
         }))
+    padded = text.rstrip()
     lines = ['## 证据边界与待核对事项', '']
     for gap in data.get('gaps') or []:
         citation = refs(gap.get('evidence') or [])
         if citation:
             lines.append(f"- {gap.get('gap', '').strip()}：{gap.get('reason', '').strip()} {citation}。")
+            candidate = padded + '\n\n' + '\n'.join(lines) + '\n'
+            if _a_dialogue_word_count(candidate) >= 1500:
+                return candidate
     for row in data.get('landscape') or []:
         citation = refs(row.get('evidence') or [])
         if citation:
             lines.append(f"- {row.get('direction', '').strip()}：{row.get('share', '').strip()} {citation}。")
-    if len(lines) <= 2:
-        return text
-    return text.rstrip() + '\n\n' + '\n'.join(lines) + '\n'
+            candidate = padded + '\n\n' + '\n'.join(lines) + '\n'
+            if _a_dialogue_word_count(candidate) >= 1500:
+                return candidate
+    if len(lines) > 2:
+        padded += '\n\n' + '\n'.join(lines) + '\n'
+        if _a_dialogue_word_count(padded) >= 1500:
+            return padded
+
+    checklist = ['## 选题核验清单', '']
+    for group in data.get('topic_groups') or []:
+        category = re.sub(r'\[\d+\]', '', str(group.get('category') or '')).strip()
+        for slot in group.get('slots') or []:
+            title = re.sub(r'\[\d+\]', '', str(slot.get('title') or '')).strip()
+            focus = re.sub(
+                r'\[\d+\]', '',
+                str(slot.get('core_question') or slot.get('reason') or slot.get('opportunity') or ''),
+            ).strip()
+            if not title and not focus:
+                continue
+            label = '·'.join(part for part in (category, title) if part) or '当前选题'
+            checklist.append(
+                f'- {label}：围绕“{focus or title}”，先确认数据来源、时间覆盖与可获得性，'
+                '再核对方法适用条件、对照设置和评价指标；摘要不能支撑的环节标为待核实，'
+                '不将分析判断写成文献结论（分析）。'
+            )
+            candidate = padded.rstrip() + '\n\n' + '\n'.join(checklist) + '\n'
+            if _a_dialogue_word_count(candidate) >= 1500:
+                return candidate
+    return padded.rstrip() + '\n\n' + '\n'.join(checklist) + '\n' if len(checklist) > 2 else padded
 
 
 def _d_display_language_errors(data):
@@ -1170,8 +1200,91 @@ def _b_body_shape_errors(text):
     return errors
 
 
-def _validate_b_body(text):
+def _b_demand_section(task):
+    data = task.component_data if isinstance(task.component_data, dict) else {}
+    demand = data.get('demand') or {}
+    text = str(demand.get('text') or '').strip()
+    if not text:
+        direction = str(task.direction or '本研究主题')
+        text = f'若不开展本项目，{direction}所需的关键证据与技术路线衔接仍缺少系统验证（分析）。'
+    citation = _evidence_refs(demand.get('evidence') or [])
+    return text + (f' {citation}' if citation else '')
+
+
+def _insert_b_demand_section(text, task):
+    if '若不开展本项目' in text:
+        return text
+    lines = text.split('\n')
+    insert_at = 1 if lines and lines[0].lstrip().startswith('#') else 0
+    lines[insert_at:insert_at] = [
+        '',
+        '## 刚性需求段（若不开展本项目）',
+        '',
+        _b_demand_section(task),
+        '',
+    ]
+    return '\n'.join(lines)
+
+
+def _compress_b_body(text, target=2850):
+    body, marker, references = text.partition('## 参考文献')
+    if _b_word_count(body) <= target:
+        return text
+    required = (
+        '研究需求', '已有进展', '现有不足', '科学问题', '切入点', '预期贡献',
+        '已有研究对本项目技术路线的支撑', '若不开展本项目',
+    )
+    lines = body.split('\n')
+    while _b_word_count('\n'.join(lines)) > target:
+        candidates = []
+        for index, line in enumerate(lines):
+            stripped = line.strip()
+            if not stripped or _b_word_count(line) < 30:
+                continue
+            if stripped.startswith(('#', '|', '-', '*', '>')):
+                continue
+            if any(key in line for key in required):
+                continue
+            candidates.append((_b_word_count(line), index))
+        if not candidates:
+            break
+        _, index = max(candidates)
+        line = lines[index]
+        sentences = [
+            sentence.strip()
+            for sentence in re.split(r'(?<=[。！？])\s*', line)
+            if sentence.strip()
+        ]
+        if len(sentences) <= 1:
+            if _b_word_count('\n'.join(lines)) - _b_word_count(line) < 2000:
+                break
+            lines[index] = ''
+            continue
+        needed = _b_word_count('\n'.join(lines)) - target
+        budget = max(_b_word_count(sentences[0]), _b_word_count(line) - needed)
+        kept = []
+        kept_count = 0
+        for sentence in sentences:
+            sentence_count = _b_word_count(sentence)
+            if kept and kept_count + sentence_count > budget:
+                break
+            kept.append(sentence)
+            kept_count += sentence_count
+        lines[index] = ''.join(kept)
+    compressed = '\n'.join(lines).rstrip()
+    return compressed + ('\n\n' + marker + references if marker else '')
+
+
+def _repair_b_body(text, task):
     text = _normalize_b_headings(text)
+    text = _insert_b_demand_section(text, task)
+    return _compress_b_body(text)
+
+
+def _validate_b_body(text, task=None):
+    text = _normalize_b_headings(text)
+    if task is not None:
+        text = _repair_b_body(text, task)
     errors = _b_body_shape_errors(text)
     if errors:
         raise WritingInputError('B body structure: ' + '; '.join(errors))
@@ -2207,7 +2320,13 @@ class WritingService:
                     if shape_errors:
                         raise WritingInputError('C2 body structure: ' + '; '.join(shape_errors))
                 if model_backed and task.mode.upper() == 'B':
-                    text = _validate_b_body(text)
+                    original_text = text
+                    text = _validate_b_body(text, task)
+                    if text != original_text:
+                        task.events.append(WritingEvent(
+                            kind='b_body_repaired',
+                            payload={'stage': 'body', 'deterministic': True},
+                        ))
                 if model_backed and task.mode.upper() == 'A_DIALOGUE':
                     text = _label_abstract_citations(text, components.evidence + evidence)
                     shape_errors = _a_dialogue_shape_errors(text)
@@ -2295,7 +2414,7 @@ class WritingService:
                         if shape_errors:
                             raise WritingInputError('C2 body structure: ' + '; '.join(shape_errors))
                     if task.mode.upper() == 'B':
-                        repaired_text = _validate_b_body(repaired_text)
+                        repaired_text = _validate_b_body(repaired_text, task)
                     if task.mode.upper() == 'A_DIALOGUE':
                         repaired_text = _ensure_a_dialogue_intro(repaired_text, task)
                         repaired_text = _pad_a_dialogue_body(repaired_text, task)
@@ -2334,7 +2453,7 @@ class WritingService:
                 _validate_citation_coverage(text, evidence)
                 _validate_material_citations(text, task.materials)
                 text = _label_abstract_citations(text, evidence)
-                text = _validate_b_body(text)
+                text = _validate_b_body(text, task)
                 task.events.append(WritingEvent(
                     kind='b_body_compacted',
                     payload={

@@ -30,6 +30,12 @@ from app.rate_limit import (
     normalize_idempotency_key,
 )
 from app.security import require_admin, require_owner, require_session, revoke_session
+from app.snapshots import (
+    artifact_content_type,
+    build_snapshot_payload,
+    resolve_snapshot_artifact,
+    valid_snapshot_token,
+)
 from app.skill_versions import SkillVersionError, SkillVersionService
 from app.task_flow import answer_card_with_decision
 from app.task_presenters import remote_task_payload, task_payload
@@ -584,6 +590,102 @@ def read_task_report(
         },
         'artifacts': ArtifactStore().list(task.id, session.id),
     }
+
+
+@app.post('/api/tasks/{task_id}/snapshots')
+def create_task_snapshot(
+    task_id: str,
+    db: Session = Depends(get_db),
+    session: InviteSession = Depends(require_session),
+):
+    task = _owned_task(task_id, session, db)
+    return build_snapshot_payload(db, task, ArtifactStore().root)
+
+
+def _snapshot_task(task_id, token, db):
+    task = db.get(Task, task_id)
+    if task is None or not valid_snapshot_token(task, token):
+        raise HTTPException(status_code=404, detail='Snapshot not found')
+    return task
+
+
+@app.get('/api/snapshots/{task_id}/{token}')
+def read_task_snapshot(
+    task_id: str,
+    token: str,
+    db: Session = Depends(get_db),
+):
+    task = _snapshot_task(task_id, token, db)
+    return build_snapshot_payload(db, task, ArtifactStore().root)
+
+
+@app.get('/api/snapshots/{task_id}/{token}/artifacts/{filename:path}')
+def read_snapshot_artifact(
+    task_id: str,
+    token: str,
+    filename: str,
+    db: Session = Depends(get_db),
+):
+    task = _snapshot_task(task_id, token, db)
+    try:
+        path = resolve_snapshot_artifact(ArtifactStore().root, task.id, filename)
+    except ValueError:
+        raise HTTPException(status_code=404, detail='Artifact not found') from None
+    inline = path.suffix.lower() in {'.html', '.svg'}
+    headers = {
+        'Cache-Control': 'private, no-store',
+        'X-Content-Type-Options': 'nosniff',
+    }
+    if inline:
+        headers['Content-Security-Policy'] = (
+            "sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox; "
+            "default-src 'self' data: blob: https:; "
+            "script-src 'self' 'unsafe-inline' https:; "
+            "style-src 'self' 'unsafe-inline' https:; "
+            "img-src 'self' data: blob: https:; "
+            "font-src 'self' data: https:"
+        )
+    return FileResponse(
+        path,
+        filename=path.name,
+        media_type=artifact_content_type(path.name),
+        content_disposition_type='inline' if inline else 'attachment',
+        headers=headers,
+    )
+
+
+@app.post('/api/tasks/{task_id}/resume-generate')
+def resume_failed_generate(
+    task_id: str,
+    x_snapshot_token: str = Header(default=''),
+    db: Session = Depends(get_db),
+):
+    task = db.get(Task, task_id)
+    if task is None or not valid_snapshot_token(task, x_snapshot_token):
+        raise HTTPException(status_code=404, detail='Task not found')
+    mode_answer = db.query(TaskAnswer).filter_by(task_id=task.id, card_id='mode').one_or_none()
+    mode = str((mode_answer.value if mode_answer else {}).get('mode', ''))
+    if task.state != 'error' or task.progress is None or task.progress.stage != 'generate' or mode != 'B':
+        raise HTTPException(status_code=409, detail='Only a failed B generate stage can be resumed')
+    resumed = db.query(TaskEvent).filter(
+        TaskEvent.task_id == task.id,
+        TaskEvent.event_type == 'generate_resume_requested',
+    ).first()
+    if resumed is not None:
+        raise HTTPException(status_code=409, detail='Generate stage was already resumed')
+    task.state = 'generating'
+    db.commit()
+    try:
+        queue_adapter.enqueue_stage(task.id, 'generate', session_id=task.session_id)
+    except QueueEnqueueError:
+        raise HTTPException(status_code=503, detail='Task could not be queued; retry later') from None
+    db.add(TaskEvent(
+        task_id=task.id,
+        event_type='generate_resume_requested',
+        payload={'stage': 'generate', 'mode': mode},
+    ))
+    db.commit()
+    return {'queued': True, 'report_url': f'/tasks/{task.id}/report'}
 
 
 class DraftRequest(BaseModel):
