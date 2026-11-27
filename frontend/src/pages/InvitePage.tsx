@@ -5,6 +5,9 @@ import { MotionButton } from '../components/MotionButton'
 import { PageTransition } from '../components/PageTransition'
 
 
+// 临时隐藏成员卡；恢复时改为 true，卡片文案与分工均保留在源码中。
+const SHOW_TEAM_CARDS = false
+
 interface InvitePageProps {
   apiBaseUrl?: string
   onSuccess?: (sessionId: string) => void
@@ -184,6 +187,7 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
             <span lang="en">Intelligent Traffic Management × Criminal Science and Technology</span>
           </p>
         </div>
+        {SHOW_TEAM_CARDS && (
         <ul className="team-grid" aria-label="团队成员与分工 / Team members and roles">
           <li className="full-power-card team-card">
             <div className="team-card__affiliation">
@@ -246,6 +250,7 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
             </div>
           </li>
         </ul>
+        )}
       </section>
       </main>
     </PageTransition>
