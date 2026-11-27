@@ -64,15 +64,23 @@ function createDebris(count: number): Debris[] {
 
 interface SceneBackdropProps {
   qualityMode?: QualityMode
+  paused?: boolean
   onQualityChange?: (level: QualityLevel) => void
 }
 
-export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBackdropProps) {
+interface ScenePlaybackControls {
+  start: () => void
+  stop: () => void
+}
+
+export function SceneBackdrop({ qualityMode = 'auto', paused = false, onQualityChange }: SceneBackdropProps) {
   const sceneRef = useRef<HTMLDivElement>(null)
   const backCanvasRef = useRef<HTMLCanvasElement>(null)
   const frontCanvasRef = useRef<HTMLCanvasElement>(null)
   const planetRef = useRef<HTMLDivElement>(null)
   const onQualityChangeRef = useRef(onQualityChange)
+  const pausedRef = useRef(paused)
+  const playbackRef = useRef<ScenePlaybackControls | null>(null)
 
   useEffect(() => {
     onQualityChangeRef.current = onQualityChange
@@ -319,6 +327,7 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
 
     const start = () => {
       stop()
+      if (pausedRef.current) return
       if (motionQuery.matches || document.hidden) {
         draw(0)
         return
@@ -384,6 +393,7 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
       else start()
     }
 
+    playbackRef.current = { start, stop }
     resize()
     handleScroll()
     start()
@@ -401,6 +411,7 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
 
     return () => {
       stop()
+      playbackRef.current = null
       window.removeEventListener('resize', resize)
       window.removeEventListener('pointermove', handlePointer)
       window.removeEventListener('pointerdown', markInteraction)
@@ -414,8 +425,15 @@ export function SceneBackdrop({ qualityMode = 'auto', onQualityChange }: SceneBa
     }
   }, [qualityMode])
 
+  useEffect(() => {
+    if (pausedRef.current === paused) return
+    pausedRef.current = paused
+    if (paused) playbackRef.current?.stop()
+    else playbackRef.current?.start()
+  }, [paused])
+
   return (
-    <div ref={sceneRef} className="scene-backdrop" aria-hidden="true">
+    <div ref={sceneRef} className="scene-backdrop" data-paused={paused ? 'true' : 'false'} aria-hidden="true">
       <div className="scene-backdrop__nebula" />
       <img className="scene-backdrop__clouds" src={cloudTexture} alt="" />
       <canvas ref={backCanvasRef} className="scene-backdrop__canvas scene-backdrop__canvas--back" />
