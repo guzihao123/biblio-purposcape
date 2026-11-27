@@ -777,6 +777,12 @@ input:focus-visible {
 @media (max-width: 760px) {
   *, *::before, *::after { animation-duration: .18s !important; }
 
+  /* 校徽开场是完整 5.6 秒时间线，不能被移动端通用降速规则截断。 */
+  .school-badge-scene *,
+  .invite-page--intro-running .invite-layout {
+    animation-duration: 5600ms !important;
+  }
+
   .full-power-card { backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
 
   .full-power-site {
