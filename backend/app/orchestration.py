@@ -8,17 +8,19 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
 from datetime import datetime, timezone
+from types import SimpleNamespace
 from pathlib import Path
 
 from app.analysis import AnalysisService
 from app.config import get_settings
-from app.db import SessionLocal
+from app.db import SessionLocal, engine
 from app.delivery import DeliveryService, DeliveryTask
 from app.models import SkillVersion
 from app.policy_search import collect_b_materials
 from app.progress_reporter import report_stage_phase
 from app.qwen import ChatModel
 from app.schemas import CardId, TaskState
+from app.skill_versions import load_base_config
 from app.search import SearchRequest, SearchService
 from app.sites_store import SitesStorageClient
 from app.writing import STYLE_REFERENCE_FILE, WritingService, WritingTask
@@ -439,21 +441,36 @@ class Orchestrator:
         return datetime.now(timezone.utc).year - offsets.get(str(choice), 5)
 
     def _version(self, task):
-        if get_settings().task_store_authority == 'sites':
-            from app.task_store_sync import configured_task_store_sync
+        last_error = None
+        for attempt in range(3):
+            try:
+                if get_settings().task_store_authority == 'sites':
+                    from app.task_store_sync import configured_task_store_sync
 
-            version = configured_task_store_sync().get_skill_version(
-                session_id=task.session_id,
-                skill_version_id=task.skill_version_id,
-            )
-            if version is None:
-                raise RuntimeError('task Skill version is missing')
-            return version
-        with SessionLocal() as db:
-            version = db.get(SkillVersion, task.skill_version_id)
-        if version is None:
-            raise RuntimeError('task Skill version is missing')
-        return version
+                    version = configured_task_store_sync().get_skill_version(
+                        session_id=task.session_id,
+                        skill_version_id=task.skill_version_id,
+                    )
+                else:
+                    with SessionLocal() as db:
+                        version = db.get(SkillVersion, task.skill_version_id)
+                if version is None:
+                    raise RuntimeError('task Skill version is missing')
+                return version
+            except Exception as error:
+                last_error = error
+                if attempt >= 2:
+                    break
+                try:
+                    engine.dispose()
+                except Exception:
+                    pass
+                time.sleep(1.0 + attempt)
+        # A transient database/TLS failure must not erase the deliverable.
+        try:
+            return SimpleNamespace(content=load_base_config())
+        except Exception:
+            raise last_error
 
     def _rehydrate_task_artifacts(self, task_dir):
         if (task_dir / 'papers.json').is_file():
