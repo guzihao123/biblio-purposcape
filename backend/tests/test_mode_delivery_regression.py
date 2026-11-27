@@ -548,7 +548,7 @@ def test_c_pair_gap_mismatch_blocks_combined_office_delivery(tmp_path, monkeypat
     assert '## 独立文献综述' in fallback_body
     assert (root / 'outline.md').stat().st_size > 100
     assert (root / 'sample.md').stat().st_size > 50
-    for name in ('C1_引言.docx', 'C2_文献综述.docx'):
+    for name in ('肝细胞癌免疫治疗耐药机制-引言.docx', '肝细胞癌免疫治疗耐药机制-文献综述.docx'):
         assert (root / name).read_bytes().startswith(b'PK')
     assert not list(root.glob('*.pptx'))
 

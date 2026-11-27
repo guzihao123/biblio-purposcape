@@ -744,6 +744,10 @@ class Orchestrator:
             custom_purpose=answers.get('mode', {}).get('custom', ''),
         )
 
+    def _c_pair_part_filename(self, direction, part):
+        topic = re.sub(r'[\s/\\:*?"<>|]+', '', str(direction or ''))[:32] or '未命名主题'
+        return f'{topic}-{part}.docx'
+
     def _write_c_pair_word_fallback(self, task, task_dir, mode, source_name, output_name,
                                     written, papers, answers):
         try:
@@ -892,11 +896,14 @@ class Orchestrator:
 
         if not can_combine:
             failures.append('C1+C2 独立交付、衔接检查或根目录复核未通过，已阻止合并交付')
+            direction = answers.get('direction', {}).get('direction', '')
             self._write_c_pair_word_fallback(
-                task, task_dir, 'C1', 'C1_引言.md', 'C1_引言.docx', written, papers, answers,
+                task, task_dir, 'C1', 'C1_引言.md',
+                self._c_pair_part_filename(direction, '引言'), written, papers, answers,
             )
             self._write_c_pair_word_fallback(
-                task, task_dir, 'C2', 'C2_文献综述.md', 'C2_文献综述.docx', written, papers, answers,
+                task, task_dir, 'C2', 'C2_文献综述.md',
+                self._c_pair_part_filename(direction, '文献综述'), written, papers, answers,
             )
             report_stage_phase('generate', 'upload')
             synced = self._sync_artifacts(task_dir)
