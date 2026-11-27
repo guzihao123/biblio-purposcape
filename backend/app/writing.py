@@ -2418,6 +2418,44 @@ def _strip_unsupported_citations(value, available):
     return clean(value), removed
 
 
+def _repair_component_quotes(value, papers):
+    """Repair non-verbatim quotes in place; never drop refs or citations here."""
+    quote_repairs = 0
+    auditor = EvidenceAuditor(papers)
+
+    def clean(node):
+        nonlocal quote_repairs
+        if isinstance(node, dict):
+            result = {}
+            for key, child in node.items():
+                if key == 'evidence' and isinstance(child, list):
+                    kept = []
+                    for item in child:
+                        candidate = item
+                        try:
+                            auditor.audit_items([item])
+                        except WritingInputError:
+                            repaired = _repair_evidence_quotes([item], papers)[0]
+                            try:
+                                auditor.audit_items([repaired])
+                            except WritingInputError:
+                                pass
+                            else:
+                                if (repaired.get('quotes') or {}) != (item.get('quotes') or {}):
+                                    quote_repairs += 1
+                                candidate = repaired
+                        kept.append(candidate)
+                    result[key] = kept
+                else:
+                    result[key] = clean(child)
+            return result
+        if isinstance(node, list):
+            return [clean(item) for item in node]
+        return node
+
+    return clean(value), quote_repairs
+
+
 def _repair_component_evidence(value, papers):
     """Repair non-verbatim quotes, then drop anything still failing the auditor."""
     valid_refs = set()
@@ -2850,6 +2888,12 @@ class WritingService:
                             kind='evidence_backfill',
                             payload={'filled_rows': filled, 'stage': 'components'},
                         ))
+                generated, quote_repairs = _repair_component_quotes(generated, task.papers)
+                if quote_repairs:
+                    task.events.append(WritingEvent(
+                        kind='component_evidence_repaired',
+                        payload={'quote_repairs': quote_repairs, 'stage': 'components'},
+                    ))
                 task.component_data = generated
                 components = self._build_components(task, mode)
                 if attempt > 0:
@@ -3085,8 +3129,10 @@ class WritingService:
                 if not isinstance(result, dict) or not isinstance(result.get('text'), str):
                     raise WritingInputError('body composer must return text and evidence')
                 auditor = EvidenceAuditor(task.papers)
-                if task.mode.upper() in {'D', 'C1', 'C2'}:
-                    evidence = _audit_items_with_quote_repair(auditor, result.get('evidence') or [], task.papers)
+                if model_backed:
+                    evidence = _audit_items_with_quote_repair(
+                        auditor, result.get('evidence') or [], task.papers,
+                    )
                 else:
                     evidence = auditor.audit_items(result.get('evidence') or [])
                 text = result['text']

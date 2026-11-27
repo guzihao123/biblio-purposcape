@@ -208,3 +208,78 @@ def test_c1_body_quote_is_repaired_without_retry_failure(tmp_path):
     assert model.body_calls == 1
     assert 'Not present in the abstract.' not in output.body
     assert any('calibrated model' in item.get('quote', '') for item in output.evidence)
+
+
+def test_a_component_quote_is_repaired_before_any_retry(tmp_path):
+    class InvalidAComponent:
+        def __init__(self):
+            self.calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            self.calls += 1
+            data = deepcopy(component_data('A'))
+            data['gaps'][0]['evidence'][0]['quotes']['1'] = 'Not present in the abstract.'
+            return {'components': data}
+
+    model = InvalidAComponent()
+    task = make_task('A', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=model).produce_components(task)
+
+    assert model.calls == 1
+    assert all('Not present in the abstract.' not in item.get('quote', '') for item in output.evidence)
+    assert any('calibrated model' in item.get('quote', '') for item in output.evidence)
+
+
+def test_a_body_quote_is_repaired_before_gate_retry(tmp_path):
+    class InvalidABody:
+        def __init__(self):
+            self.body_calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            if payload['stage'] == 'components':
+                return {'components': component_data('A')}
+            self.body_calls += 1
+            return {
+                'body': valid_a_body(),
+                'evidence': [{
+                    'claim': 'Invalid quote',
+                    'refs': [1],
+                    'quotes': {'1': 'Not present in the abstract.'},
+                }, SECOND_EVIDENCE],
+            }
+
+    model = InvalidABody()
+    task = make_task('A', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=model).produce(task)
+
+    assert model.body_calls == 1
+    assert _a_body_shape_errors(output.body) == []
+    assert 'Not present in the abstract.' not in output.body
+    assert any('calibrated model' in item.get('quote', '') for item in output.evidence)
+
+
+def test_b_body_quote_is_repaired_before_gate_retry(tmp_path):
+    class InvalidBBody:
+        def __init__(self):
+            self.body_calls = 0
+
+        def complete_json(self, system_prompt, payload):
+            if payload['stage'] == 'components':
+                return {'components': component_data('B')}
+            self.body_calls += 1
+            return {
+                'body': valid_b_body(),
+                'evidence': [{
+                    'claim': 'Invalid quote',
+                    'refs': [1],
+                    'quotes': {'1': 'Not present in the abstract.'},
+                }],
+            }
+
+    model = InvalidBBody()
+    task = make_task('B', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=model).produce(task)
+
+    assert model.body_calls == 1
+    assert _b_body_shape_errors(output.body) == []
+    assert any('calibrated model' in item.get('quote', '') for item in output.evidence)
