@@ -729,60 +729,96 @@ def _write_pptx(task, body, references, path, figure_loader=None):
     from pptx import Presentation
     from pptx.util import Inches
 
-    prs = Presentation()
-    prs.slide_width = Inches(13.333)
-    prs.slide_height = Inches(7.5)
     figure_bundle = None
+    figure_loader_error = ''
+    if task.mode == 'D' and figure_loader is not None:
+        try:
+            figure_bundle = figure_loader(
+                task.papers,
+                task.components.get('reading_cards', []),
+                path.parent,
+            )
+        except Exception as error:
+            figure_bundle = None
+            figure_loader_error = f'{type(error).__name__}: {error}'
+            (path.parent / 'figure_acquisition_log.md').write_text(
+                '# D 原文图获取日志\n\n- 原图管线异常，已降级保留文字与 OA 链接：'
+                + figure_loader_error + '\n',
+                encoding='utf-8',
+            )
+
+    deck_result = None
     if task.mode == 'D':
-        slides = _d_slides(task, references)
-        if figure_loader is not None:
-            try:
-                figure_bundle = figure_loader(
-                    task.papers,
-                    task.components.get('reading_cards', []),
-                    path.parent,
-                )
-            except Exception as error:
-                figure_bundle = None
-                figure_loader_error = f'{type(error).__name__}: {error}'
-            else:
-                figure_loader_error = ''
+        try:
+            from app import d_deck
+            deck_result = d_deck.build(task, references, figure_bundle, path)
+        except Exception as error:
+            deck_result = None
+            note = path.parent / 'figure_acquisition_log.md'
+            previous = note.read_text(encoding='utf-8') if note.exists() else '# D 版式说明\n'
+            note.write_text(
+                previous + f'\n- 新 D 版式生成失败，回退旧版式：{type(error).__name__}: {error}\n',
+                encoding='utf-8',
+            )
+    if deck_result is None:
+        prs = Presentation()
+        prs.slide_width = Inches(13.333)
+        prs.slide_height = Inches(7.5)
+        if task.mode == 'D':
+            slides = _d_slides(task, references)
             if figure_bundle is not None:
                 from app.ppt_figures import decorate_d_slides
                 decorate_d_slides(slides, figure_bundle)
-            elif figure_loader_error:
-                (path.parent / 'figure_acquisition_log.md').write_text(
-                    '# D 原文图获取日志\n\n- 原图管线异常，已降级保留文字与 OA 链接：'
-                    + figure_loader_error + '\n',
-                    encoding='utf-8',
+            for slide in slides:
+                _add_ppt_slide(
+                    prs, slide['title'], slide['lines'], slide.get('layout', 'stacked'),
+                    slide.get('variant'), slide.get('chart'), slide.get('figures'),
+                    slide.get('degraded_figures'),
                 )
-        for slide in slides:
-            _add_ppt_slide(
-                prs, slide['title'], slide['lines'], slide.get('layout', 'stacked'),
-                slide.get('variant'), slide.get('chart'), slide.get('figures'),
-                slide.get('degraded_figures'),
-            )
-    else:
-        slides = _generic_slides(task, body, references)
-        for title, lines in slides:
-            _add_ppt_slide(prs, title, lines)
-    prs.save(path)
+        else:
+            slides = _generic_slides(task, body, references)
+            for title, lines in slides:
+                _add_ppt_slide(prs, title, lines)
+        prs.save(path)
     _set_cjk_theme(path)
     if task.mode != 'D':
         return {'artifacts': {}, 'failures': []}
 
     task_dir = path.parent
-    manifest = _ppt_asset_manifest(slides, base_dir=task_dir, figure_bundle=figure_bundle)
-    manifest_path = task_dir / 'ppt_asset_manifest.json'
-    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
-    layout_manifest = {
-        'pages': [
+    if deck_result is not None:
+        manifest = {
+            'summary_pages': deck_result.get('summary_pages') or [],
+            'visuals': deck_result.get('visuals') or [],
+        }
+        if figure_bundle is not None:
+            manifest['figure_acquisition'] = [
+                {
+                    'ref_no': attempt.get('ref_no'),
+                    'title': attempt.get('title'),
+                    'oa_url': attempt.get('oa_url'),
+                    'source_url': attempt.get('source_url'),
+                    'version': attempt.get('version'),
+                    'reading_depth': attempt.get('depth'),
+                    'status': attempt.get('status'),
+                    'figure_count': len(figure_bundle.by_ref(attempt.get('ref_no') or 0)),
+                    'failures': attempt.get('failures') or [],
+                }
+                for attempt in figure_bundle.attempts
+            ]
+        pages = [
+            {'n': n, 'title': title, 'layout': kind, 'variant': {}}
+            for n, title, _section, kind in deck_result['records']
+        ]
+    else:
+        manifest = _ppt_asset_manifest(slides, base_dir=task_dir, figure_bundle=figure_bundle)
+        pages = [
             {'n': slide['n'], 'title': slide['title'], 'layout': slide.get('layout', 'stacked'), 'variant': slide.get('variant', {})}
             for slide in slides
         ]
-    }
+    manifest_path = task_dir / 'ppt_asset_manifest.json'
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
     layout_path = task_dir / 'layout_manifest.json'
-    layout_path.write_text(json.dumps(layout_manifest, ensure_ascii=False, indent=2), encoding='utf-8')
+    layout_path.write_text(json.dumps({'pages': pages}, ensure_ascii=False, indent=2), encoding='utf-8')
     verify_report = task_dir / 'verify_ppt_report.txt'
     layout_report = task_dir / 'layout_check.json'
     structure = subprocess.run(

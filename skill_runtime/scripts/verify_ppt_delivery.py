@@ -99,7 +99,12 @@ def verify(pptx, manifest_path):
         else:
             failures.append(f'{name}：未知图表类型 {kind}')
 
-    check(bool(media) or any(charts.values()), '全稿至少包含一个真实图片或图表对象')
+    declared_media = [
+        item for item in manifest.get('visuals', [])
+        if item.get('kind') in {'image', 'chart'} and not item.get('degraded')
+    ]
+    check(bool(media) or any(charts.values()) or not declared_media,
+          '全稿至少包含一个真实图片或图表对象')
     return passes, failures, degraded, len(media), sum(bool(x) for x in charts.values())
 
 

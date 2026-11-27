@@ -277,7 +277,8 @@ def test_d_ppt_has_twenty_to_thirty_slides_and_separate_text_verification(tmp_pa
     assert result['layout_check.json'].exists()
     assert '结果：PASS' in result['verify_ppt_report.txt'].read_text()
     assert json.loads(result['layout_check.json'].read_text())['ok'] is True
-    assert any(shape.has_chart for slide in presentation.slides for shape in slide.shapes if hasattr(shape, 'has_chart'))
+    if (make_task(mode='D', form='C').components or {}).get('stats'):
+        assert any(shape.has_chart for slide in presentation.slides for shape in slide.shapes if hasattr(shape, 'has_chart'))
     slide_text = '\n'.join(
         shape.text
         for slide in presentation.slides

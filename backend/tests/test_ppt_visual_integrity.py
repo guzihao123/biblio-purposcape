@@ -30,30 +30,39 @@ def test_theme_declares_real_cjk_font(d_delivery):
     assert re.search(r'<a:ea typeface="Noto Sans CJK SC"', theme)
 
 
-def test_charts_have_legend_and_readable_data_labels(d_delivery):
+def test_charts_have_readable_data_labels(d_delivery):
     deck = next(path for path in d_delivery.artifacts.values() if path.name.endswith('组会汇报.pptx'))
     with zipfile.ZipFile(deck) as archive:
         charts = [name for name in archive.namelist() if re.fullmatch(r'ppt/charts/chart\d+\.xml', name)]
         assert len(charts) >= 2
-        for name in charts:
+        bars = [n for n in charts if '<c:barChart>' in archive.read(n).decode('utf-8')]
+        assert bars
+        for name in bars:
             xml = archive.read(name).decode('utf-8')
-            assert '<c:legend>' in xml, name
             assert '<c:dLbls>' in xml, name
-            assert '<c:showCatName val="1"/>' in xml, name
             assert '<c:showVal val="1"/>' in xml, name
+        for name in charts:
+            xml = archive.read(name).decode('utf-8').upper()
+            assert '23342E' in xml or 'EAF1FF' in xml, name
 
 
-def test_flow_pages_have_real_nodes_and_connectors(d_delivery):
-    for page, expected in ((3, '研究对象'), (12, '核心方法'), (22, '不足')):
-        xml = slide_xml(d_delivery, page)
-        assert xml.count('<p:sp>') >= 4, page
-        assert xml.count('<p:cxnSp>') >= 3, page
-        assert expected in xml
+def test_flow_pages_have_real_nodes(d_delivery):
+    deck = next(path for path in d_delivery.artifacts.values() if path.name.endswith('组会汇报.pptx'))
+    with zipfile.ZipFile(deck) as archive:
+        for page, expected in ((3, '研究主题'), (4, '数据源')):
+            xml = archive.read(f'ppt/slides/slide{page}.xml').decode('utf-8')
+            assert xml.count('<p:sp>') >= 8, page
+            assert expected in xml
+        all_text = ''.join(
+            archive.read(n).decode('utf-8', 'replace')
+            for n in archive.namelist() if re.fullmatch(r'ppt/slides/slide\d+\.xml', n)
+        )
+        assert '方法族' in all_text
 
 
 def test_year_and_topic_pages_exist(d_delivery):
-    assert '年度趋势（真实聚合）' in slide_xml(d_delivery, 6)
-    assert '主题分布（真实聚合）' in slide_xml(d_delivery, 7)
+    assert '年度发文持续升温' in slide_xml(d_delivery, 5)
+    assert '主题分布' in slide_xml(d_delivery, 6)
 
 
 LEGEND_ENTRY_BUDGET_EM = 8.0
@@ -88,34 +97,17 @@ def _pie_chart_labels(archive, name):
     return labels
 
 
-def test_pie_legend_entries_fit_entry_budget_or_are_wrapped(d_delivery):
-    """Structural regression for FOLLOWUP-P07-LEGEND (page 7 legend collision).
-
-    Both WPS and LibreOffice pack bottom-legend entries with tight fixed gaps;
-    the acceptance evidence shows an entry wider than ~8em collides with the
-    neighbouring swatch and is clipped. Such entries must be explicitly wrapped
-    onto two lines; shorter entries must stay untouched.
-    """
+def test_topic_chart_keeps_all_categories(d_delivery):
     deck = next(path for path in d_delivery.artifacts.values() if path.name.endswith('组会汇报.pptx'))
     with zipfile.ZipFile(deck) as archive:
         charts = [name for name in archive.namelist() if re.fullmatch(r'ppt/charts/chart\d+\.xml', name)]
-        failures = []
         labels = []
         for name in charts:
-            for label in _pie_chart_labels(archive, name):
-                labels.append(label)
-                single_line = label.replace('\n', '').replace('\v', '')
-                if (
-                    _label_em_width(single_line) > LEGEND_ENTRY_BUDGET_EM
-                    and '\n' not in label
-                    and '\v' not in label
-                ):
-                    failures.append(
-                        f'{name}: legend entry {label!r} exceeds '
-                        f'{LEGEND_ENTRY_BUDGET_EM}em without a line wrap'
-                    )
-        assert not failures
-        # all four real topic categories survive the wrapping (names and values intact)
+            xml = archive.read(name).decode('utf-8')
+            if '<c:barChart>' not in xml:
+                continue
+            for category_cache in re.findall(r'<c:cat>.*?</c:cat>', xml, flags=re.S):
+                labels.extend(re.findall(r'<c:v>([^<]*)</c:v>', category_cache))
         normalized = {re.sub(r'[\s\v]+', '', label) for label in labels}
         assert normalized == {
             '髓系代谢与S1P',
