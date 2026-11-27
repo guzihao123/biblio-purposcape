@@ -220,6 +220,5 @@
 
 @keyframes schoolBadgeControls {
   0% { opacity: 0; }
-  8%, 58% { opacity: 1; }
-  72%, 100% { opacity: 0; }
+  8%, 100% { opacity: 1; }
 }
