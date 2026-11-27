@@ -847,6 +847,19 @@ def _write_pptx(task, body, references, path, figure_loader=None):
                 _add_ppt_slide(prs, title, lines)
         prs.save(path)
     _set_cjk_theme(path, 'PingFang SC' if task.mode == 'D' else 'Noto Sans CJK SC')
+    if task.mode == 'D' and require_two:
+        embedded = 0
+        try:
+            from pptx import Presentation
+            presentation = Presentation(str(path))
+            for slide in presentation.slides:
+                for shape in slide.shapes:
+                    if shape.shape_type == 13:
+                        embedded += 1
+        except Exception:
+            embedded = 0
+        if embedded < 2:
+            raise RuntimeError(f'D PPT 实际嵌入原图仅 {embedded} 张（要求至少 2 张）；已停止交付')
     if task.mode != 'D':
         return {'artifacts': {}, 'failures': []}
 
