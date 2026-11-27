@@ -689,9 +689,40 @@ code,
   filter: drop-shadow(0 8px 20px rgba(26, 104, 179, 0.34));
 }
 
-.school-badge-intro {
+.school-badge-scene {
   position: fixed;
-  z-index: 4;
+  z-index: 90;
+  inset: 0;
+  overflow: hidden;
+  visibility: hidden;
+  outline: none;
+  contain: layout paint;
+}
+
+.school-badge-scene.is-awaiting,
+.school-badge-scene.is-running {
+  visibility: visible;
+}
+
+.school-badge-scene__veil {
+  position: absolute;
+  inset: 0;
+  background: var(--site-bg, #070b16);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.school-badge-scene.is-awaiting .school-badge-scene__veil {
+  opacity: 1;
+}
+
+.school-badge-scene.is-running .school-badge-scene__veil {
+  animation: schoolBadgeVeil 5600ms linear both;
+}
+
+.school-badge-intro {
+  position: absolute;
+  z-index: 2;
   display: block;
   margin: 0;
   object-fit: contain;
@@ -705,7 +736,69 @@ code,
 .school-badge-intro.is-running {
   visibility: visible;
   will-change: transform, opacity;
-  animation: schoolBadgeIntro 1700ms var(--motion-ease-enter) both;
+  animation: schoolBadgeIntro 5600ms linear both;
+}
+
+.school-badge-scene__controls {
+  position: absolute;
+  z-index: 3;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: max(20px, env(safe-area-inset-left));
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.school-badge-scene.is-running .school-badge-scene__controls {
+  animation: schoolBadgeControls 5600ms linear both;
+}
+
+.school-badge-scene__control {
+  min-height: 44px;
+  padding: 0 16px;
+  color: var(--site-text);
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  touch-action: manipulation;
+  pointer-events: auto;
+  background: rgba(10, 18, 32, 0.88);
+  border: 1px solid var(--site-border);
+  border-radius: 999px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.school-badge-scene__control:hover {
+  background: rgba(20, 36, 56, 0.94);
+  border-color: var(--site-accent);
+}
+
+.school-badge-scene__control[aria-pressed="true"] {
+  border-color: var(--site-accent-2);
+}
+
+.school-badge-scene__control:focus-visible {
+  outline: 2px solid var(--site-accent-2);
+  outline-offset: 3px;
+}
+
+.invite-page--intro-active .invite-layout {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.invite-page--intro-active.invite-page--intro-running .invite-layout {
+  animation: schoolBadgeContentReveal 5600ms linear both;
+}
+
+.invite-page--intro-active .site-brand__aura,
+.invite-page--intro-active .site-brand__beam,
+.invite-page--intro-active .site-orbit {
+  animation-play-state: paused !important;
 }
 
 .school-badge.school-badge--intro-pending {
@@ -981,5 +1074,15 @@ code,
 
   .school-badge::before {
     opacity: 0.28;
+  }
+
+  .school-badge-scene {
+    display: none !important;
+  }
+
+  .invite-page--intro-active .invite-layout {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
   }
 }
