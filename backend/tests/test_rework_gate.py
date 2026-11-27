@@ -313,3 +313,37 @@ def test_c1_body_gap_without_evidence_is_rebuilt_with_pool_citation(tmp_path):
     assert _c1_body_shape_errors(output.body) == []
     assert '| 研究方向 | 已有进展 | 现有不足 | 文献证据 | 与本文研究问题的联系 |' in output.body
     assert re.search(r'\|\s*\[\d+\]', output.body)
+
+
+def test_a_component_gap_without_evidence_is_backfilled(tmp_path):
+    class EmptyAGap:
+        def complete_json(self, system_prompt, payload):
+            data = deepcopy(component_data('A'))
+            for gap in data['gaps']:
+                gap['evidence'] = []
+            return {'components': data}
+
+    task = make_task('A', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=EmptyAGap()).produce_components(task)
+
+    gap_lines = [line for line in output.markdown.splitlines() if line.startswith('| ') and '机制/数据' not in line]
+    blank_rows = [line for line in output.markdown.split('## 空白证据表')[1].split('##')[0].splitlines() if line.startswith('|') and '---' not in line]
+    assert blank_rows
+    assert all(re.search(r'\[\d+\]', line) for line in blank_rows[1:])
+
+
+def test_a_body_gap_without_evidence_is_rebuilt_with_pool_citation(tmp_path):
+    task = make_task('A', tmp_path)
+    for gap in task.component_data['gaps']:
+        gap['evidence'] = []
+
+    class ShortABody:
+        def complete_json(self, system_prompt, payload):
+            assert payload['stage'] == 'body'
+            return {'body': '# 短稿\n\n领域骨架 [1]。', 'evidence': [EVIDENCE]}
+
+    output = WritingService(workspace_root=tmp_path, model=ShortABody()).produce(task)
+
+    assert _a_body_shape_errors(output.body) == []
+    blank_lines = [line for line in output.body.splitlines() if '空白' in line and re.search(r'\[\d+\]', line)]
+    assert len(blank_lines) >= 3

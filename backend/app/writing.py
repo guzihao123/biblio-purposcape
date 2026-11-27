@@ -513,6 +513,7 @@ def _evidence_retry_exhausted(message):
 def _rebuild_a_body(task):
     try:
         data = task.component_data if isinstance(task.component_data, dict) else {}
+        data, _ = _backfill_a_gap_evidence(data, task.papers)
         directions = data.get('directions') or []
         gaps = data.get('gaps') or []
         landscape = data.get('landscape') or []
@@ -2522,6 +2523,81 @@ def _repair_component_evidence(value, papers):
     return repaired, sorted(dropped_refs), removed, quote_repairs
 
 
+def _backfill_a_gap_evidence(data, papers):
+    """Attach a real pool citation to A gap rows that lost all evidence."""
+    if not isinstance(data, dict):
+        return data, 0
+    by_ref = {
+        int(paper['ref_no']): paper
+        for paper in papers
+        if str(paper.get('ref_no', '')).isdigit()
+        and paper.get('claim_eligible') is not False
+        and str(paper.get('abstract') or '').strip()
+    }
+    if not by_ref:
+        return data, 0
+    candidate_refs = []
+    for row in (data.get('gaps') or []) + (data.get('directions') or []):
+        for item in row.get('evidence') or []:
+            for ref in item.get('refs') or []:
+                try:
+                    ref = int(ref)
+                except (TypeError, ValueError):
+                    continue
+                if ref in by_ref and ref not in candidate_refs:
+                    candidate_refs.append(ref)
+    for row in data.get('landscape') or []:
+        for ref in row.get('paper_refs') or []:
+            try:
+                ref = int(ref)
+            except (TypeError, ValueError):
+                continue
+            if ref in by_ref and ref not in candidate_refs:
+                candidate_refs.append(ref)
+    changed = 0
+    for index, row in enumerate(data.get('gaps') or []):
+        if any(item.get('refs') for item in (row.get('evidence') or []) if isinstance(item, dict)):
+            continue
+        row_text = _whole_text(' '.join(str(value) for value in row.values() if isinstance(value, str)))
+        words = set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', row_text.casefold()))
+        paper = None
+        if candidate_refs:
+            paper = by_ref[candidate_refs[index % len(candidate_refs)]]
+        else:
+            scored = []
+            for item in by_ref.values():
+                tokens = set(re.findall(
+                    r'[A-Za-z\u4e00-\u9fff]{3,}',
+                    (str(item.get('title') or '') + ' ' + str(item.get('abstract') or '')).casefold(),
+                ))
+                scored.append((len(words & tokens), int(item['ref_no']), item))
+            if scored:
+                paper = max(scored, key=lambda entry: entry[0])[2]
+        if paper is None:
+            continue
+        abstract = str(paper.get('abstract') or '').strip()
+        sentences = [
+            sentence.strip()
+            for sentence in re.split(r'(?<=[.!?。！？])\s+', abstract)
+            if len(sentence.strip()) >= 20
+        ]
+        if sentences:
+            quote = max(
+                sentences,
+                key=lambda sentence: len(words & set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', sentence.casefold()))),
+            )
+        else:
+            quote = abstract
+        ref = int(paper['ref_no'])
+        row['evidence'] = [{
+            'claim': f"研究空白结构引用：{row.get('gap') or '研究空白'}（待人工核对）",
+            'refs': [ref],
+            'quotes': {str(ref): quote},
+        }]
+        changed += 1
+    return data, changed
+
+
 def _backfill_c1_gap_evidence(data, papers):
     """Attach a real pool citation to C1 gap rows that lost all evidence."""
     if not isinstance(data, dict):
@@ -2972,8 +3048,9 @@ class WritingService:
                         kind='component_evidence_repaired',
                         payload={'quote_repairs': quote_repairs, 'stage': 'components'},
                     ))
-                if mode == 'C1':
-                    generated, filled = _backfill_c1_gap_evidence(generated, task.papers)
+                if mode in {'A', 'C1'}:
+                    backfill = _backfill_a_gap_evidence if mode == 'A' else _backfill_c1_gap_evidence
+                    generated, filled = backfill(generated, task.papers)
                     if filled:
                         task.events.append(WritingEvent(
                             kind='evidence_backfill',
