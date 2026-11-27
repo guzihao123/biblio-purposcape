@@ -154,6 +154,22 @@ def test_failed_b_generate_can_resume_once_with_capability(client, database, mon
         headers={'X-Snapshot-Token': token},
     ).status_code == 409
 
+    with database.session_factory() as db:
+        task = db.get(Task, task_id)
+        task.state = 'error'
+        db.add(TaskEvent(
+            task_id=task_id,
+            event_type='failed',
+            payload={'stage': 'generate', 'message': 'missing artifacts'},
+        ))
+        db.commit()
+    retry = client.post(
+        f'/api/tasks/{task_id}/resume-generate',
+        headers={'X-Snapshot-Token': token},
+    )
+    assert retry.status_code == 200
+    assert len(calls) == 2
+
 
 def test_resume_generate_rejects_invalid_capability_and_non_failed_task(client, database, monkeypatch):
     _, task_id, token = seed_failed_b_task(database)

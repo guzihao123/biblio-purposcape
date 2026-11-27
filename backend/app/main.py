@@ -720,9 +720,15 @@ def resume_failed_generate(
     resumed = db.query(TaskEvent).filter(
         TaskEvent.task_id == task.id,
         TaskEvent.event_type == 'generate_resume_requested',
-    ).first()
+    ).order_by(TaskEvent.id.desc()).first()
     if resumed is not None:
-        raise HTTPException(status_code=409, detail='Generate stage was already resumed')
+        later_failure = db.query(TaskEvent).filter(
+            TaskEvent.task_id == task.id,
+            TaskEvent.id > resumed.id,
+            TaskEvent.event_type.in_(['failed', 'enqueue_failed']),
+        ).first()
+        if later_failure is None:
+            raise HTTPException(status_code=409, detail='Generate stage was already resumed')
     task.state = 'generating'
     db.commit()
     try:
