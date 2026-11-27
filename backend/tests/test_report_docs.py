@@ -50,3 +50,22 @@ def test_c_pair_documents_are_combined_when_combined_files_are_missing(tmp_path)
     assert '综述正文' in result['body']
     assert '提纲一' in result['outline'] and '提纲二' in result['outline']
     assert '样章一' in result['sample'] and '样章二' in result['sample']
+
+def test_figure_diagnosis_summarizes_manifest(tmp_path):
+    import json
+
+    (tmp_path / 'ppt_asset_manifest.json').write_text(json.dumps({
+        'figure_acquisition': [
+            {'ref_no': 1, 'status': '已取得 2 张原图', 'figure_count': 2, 'pdf_backend': 'pypdfium2'},
+            {'ref_no': 2, 'status': '已定位全文但未取得可嵌入原图', 'figure_count': 0,
+             'failures': ['page 3 Fig.1: 图注锚点未在文本层定位']},
+        ],
+    }, ensure_ascii=False), encoding='utf-8')
+
+    from app.report_docs import read_figure_diagnosis
+
+    diagnosis = read_figure_diagnosis(tmp_path)
+
+    assert diagnosis['succeeded'] == 1
+    assert diagnosis['failed'] == 1
+    assert diagnosis['items'][1]['failures']

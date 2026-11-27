@@ -60,3 +60,39 @@ def read_report_documents(directory, mode):
         'sample': sample,
         'missing': missing,
     }
+
+def read_figure_diagnosis(directory):
+    """Summarize D figure acquisition without requiring the user to find files."""
+    import json
+
+    manifest = Path(directory) / 'ppt_asset_manifest.json'
+    if not manifest.is_file():
+        return None
+    try:
+        payload = json.loads(manifest.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return None
+    rows = payload.get('figure_acquisition') or []
+    if not isinstance(rows, list):
+        return None
+    items = []
+    succeeded = 0
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        count = int(row.get('figure_count') or 0)
+        if count > 0:
+            succeeded += 1
+        items.append({
+            'ref_no': row.get('ref_no'),
+            'status': row.get('status') or '未记录',
+            'figure_count': count,
+            'pdf_backend': row.get('pdf_backend') or '',
+            'failures': [str(item)[:300] for item in (row.get('failures') or [])[:3]],
+        })
+    return {
+        'available': True,
+        'succeeded': succeeded,
+        'failed': len(items) - succeeded,
+        'items': items,
+    }

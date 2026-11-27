@@ -38,6 +38,7 @@ export interface ReportPayload {
   sample: string
   body: string
   missing?: string[]
+  figure_diagnosis?: FigureDiagnosis | null
   references: string
   verification: {
     clean: boolean
@@ -45,6 +46,21 @@ export interface ReportPayload {
     conformance: string
   }
   artifacts: ArtifactLink[]
+}
+
+export interface FigureDiagnosisItem {
+  ref_no: number | null
+  status: string
+  figure_count: number
+  pdf_backend: string
+  failures: string[]
+}
+
+export interface FigureDiagnosis {
+  available: boolean
+  succeeded: number
+  failed: number
+  items: FigureDiagnosisItem[]
 }
 
 export interface SkillVersion {

@@ -40,7 +40,7 @@ from app.snapshots import (
 from app.skill_versions import SkillVersionError, SkillVersionService
 from app.task_flow import answer_card_with_decision
 from app.task_presenters import remote_task_payload, task_payload
-from app.report_docs import read_report_documents
+from app.report_docs import read_figure_diagnosis, read_report_documents
 from app.sites_store import MAX_ARTIFACT_BYTES, validate_filename, validate_task_id
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -624,6 +624,7 @@ def read_task_report(
         return path.read_text(encoding='utf-8') if path.is_file() else ''
 
     documents = read_report_documents(directory, mode)
+    figure_diagnosis = read_figure_diagnosis(directory)
     body = documents['body']
     outline = documents['outline']
     sample = documents['sample']
@@ -635,6 +636,7 @@ def read_task_report(
         'sample': sample,
         'body': body,
         'missing': documents['missing'],
+        'figure_diagnosis': figure_diagnosis,
         'references': body.split('## 参考文献', 1)[1] if '## 参考文献' in body else '',
         'verification': {
             'clean': bool(verify) and '[FAIL]' not in verify and '未通过：' not in conformance,

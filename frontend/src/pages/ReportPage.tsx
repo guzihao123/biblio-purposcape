@@ -9,6 +9,8 @@ const downloadLabels: Record<string, string> = {
   '标书-文献综述分析.docx': '下载 Word 报告',
   '调研报告.docx': '下载 Word 报告',
   'report.docx': '下载 Word 报告',
+  'ppt_asset_manifest.json': '查看图源清单',
+  'figure_acquisition_log.md': '查看图源日志',
   'C1_引言.docx': '下载 C1 引言 Word',
   'C2_文献综述.docx': '下载 C2 文献综述 Word',
   'slides.pptx': '下载 PPT',
@@ -55,6 +57,21 @@ export function ReportPage({ taskId }: { taskId: string }) {
             <p role="alert" className="app-message app-message--error">
               部分交付文件缺失或未同步：{report.missing.join('、')}。以下为可用内容，请重新运行任务或联系管理员。
             </p>
+          </section>
+        )}
+        {report.figure_diagnosis?.available && (
+          <section className="full-power-card report-section">
+            <h2>图源诊断</h2>
+            <p>成功取图 {report.figure_diagnosis.succeeded} 篇，未取得 {report.figure_diagnosis.failed} 篇。</p>
+            <ul>
+              {report.figure_diagnosis.items.map((item) => (
+                <li key={`${item.ref_no}-${item.status}`}>
+                  [{item.ref_no ?? '?'}] {item.status}，{item.figure_count} 张
+                  {item.pdf_backend ? `，PDF 后端：${item.pdf_backend}` : ''}
+                  {item.failures.length > 0 ? `；${item.failures.join('；')}` : ''}
+                </li>
+              ))}
+            </ul>
           </section>
         )}
         <section className="full-power-card report-section">

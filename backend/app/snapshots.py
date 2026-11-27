@@ -25,6 +25,8 @@ PUBLIC_ARTIFACT_NAMES = {
     'report.docx',
     'slides.pptx',
     'dialogue.json',
+    'ppt_asset_manifest.json',
+    'figure_acquisition_log.md',
 }
 
 
