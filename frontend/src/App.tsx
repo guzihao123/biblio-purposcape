@@ -32,6 +32,7 @@ export function App() {
   const [task, setTask] = useState<TaskView | null>(null)
   const [qualityMode, setQualityMode] = useState<QualityMode>(() => readQualityMode())
   const [effectiveQuality, setEffectiveQuality] = useState<QualityLevel>('full')
+  const [badgeIntroActive, setBadgeIntroActive] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const startingRef = useRef(false)
@@ -103,16 +104,19 @@ export function App() {
   if (!sessionReady) {
     return (
       <div className="app-root">
-        <SceneBackdrop qualityMode={qualityMode} onQualityChange={setEffectiveQuality} />
+        <SceneBackdrop paused={badgeIntroActive} qualityMode={qualityMode} onQualityChange={setEffectiveQuality} />
         <ConnectionBanner />
-        <InvitePage onSuccess={() => setSessionReady(true)} />
+        <InvitePage
+          onSuccess={() => setSessionReady(true)}
+          onBadgeIntroActiveChange={setBadgeIntroActive}
+        />
       </div>
     )
   }
 
   return (
     <div className="app-root">
-      <SceneBackdrop qualityMode={qualityMode} onQualityChange={setEffectiveQuality} />
+      <SceneBackdrop paused={badgeIntroActive} qualityMode={qualityMode} onQualityChange={setEffectiveQuality} />
       <ConnectionBanner />
       <nav className="app-nav" aria-label="应用导航">
         <span className="app-nav__brand">研究图谱</span>
