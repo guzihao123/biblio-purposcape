@@ -48,6 +48,13 @@ export function ReportPage({ taskId }: { taskId: string }) {
           <h1>调研交付</h1>
           <p>正文与参考文献保持相同引用编号，下载文件中含复核说明。</p>
         </header>
+        {report.missing && report.missing.length > 0 && (
+          <section className="full-power-card report-section">
+            <p role="alert" className="app-message app-message--error">
+              部分交付文件缺失或未同步：{report.missing.join('、')}。以下为可用内容，请重新运行任务或联系管理员。
+            </p>
+          </section>
+        )}
         <section className="full-power-card report-section">
           <h2>提纲</h2>
           <ReportText text={report.outline} />

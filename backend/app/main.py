@@ -40,7 +40,7 @@ from app.snapshots import (
 from app.skill_versions import SkillVersionError, SkillVersionService
 from app.task_flow import answer_card_with_decision
 from app.task_presenters import remote_task_payload, task_payload
-from app.writing import BODY_FILES
+from app.report_docs import read_report_documents
 from app.sites_store import MAX_ARTIFACT_BYTES, validate_filename, validate_task_id
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -623,21 +623,10 @@ def read_task_report(
         path = directory / name
         return path.read_text(encoding='utf-8') if path.is_file() else ''
 
-    body_name = BODY_FILES.get(mode, '综述初稿.md')
-    body = read_optional(body_name)
-    outline = read_optional('outline.md')
-    sample = read_optional('sample.md')
-    if str(mode).upper() in {'C', 'C1+C2'}:
-        c1_body = read_optional('C1_引言.md')
-        c2_body = read_optional('C2_文献综述.md')
-        if not body and (c1_body or c2_body):
-            body = c1_body + ('\n\n## 独立文献综述\n\n' + c2_body if c2_body else '')
-        if not outline:
-            parts = [read_optional('outline_C1.md'), read_optional('outline_C2.md')]
-            outline = '\n\n---\n\n'.join(part for part in parts if part)
-        if not sample:
-            parts = [read_optional('sample_C1.md'), read_optional('sample_C2.md')]
-            sample = '\n\n---\n\n'.join(part for part in parts if part)
+    documents = read_report_documents(directory, mode)
+    body = documents['body']
+    outline = documents['outline']
+    sample = documents['sample']
     verify = read_optional('verify_report.txt')
     conformance = read_optional('conformance.md')
     return {
@@ -645,6 +634,7 @@ def read_task_report(
         'outline': outline,
         'sample': sample,
         'body': body,
+        'missing': documents['missing'],
         'references': body.split('## 参考文献', 1)[1] if '## 参考文献' in body else '',
         'verification': {
             'clean': bool(verify) and '[FAIL]' not in verify and '未通过：' not in conformance,

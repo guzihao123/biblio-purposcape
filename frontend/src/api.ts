@@ -37,6 +37,7 @@ export interface ReportPayload {
   outline: string
   sample: string
   body: string
+  missing?: string[]
   references: string
   verification: {
     clean: boolean
