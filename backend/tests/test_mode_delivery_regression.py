@@ -544,7 +544,10 @@ def test_c_pair_gap_mismatch_blocks_combined_office_delivery(tmp_path, monkeypat
         report = (root / f'verify_report_{mode}.txt').read_text(encoding='utf-8')
         assert '台账: 15条' in report
         assert '[FAIL]' not in report
-    assert not (root / '综述初稿.md').exists()
+    fallback_body = (root / '综述初稿.md').read_text(encoding='utf-8')
+    assert '## 独立文献综述' in fallback_body
+    assert (root / 'outline.md').stat().st_size > 100
+    assert (root / 'sample.md').stat().st_size > 50
     assert not list(root.glob('*.docx'))
     assert not list(root.glob('*.pptx'))
 

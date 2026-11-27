@@ -819,6 +819,21 @@ class Orchestrator:
             'initial_duplicates': linkage['initial_duplicate_count'],
             'remaining_duplicates': linkage['remaining_duplicate_count'],
         }
+        combined_body_parts = [
+            _restore_original_citations(linkage['bodies'][mode], citation_maps[mode])
+            .split('## 参考文献')[0].rstrip()
+            for mode in ('C1', 'C2')
+        ]
+        combined_body = combined_body_parts[0] + '\n\n## 独立文献综述\n\n' + combined_body_parts[1] + '\n'
+        combined_outline = written['C1'].outline + '\n\n---\n\n' + written['C2'].outline
+        combined_sample = written['C1'].sample + '\n\n---\n\n' + written['C2'].sample
+        (task_dir / 'outline.md').write_text(combined_outline, encoding='utf-8')
+        (task_dir / 'sample.md').write_text(combined_sample, encoding='utf-8')
+        (task_dir / '综述初稿.md').write_text(combined_body, encoding='utf-8')
+        combined_ledger = (self.artifact_root / f'{task.id}-C1' / 'evidence_ledger.md').read_text(encoding='utf-8')
+        combined_ledger += '\n' + (self.artifact_root / f'{task.id}-C2' / 'evidence_ledger.md').read_text(encoding='utf-8')
+        (task_dir / 'evidence_ledger.md').write_text(combined_ledger, encoding='utf-8')
+
         if not can_combine:
             failures.append('C1+C2 独立交付、衔接检查或根目录复核未通过，已阻止合并交付')
             report_stage_phase('generate', 'upload')
@@ -838,19 +853,6 @@ class Orchestrator:
                 },
             }
 
-        combined_body_parts = [
-            _restore_original_citations(linkage['bodies'][mode], citation_maps[mode])
-            .split('## 参考文献')[0].rstrip()
-            for mode in ('C1', 'C2')
-        ]
-        combined_body = combined_body_parts[0] + '\n\n## 独立文献综述\n\n' + combined_body_parts[1] + '\n'
-        combined_outline = written['C1'].outline + '\n\n---\n\n' + written['C2'].outline
-        combined_sample = written['C1'].sample + '\n\n---\n\n' + written['C2'].sample
-        (task_dir / 'outline.md').write_text(combined_outline, encoding='utf-8')
-        (task_dir / 'sample.md').write_text(combined_sample, encoding='utf-8')
-        combined_ledger = (self.artifact_root / f'{task.id}-C1' / 'evidence_ledger.md').read_text(encoding='utf-8')
-        combined_ledger += '\n' + (self.artifact_root / f'{task.id}-C2' / 'evidence_ledger.md').read_text(encoding='utf-8')
-        (task_dir / 'evidence_ledger.md').write_text(combined_ledger, encoding='utf-8')
         delivery_answer = answers.get('delivery', {})
         form, custom_delivery = _resolve_delivery_form(delivery_answer, 'C')
         combined = DeliveryTask(
