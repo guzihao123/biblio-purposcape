@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import schoolBadge from '../assets/jspi-badge.png'
+import schoolBadge from '../assets/jspi-badge.webp'
 import { MotionButton } from '../components/MotionButton'
 import { PageTransition } from '../components/PageTransition'
 import { SchoolBadgeIntro } from '../components/SchoolBadgeIntro'
@@ -21,7 +21,6 @@ export function InvitePage({ apiBaseUrl, onSuccess, onBadgeIntroActiveChange }: 
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [sessionEstablished, setSessionEstablished] = useState(false)
-
 
   const startResearch = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
