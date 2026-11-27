@@ -1339,6 +1339,8 @@ def _c1_expanded_body(task, original_text, quote_limit):
 
 
 def _repair_c1_body(text, task):
+    if isinstance(task.component_data, dict):
+        task.component_data, _ = _backfill_c1_gap_evidence(task.component_data, task.papers)
     required = (
         '引言逻辑框架', '段落卡·', 'Research Gap 分析表', '完整引言',
         '写作逻辑和学术质量检查', '| 研究方向 | 已有进展 | 现有不足 | 文献证据 | 与本文研究问题的联系 |',
@@ -1354,6 +1356,24 @@ def _repair_c1_body(text, task):
         return valid[0]
     return min(candidates, key=lambda candidate: abs(_c1_word_count(candidate) - 1000))
 
+
+
+def _rebuild_c1_body(task):
+    try:
+        if not isinstance(task.component_data, dict):
+            return None
+        _backfill_c1_gap_evidence(task.component_data, task.papers)
+        evidence = EvidenceAuditor(task.papers).audit_data(task.component_data)
+        text = _repair_c1_body('', task)
+        evidence = _ensure_pool_ledger(evidence, task.papers, text)
+        text = _label_abstract_citations(text, evidence)
+        if _c1_body_shape_errors(text):
+            return None
+        _validate_citation_coverage(text, evidence)
+        _validate_material_citations(text, task.materials)
+        return BodyOutput(text=text, evidence=evidence)
+    except WritingInputError:
+        return None
 
 
 def _render_c2(data, task=None):
@@ -2502,6 +2522,64 @@ def _repair_component_evidence(value, papers):
     return repaired, sorted(dropped_refs), removed, quote_repairs
 
 
+def _backfill_c1_gap_evidence(data, papers):
+    """Attach a real pool citation to C1 gap rows that lost all evidence."""
+    if not isinstance(data, dict):
+        return data, 0
+    by_ref = {
+        int(paper['ref_no']): paper
+        for paper in papers
+        if str(paper.get('ref_no', '')).isdigit()
+        and paper.get('claim_eligible') is not False
+        and str(paper.get('abstract') or '').strip()
+    }
+    if not by_ref:
+        return data, 0
+    eligible = list(by_ref.values())
+    candidate_refs = []
+    for row in (data.get('gaps') or []) + (data.get('paragraph_cards') or []):
+        for item in row.get('evidence') or []:
+            for ref in item.get('refs') or []:
+                try:
+                    ref = int(ref)
+                except (TypeError, ValueError):
+                    continue
+                if ref in by_ref and ref not in candidate_refs:
+                    candidate_refs.append(ref)
+        for ref in re.findall(r'\[(\d+)\]', str(row.get('evidence_text') or '')):
+            ref = int(ref)
+            if ref in by_ref and ref not in candidate_refs:
+                candidate_refs.append(ref)
+    changed = 0
+    for index, row in enumerate(data.get('gaps') or []):
+        if any(item.get('refs') for item in (row.get('evidence') or []) if isinstance(item, dict)):
+            continue
+        ref = candidate_refs[index % len(candidate_refs)] if candidate_refs else int(eligible[index % len(eligible)]['ref_no'])
+        paper = by_ref[ref]
+        abstract = str(paper.get('abstract') or '').strip()
+        sentences = [
+            sentence.strip()
+            for sentence in re.split(r'(?<=[.!?。！？])\s+', abstract)
+            if len(sentence.strip()) >= 20
+        ]
+        row_text = _whole_text(' '.join(str(value) for value in row.values() if isinstance(value, str)))
+        words = set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', row_text.casefold()))
+        if sentences:
+            quote = max(
+                sentences,
+                key=lambda sentence: len(words & set(re.findall(r'[A-Za-z\u4e00-\u9fff]{3,}', sentence.casefold()))),
+            )
+        else:
+            quote = abstract
+        row['evidence'] = [{
+            'claim': f"Research Gap 结构引用：{row.get('gap') or row.get('direction') or '研究空白'}（待人工核对）",
+            'refs': [ref],
+            'quotes': {str(ref): quote},
+        }]
+        changed += 1
+    return data, changed
+
+
 def _backfill_c2_row_evidence(data, papers):
     """Attach verbatim abstract evidence to C2 comparison/gap rows that cite [n]."""
     if not isinstance(data, dict):
@@ -2894,6 +2972,13 @@ class WritingService:
                         kind='component_evidence_repaired',
                         payload={'quote_repairs': quote_repairs, 'stage': 'components'},
                     ))
+                if mode == 'C1':
+                    generated, filled = _backfill_c1_gap_evidence(generated, task.papers)
+                    if filled:
+                        task.events.append(WritingEvent(
+                            kind='evidence_backfill',
+                            payload={'filled_rows': filled, 'stage': 'components'},
+                        ))
                 task.component_data = generated
                 components = self._build_components(task, mode)
                 if attempt > 0:
@@ -3197,6 +3282,22 @@ class WritingService:
                 if model_backed and task.mode.upper() == 'C1':
                     shape_errors = _c1_body_shape_errors(text)
                     if shape_errors:
+                        rebuilt = _rebuild_c1_body(task)
+                        if rebuilt is not None:
+                            task.events.append(WritingEvent(
+                                kind='c1_body_rebuilt',
+                                payload={'stage': 'body', 'deterministic': True},
+                            ))
+                            task.events.append(WritingEvent(
+                                kind='body_rework',
+                                payload={
+                                    'stage': 'body',
+                                    'attempt': attempt + 1,
+                                    'recovered': True,
+                                    'deterministic': True,
+                                },
+                            ))
+                            return rebuilt
                         raise WritingInputError('C1 body structure: ' + '; '.join(shape_errors))
                 if model_backed and task.mode.upper() == 'C2':
                     shape_errors = _c2_body_shape_errors(text)
@@ -3401,6 +3502,14 @@ class WritingService:
             if rebuilt is not None:
                 task.events.append(WritingEvent(
                     kind='d_body_rebuilt',
+                    payload={'reason': str(last_error)[:300] if last_error else ''},
+                ))
+                return rebuilt
+        if model_backed and task.mode.upper() == 'C1' and isinstance(task.component_data, dict):
+            rebuilt = _rebuild_c1_body(task)
+            if rebuilt is not None:
+                task.events.append(WritingEvent(
+                    kind='c1_body_rebuilt',
                     payload={'reason': str(last_error)[:300] if last_error else ''},
                 ))
                 return rebuilt

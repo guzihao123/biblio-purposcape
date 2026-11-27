@@ -283,3 +283,33 @@ def test_b_body_quote_is_repaired_before_gate_retry(tmp_path):
     assert model.body_calls == 1
     assert _b_body_shape_errors(output.body) == []
     assert any('calibrated model' in item.get('quote', '') for item in output.evidence)
+
+
+def test_c1_component_gap_without_evidence_is_backfilled(tmp_path):
+    class EmptyGapEvidence:
+        def complete_json(self, system_prompt, payload):
+            data = deepcopy(component_data('C1'))
+            data['gaps'][0]['evidence'] = []
+            return {'components': data}
+
+    task = make_task('C1', tmp_path, component_data=None)
+    output = WritingService(workspace_root=tmp_path, model=EmptyGapEvidence()).produce_components(task)
+
+    table_line = next(line for line in output.markdown.splitlines() if line.startswith('| 联合校准'))
+    assert re.search(r'\[\d+\]', table_line)
+
+
+def test_c1_body_gap_without_evidence_is_rebuilt_with_pool_citation(tmp_path):
+    class ShortC1Body:
+        def complete_json(self, system_prompt, payload):
+            if payload['stage'] == 'components':
+                return {'components': component_data('C1')}
+            return {'body': '# 引言\n\n短稿 [1]。', 'evidence': [EVIDENCE]}
+
+    task = make_task('C1', tmp_path)
+    task.component_data['gaps'][0]['evidence'] = []
+    output = WritingService(workspace_root=tmp_path, model=ShortC1Body()).produce(task)
+
+    assert _c1_body_shape_errors(output.body) == []
+    assert '| 研究方向 | 已有进展 | 现有不足 | 文献证据 | 与本文研究问题的联系 |' in output.body
+    assert re.search(r'\|\s*\[\d+\]', output.body)
