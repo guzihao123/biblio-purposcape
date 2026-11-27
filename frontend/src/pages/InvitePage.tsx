@@ -1,20 +1,23 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import schoolBadge from '../assets/jspi-badge.png'
 import { MotionButton } from '../components/MotionButton'
 import { PageTransition } from '../components/PageTransition'
+import { SchoolBadgeIntro } from '../components/SchoolBadgeIntro'
 
 
-// 临时隐藏成员卡；恢复时改为 true，卡片文案与分工均保留在源码中。
-const SHOW_TEAM_CARDS = false
+// 临时隐藏制作团队区域；恢复时改为 true，标题、学院说明与四张成员卡均保留在源码中。
+const SHOW_TEAM_SECTION = false
 
 interface InvitePageProps {
   apiBaseUrl?: string
   onSuccess?: (sessionId: string) => void
+  onBadgeIntroActiveChange?: (active: boolean) => void
 }
 
 
-export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
+export function InvitePage({ apiBaseUrl, onSuccess, onBadgeIntroActiveChange }: InvitePageProps) {
+  const badgeTargetRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [sessionEstablished, setSessionEstablished] = useState(false)
@@ -86,12 +89,17 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
   return (
     <PageTransition>
       <main className="full-power-site invite-page">
+      <SchoolBadgeIntro
+        source={schoolBadge}
+        targetRef={badgeTargetRef}
+        onActiveChange={onBadgeIntroActiveChange}
+      />
       <div className="site-orbit site-orbit--one" aria-hidden="true" />
       <div className="site-orbit site-orbit--two" aria-hidden="true" />
       <div className="invite-layout">
         <section className="invite-hero" aria-labelledby="invite-hero-title">
           <div className="invite-identity">
-            <div className="school-badge">
+            <div ref={badgeTargetRef} className="school-badge">
               <img
                 src={schoolBadge}
                 alt="江苏警官学院校徽"
@@ -176,6 +184,7 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
         </section>
       </div>
 
+      {SHOW_TEAM_SECTION && (
       <section className="team-section" aria-labelledby="team-title">
         <div className="team-section__heading">
           <div>
@@ -187,7 +196,6 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
             <span lang="en">Intelligent Traffic Management × Criminal Science and Technology</span>
           </p>
         </div>
-        {SHOW_TEAM_CARDS && (
         <ul className="team-grid" aria-label="团队成员与分工 / Team members and roles">
           <li className="full-power-card team-card">
             <div className="team-card__affiliation">
@@ -250,8 +258,8 @@ export function InvitePage({ apiBaseUrl, onSuccess }: InvitePageProps) {
             </div>
           </li>
         </ul>
-        )}
       </section>
+      )}
       </main>
     </PageTransition>
   )
