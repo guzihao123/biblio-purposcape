@@ -583,6 +583,38 @@ code,
   filter: drop-shadow(0 8px 20px rgba(26, 104, 179, 0.34));
 }
 
+.school-badge-intro {
+  position: fixed;
+  z-index: 4;
+  display: block;
+  margin: 0;
+  object-fit: contain;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+  transform-origin: center;
+}
+
+.school-badge-intro.is-running {
+  visibility: visible;
+  will-change: transform, opacity;
+  animation: schoolBadgeIntro 1700ms var(--motion-ease-enter) both;
+}
+
+.school-badge.school-badge--intro-pending {
+  opacity: 0 !important;
+}
+
+.school-badge.school-badge--intro-static,
+.school-badge.school-badge--intro-static::before {
+  animation: none !important;
+}
+
+.school-badge.school-badge--intro-static::before {
+  opacity: 0.28;
+}
+
 .team-section {
   width: min(1180px, 100%);
   margin: 0 auto;
